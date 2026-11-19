@@ -1,0 +1,16 @@
+{
+  "name": "@sorrell/diagetic-demo",
+  "version": "1.0.0",
+  "description": "Self-contained demonstration server for Bedform Diagetic levers, sliders and wheels.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --import tsx Tool/Build.mts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.tools.json",
+    "lint": "eslint Script Tool Test --max-warnings 0",
+    "test": "node --import tsx --test Test/*.test.mts",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "demo:prepare": "node --import tsx Tool/Demonstration.mts",
+    "demo:diagetic": "node --import tsx \"../../Script/Deprecated/Demonstration/Source/start.mts\" --server \"Demonstration/diagetic/server\""
+  }
+}

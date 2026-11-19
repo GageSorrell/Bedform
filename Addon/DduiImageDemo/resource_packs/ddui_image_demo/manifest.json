@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Transactional DDUI Demo Resources",
+    "description": "Client acceptance fixture for Bedform Undo, Redo, Reset, text chunking and Direction.",
+    "uuid": "62cd8c60-14c3-40a6-967a-c827877565bf",
+    "version": [
+      1,
+      1,
+      82
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      60
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "abda49d6-44ca-4124-bced-54d8ab4e50b4",
+      "version": [
+        1,
+        1,
+        82
+      ]
+    }
+  ]
+}

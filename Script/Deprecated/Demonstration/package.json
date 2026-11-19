@@ -1,0 +1,11 @@
+{
+  "name": "@sorrell/demonstration",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --import tsx --test Test/*.test.mts",
+    "typecheck:tools": "tsc -p tsconfig.json",
+    "lint": "eslint Source Test --max-warnings 0"
+  }
+}

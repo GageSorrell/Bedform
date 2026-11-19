@@ -1,0 +1,18 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.ddui_demo.bone_orbit.loop": {
+      "loop": true,
+      "animation_length": 8,
+      "bones": {
+        "root": {
+          "position": [
+            "32 * math.sin(query.anim_time * 45)",
+            "32 - 32 * math.cos(query.anim_time * 45)",
+            0
+          ]
+        }
+      }
+    }
+  }
+}

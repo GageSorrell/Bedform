@@ -1,0 +1,387 @@
+{
+  "name": "bedform",
+  "version": "1.0.0-alpha.2",
+  "description": "The definitive toolset for *MineCraft: Bedrock Edition*: build feature-packed add-ons, manage servers and worlds, and extend MineCraft with cross-platform support.",
+  "license": "MIT",
+  "main": "./Distribution/index.js",
+  "types": "./Distribution/index.d.ts",
+  "sideEffects": false,
+  "author": {
+    "name": "Gage Sorrell",
+    "email": "gage@sorrell.sh",
+    "url": "https://sorrell.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git",
+    "directory": "Package/Bedform"
+  },
+  "files": [
+    "Distribution",
+    "License.md",
+    "ReadMe.md",
+    "Documentation",
+    "tsconfig.json",
+    "bedform.config.schema.json",
+    "Asset/bedform-common.mcaddon",
+    "Asset/bedform-canvas.mcaddon"
+  ],
+  "bin": {
+    "bedform": "./Distribution/Bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./Distribution/index.d.ts",
+      "import": "./Distribution/index.js"
+    },
+    "./Utility": {
+      "types": "./Distribution/Utility/index.d.ts",
+      "import": "./Distribution/Utility/index.js"
+    },
+    "./Utility/Name": {
+      "types": "./Distribution/Utility/Name.d.ts",
+      "import": "./Distribution/Utility/Name.js"
+    },
+    "./Diagetic": {
+      "types": "./Distribution/Diagetic.d.ts",
+      "import": "./Distribution/Diagetic.js"
+    },
+    "./Spatial": {
+      "types": "./Distribution/Spatial/index.d.ts",
+      "import": "./Distribution/Spatial/index.js"
+    },
+    "./Spatial/Intent": {
+      "types": "./Distribution/Spatial/Intent.d.ts",
+      "import": "./Distribution/Spatial/Intent.js"
+    },
+    "./Canvas/Image": {
+      "types": "./Distribution/Canvas/Image.d.ts",
+      "import": "./Distribution/Canvas/Image.js"
+    },
+    "./Canvas/Surface": {
+      "types": "./Distribution/Canvas/Surface.d.ts",
+      "import": "./Distribution/Canvas/Surface.js"
+    },
+    "./Canvas/IntentProtocol": {
+      "types": "./Distribution/Canvas/Public/Intent.d.ts",
+      "import": "./Distribution/Canvas/Public/Intent.js"
+    },
+    "./Canvas/IntentValidation": {
+      "types": "./Distribution/Spatial/Internal/IntentValue.d.ts",
+      "import": "./Distribution/Spatial/Internal/IntentValue.js"
+    },
+    "./Diagetic/Gizmo": {
+      "types": "./Distribution/Diagetic/Gizmo.d.ts",
+      "import": "./Distribution/Diagetic/Gizmo.js"
+    },
+    "./package.json": "./package.json",
+    "./Vector2": {
+      "types": "./Distribution/Vector2.d.ts",
+      "import": "./Distribution/Vector2.js"
+    },
+    "./Vector3": {
+      "types": "./Distribution/Vector3.d.ts",
+      "import": "./Distribution/Vector3.js"
+    },
+    "./Quat": {
+      "types": "./Distribution/Quat.d.ts",
+      "import": "./Distribution/Quat.js"
+    },
+    "./Rotator": {
+      "types": "./Distribution/Rotator.d.ts",
+      "import": "./Distribution/Rotator.js"
+    },
+    "./Transform": {
+      "types": "./Distribution/Transform.d.ts",
+      "import": "./Distribution/Transform.js"
+    },
+    "./RigidTransform": {
+      "types": "./Distribution/RigidTransform.d.ts",
+      "import": "./Distribution/RigidTransform.js"
+    },
+    "./Ray": {
+      "types": "./Distribution/Ray.d.ts",
+      "import": "./Distribution/Ray.js"
+    },
+    "./Plane": {
+      "types": "./Distribution/Plane.d.ts",
+      "import": "./Distribution/Plane.js"
+    },
+    "./AABB": {
+      "types": "./Distribution/AABB.d.ts",
+      "import": "./Distribution/AABB.js"
+    },
+    "./Voxel": {
+      "types": "./Distribution/Voxel.d.ts",
+      "import": "./Distribution/Voxel.js"
+    },
+    "./Microvoxel": {
+      "types": "./Distribution/Microvoxel.d.ts",
+      "import": "./Distribution/Microvoxel.js"
+    },
+    "./OBB": {
+      "types": "./Distribution/OBB.d.ts",
+      "import": "./Distribution/OBB.js"
+    },
+    "./ConvexHull": {
+      "types": "./Distribution/ConvexHull.d.ts",
+      "import": "./Distribution/ConvexHull.js"
+    },
+    "./CollisionShape": {
+      "types": "./Distribution/CollisionShape.d.ts",
+      "import": "./Distribution/CollisionShape.js"
+    },
+    "./PhysicsModel": {
+      "types": "./Distribution/PhysicsModel.d.ts",
+      "import": "./Distribution/PhysicsModel.js"
+    },
+    "./PhysicsRenderer": {
+      "types": "./Distribution/PhysicsRenderer.d.ts",
+      "import": "./Distribution/PhysicsRenderer.js"
+    },
+    "./keys": {
+      "types": "./Distribution/keys.d.ts",
+      "import": "./Distribution/keys.js"
+    },
+    "./Build": {
+      "types": "./Distribution/Build/Physics.d.ts",
+      "import": "./Distribution/Build/Physics.js"
+    },
+    "./Collision": {
+      "types": "./Distribution/Collision.d.ts",
+      "import": "./Distribution/Collision.js"
+    },
+    "./CollisionBroadPhase": {
+      "types": "./Distribution/CollisionBroadPhase.d.ts",
+      "import": "./Distribution/CollisionBroadPhase.js"
+    },
+    "./PhysicsEntity": {
+      "types": "./Distribution/PhysicsEntity.d.ts",
+      "import": "./Distribution/PhysicsEntity.js"
+    },
+    "./PhysicsRuntime": {
+      "types": "./Distribution/PhysicsRuntime.d.ts",
+      "import": "./Distribution/PhysicsRuntime.js"
+    },
+    "./PhysicsRuntime/Bedrock": {
+      "types": "./Distribution/Internal/PhysicsBedrock.d.ts",
+      "import": "./Distribution/Internal/PhysicsBedrock.js"
+    },
+    "./PhysicsWorld": {
+      "types": "./Distribution/PhysicsWorld.d.ts",
+      "import": "./Distribution/PhysicsWorld.js"
+    },
+    "./Config": {
+      "types": "./Distribution/Config.d.ts",
+      "import": "./Distribution/Config.js"
+    },
+    "./bedform.config.schema.json": "./bedform.config.schema.json",
+    "./Config/Loader": {
+      "types": "./Distribution/Build/ProjectConfig.d.ts",
+      "import": "./Distribution/Build/ProjectConfig.js"
+    },
+    "./Build/Settings": {
+      "types": "./Distribution/Build/Settings.d.ts",
+      "import": "./Distribution/Build/Settings.js"
+    },
+    "./Build/DiageticControls": {
+      "types": "./Distribution/Build/DiageticControls.d.ts",
+      "import": "./Distribution/Build/DiageticControls.js"
+    },
+    "./Build/Addon": {
+      "types": "./Distribution/Build/Addon.d.ts",
+      "import": "./Distribution/Build/Addon.js"
+    },
+    "./DDUI": {
+      "types": "./Distribution/DDUI/index.d.ts",
+      "import": "./Distribution/DDUI/index.js"
+    },
+    "./DDUI/CustomForm": {
+      "types": "./Distribution/DDUI/CustomForm.d.ts",
+      "import": "./Distribution/DDUI/CustomForm.js"
+    },
+    "./DDUI/Direction": {
+      "types": "./Distribution/DDUI/Direction.d.ts",
+      "import": "./Distribution/DDUI/Direction.js"
+    },
+    "./DDUI/Transactional": {
+      "types": "./Distribution/DDUI/Transactional.d.ts",
+      "import": "./Distribution/DDUI/Transactional.js"
+    },
+    "./DDUI/Utility": {
+      "types": "./Distribution/DDUI/Utility.d.ts",
+      "import": "./Distribution/DDUI/Utility.js"
+    },
+    "./DDUI/jsx-runtime": {
+      "types": "./Distribution/DDUI/jsx-runtime.d.ts",
+      "import": "./Distribution/DDUI/jsx-runtime.js"
+    },
+    "./DDUI/jsx-dev-runtime": {
+      "types": "./Distribution/DDUI/jsx-dev-runtime.d.ts",
+      "import": "./Distribution/DDUI/jsx-dev-runtime.js"
+    },
+    "./DDUI/BuildMode": {
+      "types": "./Distribution/Internal/DDUIBuildMode.d.ts",
+      "import": "./Distribution/Internal/DDUIBuildMode.js"
+    },
+    "./Prototype": {
+      "types": "./Distribution/Prototype/index.d.ts",
+      "import": "./Distribution/Prototype/index.js"
+    },
+    "./Prototype/Demonstration": {
+      "types": "./Distribution/Prototype/Demonstration.d.ts",
+      "import": "./Distribution/Prototype/Demonstration.js"
+    },
+    "./Prototype/World": {
+      "types": "./Distribution/Prototype/World.d.ts",
+      "import": "./Distribution/Prototype/World.js"
+    },
+    "./Prototype/Interaction": {
+      "types": "./Distribution/Prototype/Interaction.d.ts",
+      "import": "./Distribution/Prototype/Interaction.js"
+    },
+    "./Prototype/Structure": {
+      "types": "./Distribution/Prototype/Structure.d.ts",
+      "import": "./Distribution/Prototype/Structure.js"
+    },
+    "./Prototype/World/Host": {
+      "types": "./Distribution/Prototype/World/Host.d.ts",
+      "import": "./Distribution/Prototype/World/Host.js"
+    },
+    "./Prototype/Persistence": {
+      "types": "./Distribution/Prototype/Persistence.d.ts",
+      "import": "./Distribution/Prototype/Persistence.js"
+    },
+    "./Prototype/References": {
+      "types": "./Distribution/Prototype/References.d.ts",
+      "import": "./Distribution/Prototype/References.js"
+    },
+    "./Prototype/keys": {
+      "types": "./Distribution/Prototype/keys.d.ts",
+      "import": "./Distribution/Prototype/keys.js"
+    },
+    "./Prototype/Structure/Catalog": {
+      "types": "./Distribution/Prototype/Structure/Catalog.d.ts",
+      "import": "./Distribution/Prototype/Structure/Catalog.js"
+    },
+    "./Spatial/Measurement": {
+      "types": "./Distribution/Spatial/Measurement.d.ts",
+      "import": "./Distribution/Spatial/Measurement.js"
+    },
+    "./Canvas/Dependency": {
+      "types": "./Distribution/Canvas/Dependency.d.ts",
+      "import": "./Distribution/Canvas/Dependency.js"
+    }
+  },
+  "scripts": {
+    "verify:intent": "node --import tsx Tool/IntentVerify.mts",
+    "test:physics:bds": "node --import tsx Tool/physics-bds.mts",
+    "benchmark:physics": "node --import tsx Tool/physics-bds.mts --benchmark",
+    "benchmark:physics:smoke": "node --import tsx Tool/physics-bds.mts --benchmark --seconds 2",
+    "benchmark:physics:host": "node --import tsx Tool/physics-benchmark-host.mts",
+    "prepare:physics:client": "node --import tsx Tool/physics-bds.mts --prepare-client",
+    "preview:physics": "node --import tsx Tool/physics-client.mts",
+    "build": "tsc -p tsconfig.json && npm run build:common && npm run build:canvas",
+    "build:common": "node --import tsx Tool/PrepareCommon.mts",
+    "prepack": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:tools": "tsc -p tsconfig.tools.json",
+    "lint": "eslint Source Test Tool",
+    "test": "npm run build && node --import tsx --test Test/*.test.mts",
+    "verify": "npm run text-metrics:check && npm run check:config && npm run typecheck && npm test && npm run typecheck:tools && npm run lint",
+    "lint:vectors": "eslint Source/Vector2.ts Source/Vector3.ts Source/Internal/Vector.ts Test/Vector*.mts",
+    "test:vectors": "npm run build:pure && node --import tsx --test Test/Vector*.test.mts",
+    "verify:vectors": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "build:pure": "tsc -p tsconfig.pure.json && npm run build:common && npm run build:canvas",
+    "typecheck:pure": "tsc -p tsconfig.pure.json --noEmit",
+    "test:pure": "npm run build:pure && node --import tsx --test Test/*.test.mts",
+    "lint:quat": "eslint Source/Quat.ts Test/Quat*.mts",
+    "test:quat": "npm run build:pure && node --import tsx --test Test/Quat*.test.mts",
+    "verify:quat": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:rotator": "eslint Source/Rotator.ts Source/Quat.ts Source/Internal/Rotator.ts Source/Internal/Rotation.ts Test/Rotator*.mts",
+    "test:rotator": "npm run build:pure && node --import tsx --test Test/Rotator*.test.mts",
+    "verify:rotator": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:transform": "eslint Source/Transform.ts Test/Transform*.mts",
+    "test:transform": "npm run build:pure && node --import tsx --test Test/Transform*.test.mts",
+    "verify:transform": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:rigid-transform": "eslint Source/RigidTransform.ts Source/Transform.ts Source/Internal/Transform.ts Test/RigidTransform*.mts",
+    "test:rigid-transform": "npm run build:pure && node --import tsx --test Test/RigidTransform*.test.mts",
+    "verify:rigid-transform": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:ray": "eslint Source/Ray.ts Test/Ray*.mts",
+    "test:ray": "npm run build:pure && node --import tsx --test Test/Ray*.test.mts",
+    "verify:ray": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:plane": "eslint Source/Plane.ts Source/Internal/Geometry.ts Test/Plane*.mts",
+    "test:plane": "npm run build:pure && node --import tsx --test Test/Plane*.test.mts",
+    "verify:plane": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:aabb": "eslint Source/AABB.ts Source/Internal/Geometry.ts Test/AABB*.mts",
+    "test:aabb": "npm run build:pure && node --import tsx --test Test/AABB*.test.mts",
+    "verify:aabb": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:voxel": "eslint Source/Voxel.ts Test/Voxel*.mts",
+    "test:voxel": "npm run build && node --import tsx --test Test/Voxel*.test.mts",
+    "verify:voxel": "npm run typecheck && npm run typecheck:tools && npm run lint:voxel && npm run test:voxel",
+    "lint:microvoxel": "eslint Source/Microvoxel.ts Test/Microvoxel*.mts",
+    "test:microvoxel": "npm run build && node --import tsx --test Test/Microvoxel*.test.mts",
+    "verify:microvoxel": "npm run typecheck && npm run typecheck:tools && npm run lint:microvoxel && npm run test:microvoxel",
+    "lint:obb": "eslint Source/OBB.ts Test/OBB*.mts",
+    "test:obb": "npm run build:pure && node --import tsx --test Test/OBB*.test.mts",
+    "verify:obb": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "lint:convex-hull": "eslint Source/ConvexHull.ts Source/Internal/ConvexHull.ts Test/ConvexHull*.mts",
+    "test:convex-hull": "npm run build:pure && node --import tsx --test Test/ConvexHull*.test.mts",
+    "verify:convex-hull": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
+    "generate:config": "node --import tsx Tool/config-generate.mts",
+    "check:config": "node --import tsx Tool/config-generate.mts --check",
+    "test:config": "npm run build && npm run check:config && node --import tsx --test Test/Config.test.mts Test/ConfigLoader.test.mts",
+    "test:config:packed": "npm run build && node --import tsx --test Test/Consumer.test.mts",
+    "test:intent": "npm run build && node --import tsx --test Test/Intent.test.mts Test/IntentPacked.test.mts",
+    "test:surface": "npm run build && node --import tsx --test Test/Surface.test.mts",
+    "test:build-settings": "npm run build && node --import tsx --test Test/BuildSettings.test.mts",
+    "test:prototype": "npm run build && node --import tsx --test Test/Prototype*.test.mts",
+    "text-metrics": "node --import tsx Tool/TextMetrics.mts",
+    "text-metrics:check": "node --import tsx Tool/TextMetrics.mts --check",
+    "test:canvas-images": "npm run build && node --import tsx --test Test/CanvasImages.test.mts",
+    "build:canvas": "node --import tsx Tool/PrepareCanvas.mts",
+    "test:canvas-packs": "npm run build && node --import tsx --test Test/CanvasPacks.test.mts"
+  },
+  "peerDependenciesMeta": {
+    "effect": {
+      "optional": true
+    },
+    "@effect/platform-node": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@minecraft/core-build-tasks": "5.5.0",
+    "@bedform/effect": "1.0.0-alpha.1",
+    "esbuild": "0.25.12",
+    "fflate": "0.8.2",
+    "ignore": "5.3.2",
+    "jiti": "2.7.0",
+    "pngjs": "7.0.0",
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {
+    "@effect/platform-node": "^4.0.5",
+    "@minecraft/math": "2.4.1",
+    "@minecraft/server": "2.10.0",
+    "@minecraft/server-ui": "2.4.0-beta.1.26.60-preview.30",
+    "ajv": "8.17.1",
+    "effect": "^4.0.5"
+  },
+  "peerDependencies": {
+    "@effect/platform-node": "^4.0.5",
+    "@minecraft/math": "^2.4.1",
+    "@minecraft/server": ">=2.0.0 <3.0.0",
+    "effect": "^4.0.5"
+  },
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "framework",
+    "utilities",
+    "add-on",
+    "add-ons",
+    "effect"
+  ],
+  "type": "module"
+}

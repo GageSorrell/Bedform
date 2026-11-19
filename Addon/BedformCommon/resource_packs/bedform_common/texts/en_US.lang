@@ -1,0 +1,19 @@
+entity.bedform:diagetic_lever.name=Lever
+entity.bedform:diagetic_slider.name=Slider
+entity.bedform:diagetic_wheel.name=Wheel
+action.interact.bedform.diagetic=Grab
+action.interact.bedform.diagetic_release=Release
+
+bedform.direction.up=Up
+bedform.direction.down=Down
+bedform.direction.north=North
+bedform.direction.south=South
+bedform.direction.east=East
+bedform.direction.west=West
+bedform.transactional.cancel=Cancel
+bedform.transactional.complete=Reset complete!
+bedform.transactional.confirm=Reset
+bedform.transactional.question=Are you sure?
+bedform.transactional.redo=Redo
+bedform.transactional.reset=Reset
+bedform.transactional.undo=Undo

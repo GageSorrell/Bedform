@@ -1,0 +1,26 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.ddui_demo.ui_texture_cube": {
+      "arrays": {
+        "textures": {
+          "Array.skins": [
+            "Texture.menu_button",
+            "Texture.play_button",
+            "Texture.servers_icon",
+            "Texture.stone"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Array.skins[query.variant]"
+      ]
+    }
+  }
+}

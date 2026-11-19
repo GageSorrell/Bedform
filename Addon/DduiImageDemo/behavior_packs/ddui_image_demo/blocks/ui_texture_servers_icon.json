@@ -1,0 +1,21 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:block": {
+    "description": {
+      "identifier": "ddui_demo:ui_texture_servers_icon",
+      "menu_category": {
+        "category": "none"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "Server list icon (UI)",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "ddui_ui_texture_servers_icon",
+          "render_method": "alpha_test"
+        }
+      }
+    }
+  }
+}

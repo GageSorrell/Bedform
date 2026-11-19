@@ -1,0 +1,17 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.ddui_demo.hop.launch": {
+      "animation_length": 1.05,
+      "bones": {
+        "cube": {
+          "position": [
+            0,
+            "16 * math.max(0, 236.142807 * (1 - math.pow(0.98, 20 * query.anim_time)) - 78.4 * query.anim_time)",
+            0
+          ]
+        }
+      }
+    }
+  }
+}

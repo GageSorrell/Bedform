@@ -1,0 +1,4 @@
+{
+  "extends": "../../tsconfig.tools.base.json",
+  "include": ["Tool/**/*.mts", "Test/**/*.mts"]
+}

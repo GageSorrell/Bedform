@@ -1,0 +1,66 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Transactional DDUI Demo",
+    "description": "Client acceptance fixture for Bedform Undo, Redo, Reset, text chunking and Direction.",
+    "uuid": "6fe04423-089a-4dc0-a210-76fac139e8bf",
+    "version": [
+      1,
+      1,
+      82
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      60
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "817ae72e-bd74-44c1-82bb-e963c723effd",
+      "version": [
+        1,
+        1,
+        82
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/Main.js",
+      "uuid": "516d6caa-6596-43a5-b9a0-9428918d9c09",
+      "version": [
+        1,
+        1,
+        82
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.12.0-beta"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.4.0-beta"
+    },
+    {
+      "uuid": "62cd8c60-14c3-40a6-967a-c827877565bf",
+      "version": [
+        1,
+        1,
+        82
+      ]
+    },
+    {
+      "uuid": "c15f802e-ae6c-4b64-9037-db7fb035f1e8",
+      "version": [
+        1,
+        1,
+        3
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "private": true,
+  "name": "bds-intellisense",
+  "version": "1.0.0",
+  "description": "Version-aware IntelliSense for Bedrock Dedicated Server server.properties files.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./Distribution/index.js",
+  "types": "./Distribution/index.d.ts",
+  "sideEffects": false,
+  "author": {
+    "name": "Gage Sorrell",
+    "email": "gage@sorrell.sh",
+    "url": "https://sorrell.sh"
+  },
+  "repository": {
+    "directory": "Package/Deprecated/BDSIntellisense",
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git"
+  },
+  "files": [
+    "Distribution",
+    "License.md",
+    "ReadMe.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./Distribution/index.d.ts",
+      "import": "./Distribution/index.js",
+      "default": "./Distribution/index.js"
+    },
+    "./Analysis": {
+      "types": "./Distribution/Analysis.d.ts",
+      "import": "./Distribution/Analysis.js",
+      "default": "./Distribution/Analysis.js"
+    },
+    "./Detection": {
+      "types": "./Distribution/Detection.d.ts",
+      "import": "./Distribution/Detection.js",
+      "default": "./Distribution/Detection.js"
+    },
+    "./Keys": {
+      "types": "./Distribution/Keys.d.ts",
+      "import": "./Distribution/Keys.js",
+      "default": "./Distribution/Keys.js"
+    },
+    "./Parser": {
+      "types": "./Distribution/Parser.d.ts",
+      "import": "./Distribution/Parser.js",
+      "default": "./Distribution/Parser.js"
+    },
+    "./PeVersion": {
+      "types": "./Distribution/PeVersion.d.ts",
+      "import": "./Distribution/PeVersion.js",
+      "default": "./Distribution/PeVersion.js"
+    },
+    "./Resolution": {
+      "types": "./Distribution/Resolution.d.ts",
+      "import": "./Distribution/Resolution.js",
+      "default": "./Distribution/Resolution.js"
+    },
+    "./Schema": {
+      "types": "./Distribution/Schema/index.d.ts",
+      "import": "./Distribution/Schema/index.js",
+      "default": "./Distribution/Schema/index.js"
+    },
+    "./VSCode": {
+      "types": "./Distribution/VSCode/index.d.ts",
+      "import": "./Distribution/VSCode/index.js",
+      "default": "./Distribution/VSCode/index.js"
+    },
+    "./Version": {
+      "types": "./Distribution/Version.d.ts",
+      "import": "./Distribution/Version.js",
+      "default": "./Distribution/Version.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && npm run typecheck:tools",
+    "typecheck:tools": "npm run build && tsc -p tsconfig.tools.json",
+    "lint": "eslint Source Test Tool",
+    "test": "npm run build && node --import tsx --test Test/*.test.mts",
+    "fetch": "node --import tsx Tool/fetch.mts",
+    "generate": "node --import tsx Tool/generate.mts && npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "@types/vscode": "^1.145.0",
+    "typescript": "6.0.3"
+  }
+}

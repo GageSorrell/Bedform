@@ -1,0 +1,16 @@
+{
+  "name": "@sorrell/documentation-probe",
+  "version": "1.0.12",
+  "private": true,
+  "type": "module",
+  "description": "Isolated Classic JSON UI feasibility fixtures for MineCraft-9a8v.1.",
+  "scripts": {
+    "build": "node Tool/Build.mjs common && node Tool/Build.mjs alpha && node Tool/Build.mjs beta && node Tool/Worlds.mjs",
+    "test": "node --test Test/*.test.mjs",
+    "lint": "eslint --config eslint.config.mjs Tool Test eslint.config.mjs --max-warnings 0",
+    "check": "npm run lint && npm test && npm run build"
+  },
+  "devDependencies": {
+    "fflate": "0.8.2"
+  }
+}

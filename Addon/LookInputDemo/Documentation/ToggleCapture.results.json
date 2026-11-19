@@ -1,0 +1,35 @@
+{
+  "build": "53340801",
+  "engine": "1.26.63.1",
+  "evidence": {
+    "accepted": true,
+    "afterEvents": 0,
+    "clientGate": "Simulated calls do not establish physical press/release or event dispatch",
+    "conclusion": "UNQUALIFIED: no Use edge signal; aim misses; invisible owned helper intercepts other players",
+    "divergentAccepted": false,
+    "divergentEvents": 0,
+    "divergentHits": false,
+    "divergentRotation": {
+      "x": 1.335479736328125,
+      "y": 29.054595947265625
+    },
+    "freshAccepted": true,
+    "freshEvents": [],
+    "heldEvents": [],
+    "helperAccepted": true,
+    "helperEvents": [],
+    "helperHit": true,
+    "initialHit": true,
+    "inputButtons": [
+      "Jump",
+      "Sneak"
+    ],
+    "inventoryUnchanged": true,
+    "observerAccepted": true,
+    "observerHits": true,
+    "otherEvents": [],
+    "cleanup": true
+  },
+  "runtime": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime",
+  "world": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime\\worlds\\toggle-489lur"
+}

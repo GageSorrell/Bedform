@@ -1,0 +1,8 @@
+Minecraft font notice
+
+Glyphs U+E922 to U+E966 on glyph_E9.png and its
+white particle texture were rasterised from Mojang's minecraft-ten.ttf, and the legacy
+computing shade glyphs sample the vanilla Unicode font's U+2592 medium shade pattern,
+both captured from Minecraft for Windows 1.26.6501.0. Minecraft is a trademark of
+Mojang Synergies AB; the Minecraft fonts are Mojang's and are not covered by this
+add-on's MIT license.

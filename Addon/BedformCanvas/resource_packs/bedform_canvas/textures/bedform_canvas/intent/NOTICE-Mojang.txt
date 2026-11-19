@@ -1,0 +1,6 @@
+Minecraft artwork notice
+
+Fine Mojangles glyphs, health and hunger artwork derive from Minecraft for Windows 1.26.6501.0.
+SOS reuses the Canvas rasterization of Mojang's minecraft-ten.ttf. Source identities are recorded
+in Assets/Intent/Input.json and Assets/Glyph/Input/minecraft-ten.json. Minecraft is a trademark
+of Mojang Synergies AB. These source fonts and textures are Mojang's, outside the MIT license.

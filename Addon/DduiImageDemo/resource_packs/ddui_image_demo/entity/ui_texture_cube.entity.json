@@ -1,0 +1,23 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "ddui_demo:ui_texture_cube",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "menu_button": "textures/ui/button_borderless_light",
+        "play_button": "textures/gui/newgui/play_screen/NormalButtonThinNewBevel",
+        "servers_icon": "textures/ui/servers",
+        "stone": "textures/blocks/stone"
+      },
+      "geometry": {
+        "default": "geometry.ddui_demo.ui_texture_cube"
+      },
+      "render_controllers": [
+        "controller.render.ddui_demo.ui_texture_cube"
+      ]
+    }
+  }
+}

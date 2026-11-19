@@ -1,0 +1,50 @@
+{
+  "name": "@bedform/core-build-tasks",
+  "version": "5.7.1-dev.1",
+  "description": "Bedform's counterpart to @minecraft/core-build-tasks: everything it exports, extended by Bedform.",
+  "license": "MIT",
+  "author": {
+    "email": "gage@sorrell.sh",
+    "name": "Gage Sorrell",
+    "url": "https://sorrell.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git",
+    "directory": "Package/CoreBuildTasks"
+  },
+  "type": "module",
+  "main": "./Distribution/index.js",
+  "types": "./Distribution/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./Distribution/index.d.ts",
+      "import": "./Distribution/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "Distribution",
+    "License.md",
+    "ReadMe.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint Source",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@minecraft/core-build-tasks": "5.7.1"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  },
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "bedform",
+    "core-build-tasks"
+  ]
+}

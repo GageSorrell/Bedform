@@ -1,0 +1,42 @@
+{
+  "issue": "MineCraft-9a8v.1",
+  "affectedProbeVersion": "1.0.7",
+  "affectedClientVersions": [
+    "1.26.63.1",
+    "1.26.65.1"
+  ],
+  "evidence": {
+    "source": "Local Windows Application Error events and read-only local minidump inspection",
+    "exceptionCode": "0xc0000005",
+    "accessType": "write",
+    "faultAddress": "0x10",
+    "module": "Minecraft.Windows.exe",
+    "moduleOffset": "0x1ca40b9",
+    "faultingInstruction": "mov qword ptr [rax + 0x10], rcx",
+    "raxAtFault": "0x0",
+    "inspectedLatestDump": "Minecraft.Windows.exe.19776.dmp",
+    "matchingEarlierDumps": [
+      "Minecraft.Windows.exe.36316.dmp",
+      "Minecraft.Windows.exe.41784.dmp"
+    ],
+    "contentLogsAtRecentCrashes": "empty"
+  },
+  "scope": "The 1.0.7 change activated the previously unresolved page/search registry. The specific triggering control or engine defect has not been isolated; no native function symbols were available.",
+  "recovery": {
+    "probeVersion": "1.0.8",
+    "approach": "Remove the unverified renderer and matching control graph from emitted resource packs. Retain known working close controls, query echo and static contribution rows.",
+    "clientPageRenderer": false,
+    "clientSearchGraph": false,
+    "worldsModifiedOrDeleted": false,
+    "hostChecks": "lint, 3 tests, independent packaging and archive-content recovery checks passed",
+    "clientLoadCheck": "passed-user-confirmed-after-reasked-question"
+  },
+  "offlineFindings": {
+    "duplicateFocusIdentifiers": [
+      "docs_route_1",
+      "docs_route_2"
+    ],
+    "layoutDependencies": "Both wide infobox layouts use parent auto-height with introduction child100% height.",
+    "exactCrashCauseEstablished": false
+  }
+}

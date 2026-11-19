@@ -1,0 +1,61 @@
+{
+  "name": "bedform-monorepo",
+  "description": "The monorepo for Bedform, the definitive toolset for MineCraft: Bedrock Edition.",
+  "private": true,
+  "workspaces": [
+    "./Addon/*",
+    "./Package/*",
+    "./Package/Deprecated/*",
+    "./Script/*",
+    "./Script/Deprecated/*"
+  ],
+  "version": "1.0.0",
+  "author": {
+    "name": "Gage Sorrell",
+    "email": "gage@sorrell.sh",
+    "url": "https://sorrell.sh"
+  },
+  "license": "SEE LICENSE IN License.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git"
+  },
+  "engines": {
+    "node": "24.19.0",
+    "npm": ">=12.0.2"
+  },
+  "type": "module",
+  "scripts": {
+    "prepare": "husky",
+    "pull": "node ./Script/PullMonorepo/Distribution/index.js",
+    "firewall:configure": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File Script/configure-test-firewall.ps1",
+    "typecheck:tools": "tsc -p tsconfig.tools.json && npm run typecheck:tools --workspaces --if-present",
+    "demo:create": "node --import tsx Script/Deprecated/Demonstration/Source/cli.mts",
+    "demo:start": "node --import tsx Script/Deprecated/Demonstration/Source/start.mts",
+    "mirrors:sync": "node --import tsx Script/sync-minecraft-mirrors.mts"
+  },
+  "devDependencies": {
+    "@sorrell/eslint-plugin": "1.4.0",
+    "@sorrell/tsconfig": "2.1.0",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "24.0.0",
+    "@types/pngjs": "6.0.5",
+    "@typescript-eslint/eslint-plugin": "8.46.2",
+    "@typescript-eslint/parser": "8.46.2",
+    "esbuild": "0.25.12",
+    "eslint": "9.39.5",
+    "eslint-plugin-jsdoc": "^62.8.1",
+    "eslint-plugin-minecraft-linting": "2.0.10",
+    "eslint-plugin-tsdoc": "^0.5.2",
+    "eslint-plugin-unicorn": "65.0.1",
+    "fflate": "0.8.2",
+    "husky": "9.1.7",
+    "jiti": "2.7.0",
+    "tsx": "4.23.15",
+    "typescript": "5.5.4",
+    "typescript-eslint": "^8.65.0"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}

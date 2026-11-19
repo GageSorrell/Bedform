@@ -1,0 +1,81 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.bedform.diagetic.mount": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "rotation": [
+            0,
+            "-query.body_y_rotation",
+            0
+          ]
+        },
+        "offset": {
+          "position": [
+            "query.property('bedform:diagetic_offset_x')",
+            "query.property('bedform:diagetic_offset_y')",
+            "query.property('bedform:diagetic_offset_z')"
+          ]
+        },
+        "mount_yaw": {
+          "rotation": [
+            0,
+            "query.property('bedform:diagetic_yaw')",
+            0
+          ]
+        },
+        "mount_pitch": {
+          "rotation": [
+            "query.property('bedform:diagetic_pitch')",
+            0,
+            0
+          ]
+        },
+        "mount_roll": {
+          "rotation": [
+            0,
+            0,
+            "query.property('bedform:diagetic_roll')"
+          ]
+        }
+      }
+    },
+    "animation.bedform.diagetic_lever.motion": {
+      "loop": true,
+      "bones": {
+        "handle": {
+          "rotation": [
+            0,
+            "query.property('bedform:diagetic_motion')",
+            0
+          ]
+        }
+      }
+    },
+    "animation.bedform.diagetic_slider.motion": {
+      "loop": true,
+      "bones": {
+        "knob": {
+          "position": [
+            "query.property('bedform:diagetic_motion')",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.bedform.diagetic_wheel.motion": {
+      "loop": true,
+      "bones": {
+        "wheel": {
+          "rotation": [
+            0,
+            0,
+            "query.property('bedform:diagetic_motion')"
+          ]
+        }
+      }
+    }
+  }
+}

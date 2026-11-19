@@ -1,0 +1,20 @@
+{
+  "resource_pack_name": "ddui_image_demo",
+  "texture_name": "atlas.terrain",
+  "padding": 8,
+  "num_mip_levels": 4,
+  "texture_data": {
+    "ddui_ui_texture_menu_button": {
+      "textures": "textures/ui/button_borderless_light"
+    },
+    "ddui_ui_texture_play_button": {
+      "textures": "textures/gui/newgui/play_screen/NormalButtonThinNewBevel"
+    },
+    "ddui_ui_texture_servers_icon": {
+      "textures": "textures/ui/servers"
+    },
+    "ddui_ui_texture_stone": {
+      "textures": "textures/blocks/stone"
+    }
+  }
+}

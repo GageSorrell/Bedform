@@ -1,0 +1,31 @@
+{
+  "name": "bedform-canvas",
+  "version": "1.0.0",
+  "description": "Shared terminal and spatial display pack foundation for Bedform.",
+  "private": true,
+  "type": "module",
+  "author": "Gage Sorrell <gage@sorrell.sh>",
+  "license": "MIT",
+  "scripts": {
+    "build": "node --import tsx Tool/Build.mts",
+    "glyph": "node --import tsx Tool/Glyph/Generate.mts",
+    "glyph:check": "node --import tsx Tool/Glyph/Generate.mts --check",
+    "glyph:capture": "node --import tsx Tool/Glyph/Capture.mts",
+    "mcaddon": "npm run build",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.tools.json",
+    "typecheck:tools": "tsc -p tsconfig.tools.json",
+    "lint": "eslint Public Script Tool Test --max-warnings 0",
+    "test": "node --import tsx --test Test/*.test.mts",
+    "check": "npm run lint && npm run typecheck && npm run glyph:check && npm run intent:art:check && npm test && npm run build",
+    "intent:art": "node --import tsx Tool/IntentArt.mts",
+    "intent:art:check": "node --import tsx Tool/IntentArt.mts --check",
+    "intent:art:capture": "node --import tsx Tool/IntentArt.mts --capture",
+    "test:native": "npm run build --workspace bedform && node --import tsx Tool/Native.mts"
+  },
+  "devDependencies": {
+    "@minecraft/server-gametest": "1.0.0-beta.1.26.50-stable",
+    "esbuild": "0.25.12",
+    "fflate": "0.8.2",
+    "pngjs": "7.0.0"
+  }
+}

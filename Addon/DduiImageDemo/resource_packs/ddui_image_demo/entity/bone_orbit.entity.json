@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "ddui_demo:bone_orbit",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/blocks/redstone_block"
+      },
+      "geometry": {
+        "default": "geometry.ddui_demo.bone_orbit"
+      },
+      "animations": {
+        "loop": "animation.ddui_demo.bone_orbit.loop"
+      },
+      "scripts": {
+        "animate": [
+          "loop"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

@@ -1,0 +1,4 @@
+{
+    /** This config file exists so that the VS Code TypeScript LSP can see the config. */
+    "extends": "./tsconfig.tools.json"
+}

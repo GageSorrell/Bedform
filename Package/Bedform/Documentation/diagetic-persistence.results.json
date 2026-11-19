@@ -1,0 +1,17 @@
+{
+  "build": "53340801",
+  "engine": "1.26.63.1",
+  "evidence": {
+    "serverRestart": true,
+    "restoredActors": 7,
+    "sixFaces": true,
+    "freePoseRestored": true,
+    "inactiveAfterRestart": true,
+    "ordinaryStateRetained": true,
+    "replacedSupportRemoved": true,
+    "duplicateActors": 0,
+    "physicalInputVerified": false
+  },
+  "runtime": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime",
+  "world": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime\\worlds\\toggle-Qnmr91"
+}

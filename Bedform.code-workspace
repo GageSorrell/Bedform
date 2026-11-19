@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+        "sorrellWmCodeExtension.headers.insertOnAnyFileCreation": false,
+		"terminal.integrated.env.windows": {
+			"PATH": "${env:LOCALAPPDATA}\\Programs\\bd;${env:PATH}",
+            "BDS_ROOT": "C:\\MineCraft\\Server\\"
+		},
+		"cSpell.words": [
+			"bedform",
+			"despawn",
+			"equippable",
+			"mainhand",
+			"mcstructure",
+			"Overworld",
+			"spawnable",
+			"summonable"
+		],
+		"git.ignoreLimitWarning": true,
+		"js/ts.tsdk.path": "node_modules\\typescript\\lib"
+	}
+}

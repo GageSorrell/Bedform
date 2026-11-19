@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@minecraft/server": [
+        "../../Package/Bedform/node_modules/@minecraft/server"
+      ],
+      "bedform/Canvas/IntentProtocol": [
+        "../../Package/Bedform/Source/Canvas/Public/Intent.ts"
+      ],
+      "bedform/Canvas/IntentValidation": [
+        "../../Package/Bedform/Source/Spatial/Internal/IntentValue.ts"
+      ],
+      "bedform/Canvas/Surface": [
+        "../../Package/Bedform/Source/Canvas/Surface.ts"
+      ],
+      "bedform/Spatial/Measurement": [
+        "../../Package/Bedform/Source/Spatial/Measurement.ts"
+      ],
+      "bedform/Canvas/Image": [
+        "../../Package/Bedform/Source/Canvas/Image.ts"
+      ]
+    }
+  },
+  "include": [
+    "Public/**/*.ts",
+    "Script/**/*.ts"
+  ]
+}

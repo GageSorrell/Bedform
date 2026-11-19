@@ -1,0 +1,23 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "ddui_demo:animated_hop",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/blocks/stone"
+      },
+      "geometry": {
+        "default": "geometry.ddui_demo.hop_cube"
+      },
+      "animations": {
+        "launch": "animation.ddui_demo.hop.launch"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

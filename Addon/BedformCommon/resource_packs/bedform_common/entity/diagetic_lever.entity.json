@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bedform:diagetic_lever",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "base": "textures/blocks/cobblestone",
+        "handle": "textures/blocks/lever"
+      },
+      "geometry": {
+        "default": "geometry.bedform.diagetic_lever"
+      },
+      "animations": {
+        "mount": "animation.bedform.diagetic.mount",
+        "motion": "animation.bedform.diagetic_lever.motion"
+      },
+      "scripts": {
+        "animate": [
+          "mount",
+          "motion"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bedform.diagetic_lever.base",
+        "controller.render.bedform.diagetic_lever.handle"
+      ]
+    }
+  }
+}

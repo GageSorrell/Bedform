@@ -1,0 +1,628 @@
+{
+  "name": "@bedform/effect",
+  "version": "1.0.0-alpha.1",
+  "description": "A self-contained port of Effect utilities for Bedrock Dedicated Server.",
+  "main": "./Distribution/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint Source",
+    "lint:function": "eslint Source/Function.ts Test/Function*.mts",
+    "test:function": "npm run build && node --import tsx --test Test/Function.test.mts",
+    "lint:data": "eslint Source/Data.ts Test/Data*.mts Test/UpstreamWeb.d.mts",
+    "test:data": "npm run build && node --import tsx --test Test/Data.test.mts",
+    "typecheck:tools": "tsc -p tsconfig.tools.json",
+    "test:schema:foundation": "npm run build && node --import tsx --test Test/SchemaCompatibility.test.mts Test/SchemaDependencies.test.mts",
+    "lint:schema:foundation": "eslint Source/BigDecimal.ts Source/BigInt.ts Source/ByteSize.ts Source/Chunk.ts Source/Duration.ts Source/HashMap.ts Source/HashSet.ts Source/NonEmptyIterable.ts Source/Redacted.ts Source/RegExp.ts Source/Internal/hashMap.ts Source/Internal/hashSet.ts Source/Internal/redacted.ts Source/Internal/brand.ts Source/Internal/utf8.ts Source/Encoding/Base64.ts Source/Encoding/Base64Url.ts Source/Encoding/Hex.ts Source/Encoding/EncodingError.ts Test/Schema*.mts Tool/SchemaManifest.mts",
+    "manifest:schema": "node --import tsx Tool/SchemaManifest.mts",
+    "test:schema": "npm run build && node --import tsx --test Test/Schema*.test.mts",
+    "lint:schema": "npm run lint:schema:foundation && eslint Source/Schema*.ts Source/StandardSchema.ts Source/JsonSchema.ts Source/JsonPointer.ts Source/Internal/Schema Source/Internal/schemaError.ts Source/Internal/errors.ts Source/Internal/brand.ts Test/Schema*.mts",
+    "verify:schema": "npm run typecheck && npm run typecheck:tools && npm run test:schema && npm run lint:schema && npm run test:function && npm run test:data",
+    "lint:brand": "eslint Source/Brand.ts Source/Internal/brand.ts Test/Brand*.mts",
+    "test:brand": "npm run build && node --import tsx --test Test/Brand.test.mts",
+    "verify:brand": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:brand && npm run test:brand && npm run test:schema",
+    "lint:match": "eslint Source/Match.ts Source/Internal/matcher.ts Test/Match*.mts",
+    "test:match": "npm run build && node --import tsx --test Test/Match.test.mts",
+    "verify:match": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:match && npm run test:match && npm run test:function && npm run test:data && npm run test:brand",
+    "lint:collections": "eslint Source/Array.ts Source/Record.ts Source/Struct.ts Source/Number.ts Source/Tuple.ts Test/Collections*.mts",
+    "test:collections": "npm run build && node --import tsx --test Test/Collections*.test.mts",
+    "verify:collections": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:collections && npm run test:collections && npm run test:function && npm run test:data && npm run test:match && npm run test:brand && npm run test:schema",
+    "lint:number": "eslint Source/Number.ts Test/Number*.mts",
+    "test:number": "npm run build && node --import tsx --test Test/Number.test.mts",
+    "verify:number": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:number && npm run test:number && npm run test:collections",
+    "lint:protocols": "eslint Source/index.ts Test/Protocols*.mts",
+    "test:protocols": "npm run build && node --import tsx --test Test/Protocols.test.mts",
+    "verify:protocols": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:protocols && npm run test:protocols && npm run test:number && npm run test:collections",
+    "lint:unit": "eslint Source/Unit.ts Source/Unit Test/Unit*.mts",
+    "test:unit": "npm run build && node --import tsx --test Test/Unit*.test.mts",
+    "verify:unit": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:numeric && npm run lint:unit && npm run test:numeric && npm run test:unit && npm run test:schema",
+    "lint:numeric": "eslint Source/Int.ts Source/UInt.ts Source/Rational.ts Source/BigRational.ts Source/Internal/valueObject.ts Test/Int*.mts Test/Rational*.mts",
+    "test:numeric": "npm run build && node --import tsx --test Test/Int.test.mts Test/Rational.test.mts",
+    "verify:numeric": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:numeric && npm run test:numeric",
+    "lint:runtime": "eslint Source/Cause.ts Source/Clock.ts Source/Context.ts Source/Cron.ts Source/Deferred.ts Source/Effect.ts Source/Effectable.ts Source/ExecutionPlan.ts Source/Exit.ts Source/Fiber.ts Source/Filter.ts Source/Layer.ts Source/ManagedRuntime.ts Source/Metric.ts Source/MutableHashMap.ts Source/MutableRef.ts Source/Pull.ts Source/Redactable.ts Source/Ref.ts Source/Request.ts Source/Schedule.ts Source/Scheduler.ts Source/Scope.ts Source/Tracer.ts Source/References.ts Source/Internal/core.ts Source/Internal/dateTime.ts Source/Internal/effect.ts Source/Internal/executionPlan.ts Source/Internal/layer.ts Source/Internal/metric.ts Source/Internal/random.ts Source/Internal/references.ts Source/Internal/request.ts Source/Internal/schedule.ts Source/Internal/tracer.ts Source/LogLevel.ts Source/Console.ts Source/Latch.ts Source/Random.ts Source/ErrorReporter.ts Source/TxRef.ts Source/Internal/dateTime-types.ts Source/Internal/logger-types.ts Source/Internal/requestResolver-types.ts Source/Internal/stream-types.ts Source/Internal/channel-types.ts Source/Internal/host.ts Source/Internal/abort.ts Source/Bedrock.ts Test/Runtime.test.mts Test/Bedrock.test.mts Tool/bds-runtime.mts Tool/BdsFixture/main.mts Tool/BdsFixture/keys.mts",
+    "test:runtime": "npm run build && node --import tsx --test Test/Runtime.test.mts Test/Bedrock.test.mts",
+    "verify:runtime": "npm run typecheck && npm run build && npm run typecheck:tools && npm run lint:runtime && npm run test:runtime && npm run test:data && npm run test:schema && npm run test:match && npm run test:collections",
+    "test:bds": "node --import tsx Tool/bds-runtime.mts",
+    "test:primitives": "npm run build && node --import tsx --test Test/Primitives*.test.mts",
+    "lint:primitives": "eslint Source/Predicate.ts Source/String.ts Test/Primitives*.mts",
+    "verify:primitives": "npm run typecheck && npm run typecheck:tools && npm run lint:function && npm run lint:primitives && npm run test:function && npm run test:primitives",
+    "test:host": "npm run build && node --import tsx --test --test-concurrency=2 Test/*.test.mts"
+  },
+  "type": "module",
+  "author": {
+    "name": "Gage Sorrell",
+    "email": "gage@sorrell.sh",
+    "url": "https://sorrell.sh"
+  },
+  "license": "MIT AND BSD-3-Clause",
+  "repository": {
+    "directory": "Package/Effect",
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git"
+  },
+  "devDependencies": {
+    "effect": "4.0.5",
+    "effect-units": "1.0.1",
+    "typescript": "6.0.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./Distribution/index.d.ts",
+      "import": "./Distribution/index.js"
+    },
+    "./Data": {
+      "types": "./Distribution/Data.d.ts",
+      "import": "./Distribution/Data.js"
+    },
+    "./Option": {
+      "types": "./Distribution/Option.d.ts",
+      "import": "./Distribution/Option.js"
+    },
+    "./Function": {
+      "types": "./Distribution/Function.d.ts",
+      "import": "./Distribution/Function.js"
+    },
+    "./Predicate": {
+      "types": "./Distribution/Predicate.d.ts",
+      "import": "./Distribution/Predicate.js"
+    },
+    "./String": {
+      "types": "./Distribution/String.d.ts",
+      "import": "./Distribution/String.js"
+    },
+    "./BigDecimal": {
+      "types": "./Distribution/BigDecimal.d.ts",
+      "import": "./Distribution/BigDecimal.js"
+    },
+    "./BigInt": {
+      "types": "./Distribution/BigInt.d.ts",
+      "import": "./Distribution/BigInt.js"
+    },
+    "./ByteSize": {
+      "types": "./Distribution/ByteSize.d.ts",
+      "import": "./Distribution/ByteSize.js"
+    },
+    "./Chunk": {
+      "types": "./Distribution/Chunk.d.ts",
+      "import": "./Distribution/Chunk.js"
+    },
+    "./Duration": {
+      "types": "./Distribution/Duration.d.ts",
+      "import": "./Distribution/Duration.js"
+    },
+    "./HashMap": {
+      "types": "./Distribution/HashMap.d.ts",
+      "import": "./Distribution/HashMap.js"
+    },
+    "./HashSet": {
+      "types": "./Distribution/HashSet.d.ts",
+      "import": "./Distribution/HashSet.js"
+    },
+    "./NonEmptyIterable": {
+      "types": "./Distribution/NonEmptyIterable.d.ts",
+      "import": "./Distribution/NonEmptyIterable.js"
+    },
+    "./Redacted": {
+      "types": "./Distribution/Redacted.d.ts",
+      "import": "./Distribution/Redacted.js"
+    },
+    "./RegExp": {
+      "types": "./Distribution/RegExp.d.ts",
+      "import": "./Distribution/RegExp.js"
+    },
+    "./Result": {
+      "types": "./Distribution/Result.d.ts",
+      "import": "./Distribution/Result.js"
+    },
+    "./Schema": {
+      "types": "./Distribution/Schema.d.ts",
+      "import": "./Distribution/Schema.js"
+    },
+    "./SchemaAST": {
+      "types": "./Distribution/SchemaAST.d.ts",
+      "import": "./Distribution/SchemaAST.js"
+    },
+    "./SchemaIssue": {
+      "types": "./Distribution/SchemaIssue.d.ts",
+      "import": "./Distribution/SchemaIssue.js"
+    },
+    "./SchemaParser": {
+      "types": "./Distribution/SchemaParser.d.ts",
+      "import": "./Distribution/SchemaParser.js"
+    },
+    "./SchemaGetter": {
+      "types": "./Distribution/SchemaGetter.d.ts",
+      "import": "./Distribution/SchemaGetter.js"
+    },
+    "./SchemaTransformation": {
+      "types": "./Distribution/SchemaTransformation.d.ts",
+      "import": "./Distribution/SchemaTransformation.js"
+    },
+    "./StandardSchema": {
+      "types": "./Distribution/StandardSchema.d.ts",
+      "import": "./Distribution/StandardSchema.js"
+    },
+    "./JsonSchema": {
+      "types": "./Distribution/JsonSchema.d.ts",
+      "import": "./Distribution/JsonSchema.js"
+    },
+    "./Brand": {
+      "types": "./Distribution/Brand.d.ts",
+      "import": "./Distribution/Brand.js"
+    },
+    "./Match": {
+      "types": "./Distribution/Match.d.ts",
+      "import": "./Distribution/Match.js"
+    },
+    "./Array": {
+      "types": "./Distribution/Array.d.ts",
+      "import": "./Distribution/Array.js"
+    },
+    "./Record": {
+      "types": "./Distribution/Record.d.ts",
+      "import": "./Distribution/Record.js"
+    },
+    "./Struct": {
+      "types": "./Distribution/Struct.d.ts",
+      "import": "./Distribution/Struct.js"
+    },
+    "./Number": {
+      "types": "./Distribution/Number.d.ts",
+      "import": "./Distribution/Number.js"
+    },
+    "./Tuple": {
+      "types": "./Distribution/Tuple.d.ts",
+      "import": "./Distribution/Tuple.js"
+    },
+    "./Equal": {
+      "types": "./Distribution/Equal.d.ts",
+      "import": "./Distribution/Equal.js"
+    },
+    "./Hash": {
+      "types": "./Distribution/Hash.d.ts",
+      "import": "./Distribution/Hash.js"
+    },
+    "./Equivalence": {
+      "types": "./Distribution/Equivalence.d.ts",
+      "import": "./Distribution/Equivalence.js"
+    },
+    "./Order": {
+      "types": "./Distribution/Order.d.ts",
+      "import": "./Distribution/Order.js"
+    },
+    "./Ordering": {
+      "types": "./Distribution/Ordering.d.ts",
+      "import": "./Distribution/Ordering.js"
+    },
+    "./Pipeable": {
+      "types": "./Distribution/Pipeable.d.ts",
+      "import": "./Distribution/Pipeable.js"
+    },
+    "./Inspectable": {
+      "types": "./Distribution/Inspectable.d.ts",
+      "import": "./Distribution/Inspectable.js"
+    },
+    "./Formatter": {
+      "types": "./Distribution/Formatter.d.ts",
+      "import": "./Distribution/Formatter.js"
+    },
+    "./Unit": {
+      "types": "./Distribution/Unit.d.ts",
+      "import": "./Distribution/Unit.js"
+    },
+    "./Unit/Meter": {
+      "types": "./Distribution/Unit/Meter.d.ts",
+      "import": "./Distribution/Unit/Meter.js"
+    },
+    "./Int": {
+      "types": "./Distribution/Int.d.ts",
+      "import": "./Distribution/Int.js"
+    },
+    "./UInt": {
+      "types": "./Distribution/UInt.d.ts",
+      "import": "./Distribution/UInt.js"
+    },
+    "./Rational": {
+      "types": "./Distribution/Rational.d.ts",
+      "import": "./Distribution/Rational.js"
+    },
+    "./BigRational": {
+      "types": "./Distribution/BigRational.d.ts",
+      "import": "./Distribution/BigRational.js"
+    },
+    "./Cause": {
+      "types": "./Distribution/Cause.d.ts",
+      "import": "./Distribution/Cause.js"
+    },
+    "./Clock": {
+      "types": "./Distribution/Clock.d.ts",
+      "import": "./Distribution/Clock.js"
+    },
+    "./Console": {
+      "types": "./Distribution/Console.d.ts",
+      "import": "./Distribution/Console.js"
+    },
+    "./Context": {
+      "types": "./Distribution/Context.d.ts",
+      "import": "./Distribution/Context.js"
+    },
+    "./Cron": {
+      "types": "./Distribution/Cron.d.ts",
+      "import": "./Distribution/Cron.js"
+    },
+    "./Deferred": {
+      "types": "./Distribution/Deferred.d.ts",
+      "import": "./Distribution/Deferred.js"
+    },
+    "./Effect": {
+      "types": "./Distribution/Effect.d.ts",
+      "import": "./Distribution/Effect.js"
+    },
+    "./Effectable": {
+      "types": "./Distribution/Effectable.d.ts",
+      "import": "./Distribution/Effectable.js"
+    },
+    "./ErrorReporter": {
+      "types": "./Distribution/ErrorReporter.d.ts",
+      "import": "./Distribution/ErrorReporter.js"
+    },
+    "./ExecutionPlan": {
+      "types": "./Distribution/ExecutionPlan.d.ts",
+      "import": "./Distribution/ExecutionPlan.js"
+    },
+    "./Exit": {
+      "types": "./Distribution/Exit.d.ts",
+      "import": "./Distribution/Exit.js"
+    },
+    "./Fiber": {
+      "types": "./Distribution/Fiber.d.ts",
+      "import": "./Distribution/Fiber.js"
+    },
+    "./Filter": {
+      "types": "./Distribution/Filter.d.ts",
+      "import": "./Distribution/Filter.js"
+    },
+    "./Latch": {
+      "types": "./Distribution/Latch.d.ts",
+      "import": "./Distribution/Latch.js"
+    },
+    "./Layer": {
+      "types": "./Distribution/Layer.d.ts",
+      "import": "./Distribution/Layer.js"
+    },
+    "./LogLevel": {
+      "types": "./Distribution/LogLevel.d.ts",
+      "import": "./Distribution/LogLevel.js"
+    },
+    "./ManagedRuntime": {
+      "types": "./Distribution/ManagedRuntime.d.ts",
+      "import": "./Distribution/ManagedRuntime.js"
+    },
+    "./Metric": {
+      "types": "./Distribution/Metric.d.ts",
+      "import": "./Distribution/Metric.js"
+    },
+    "./MutableHashMap": {
+      "types": "./Distribution/MutableHashMap.d.ts",
+      "import": "./Distribution/MutableHashMap.js"
+    },
+    "./MutableRef": {
+      "types": "./Distribution/MutableRef.d.ts",
+      "import": "./Distribution/MutableRef.js"
+    },
+    "./Pull": {
+      "types": "./Distribution/Pull.d.ts",
+      "import": "./Distribution/Pull.js"
+    },
+    "./Random": {
+      "types": "./Distribution/Random.d.ts",
+      "import": "./Distribution/Random.js"
+    },
+    "./Redactable": {
+      "types": "./Distribution/Redactable.d.ts",
+      "import": "./Distribution/Redactable.js"
+    },
+    "./Ref": {
+      "types": "./Distribution/Ref.d.ts",
+      "import": "./Distribution/Ref.js"
+    },
+    "./References": {
+      "types": "./Distribution/References.d.ts",
+      "import": "./Distribution/References.js"
+    },
+    "./Request": {
+      "types": "./Distribution/Request.d.ts",
+      "import": "./Distribution/Request.js"
+    },
+    "./Schedule": {
+      "types": "./Distribution/Schedule.d.ts",
+      "import": "./Distribution/Schedule.js"
+    },
+    "./Scheduler": {
+      "types": "./Distribution/Scheduler.d.ts",
+      "import": "./Distribution/Scheduler.js"
+    },
+    "./Scope": {
+      "types": "./Distribution/Scope.d.ts",
+      "import": "./Distribution/Scope.js"
+    },
+    "./Tracer": {
+      "types": "./Distribution/Tracer.d.ts",
+      "import": "./Distribution/Tracer.js"
+    },
+    "./TxRef": {
+      "types": "./Distribution/TxRef.d.ts",
+      "import": "./Distribution/TxRef.js"
+    },
+    "./Bedrock": {
+      "types": "./Distribution/Bedrock.d.ts",
+      "import": "./Distribution/Bedrock.js"
+    }
+  },
+  "files": [
+    "Distribution",
+    "License.md",
+    "Unit.License.md",
+    "PROVENANCE.md",
+    "SCHEMA.md",
+    "SchemaCompatibility.json",
+    "RUNTIME.md"
+  ],
+  "types": "./Distribution/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "Data": [
+        "Distribution/Data.d.ts"
+      ],
+      "Option": [
+        "Distribution/Option.d.ts"
+      ],
+      "Function": [
+        "Distribution/Function.d.ts"
+      ],
+      "Predicate": [
+        "Distribution/Predicate.d.ts"
+      ],
+      "String": [
+        "Distribution/String.d.ts"
+      ],
+      "BigDecimal": [
+        "Distribution/BigDecimal.d.ts"
+      ],
+      "BigInt": [
+        "Distribution/BigInt.d.ts"
+      ],
+      "ByteSize": [
+        "Distribution/ByteSize.d.ts"
+      ],
+      "Chunk": [
+        "Distribution/Chunk.d.ts"
+      ],
+      "Duration": [
+        "Distribution/Duration.d.ts"
+      ],
+      "HashMap": [
+        "Distribution/HashMap.d.ts"
+      ],
+      "HashSet": [
+        "Distribution/HashSet.d.ts"
+      ],
+      "NonEmptyIterable": [
+        "Distribution/NonEmptyIterable.d.ts"
+      ],
+      "Redacted": [
+        "Distribution/Redacted.d.ts"
+      ],
+      "RegExp": [
+        "Distribution/RegExp.d.ts"
+      ],
+      "Result": [
+        "Distribution/Result.d.ts"
+      ],
+      "Schema": [
+        "Distribution/Schema.d.ts"
+      ],
+      "SchemaAST": [
+        "Distribution/SchemaAST.d.ts"
+      ],
+      "SchemaIssue": [
+        "Distribution/SchemaIssue.d.ts"
+      ],
+      "SchemaParser": [
+        "Distribution/SchemaParser.d.ts"
+      ],
+      "SchemaGetter": [
+        "Distribution/SchemaGetter.d.ts"
+      ],
+      "SchemaTransformation": [
+        "Distribution/SchemaTransformation.d.ts"
+      ],
+      "StandardSchema": [
+        "Distribution/StandardSchema.d.ts"
+      ],
+      "JsonSchema": [
+        "Distribution/JsonSchema.d.ts"
+      ],
+      "Brand": [
+        "Distribution/Brand.d.ts"
+      ],
+      "Match": [
+        "Distribution/Match.d.ts"
+      ],
+      "Array": [
+        "Distribution/Array.d.ts"
+      ],
+      "Record": [
+        "Distribution/Record.d.ts"
+      ],
+      "Struct": [
+        "Distribution/Struct.d.ts"
+      ],
+      "Number": [
+        "Distribution/Number.d.ts"
+      ],
+      "Tuple": [
+        "Distribution/Tuple.d.ts"
+      ],
+      "Equal": [
+        "Distribution/Equal.d.ts"
+      ],
+      "Hash": [
+        "Distribution/Hash.d.ts"
+      ],
+      "Equivalence": [
+        "Distribution/Equivalence.d.ts"
+      ],
+      "Order": [
+        "Distribution/Order.d.ts"
+      ],
+      "Ordering": [
+        "Distribution/Ordering.d.ts"
+      ],
+      "Pipeable": [
+        "Distribution/Pipeable.d.ts"
+      ],
+      "Inspectable": [
+        "Distribution/Inspectable.d.ts"
+      ],
+      "Formatter": [
+        "Distribution/Formatter.d.ts"
+      ],
+      "Unit": [
+        "Distribution/Unit.d.ts"
+      ],
+      "Unit/Meter": [
+        "Distribution/Unit/Meter.d.ts"
+      ],
+      "Int": [
+        "Distribution/Int.d.ts"
+      ],
+      "UInt": [
+        "Distribution/UInt.d.ts"
+      ],
+      "Rational": [
+        "Distribution/Rational.d.ts"
+      ],
+      "BigRational": [
+        "Distribution/BigRational.d.ts"
+      ],
+      "Cause": [
+        "Distribution/Cause.d.ts"
+      ],
+      "Clock": [
+        "Distribution/Clock.d.ts"
+      ],
+      "Console": [
+        "Distribution/Console.d.ts"
+      ],
+      "Context": [
+        "Distribution/Context.d.ts"
+      ],
+      "Cron": [
+        "Distribution/Cron.d.ts"
+      ],
+      "Deferred": [
+        "Distribution/Deferred.d.ts"
+      ],
+      "Effect": [
+        "Distribution/Effect.d.ts"
+      ],
+      "Effectable": [
+        "Distribution/Effectable.d.ts"
+      ],
+      "ErrorReporter": [
+        "Distribution/ErrorReporter.d.ts"
+      ],
+      "ExecutionPlan": [
+        "Distribution/ExecutionPlan.d.ts"
+      ],
+      "Exit": [
+        "Distribution/Exit.d.ts"
+      ],
+      "Fiber": [
+        "Distribution/Fiber.d.ts"
+      ],
+      "Filter": [
+        "Distribution/Filter.d.ts"
+      ],
+      "Latch": [
+        "Distribution/Latch.d.ts"
+      ],
+      "Layer": [
+        "Distribution/Layer.d.ts"
+      ],
+      "LogLevel": [
+        "Distribution/LogLevel.d.ts"
+      ],
+      "ManagedRuntime": [
+        "Distribution/ManagedRuntime.d.ts"
+      ],
+      "Metric": [
+        "Distribution/Metric.d.ts"
+      ],
+      "MutableHashMap": [
+        "Distribution/MutableHashMap.d.ts"
+      ],
+      "MutableRef": [
+        "Distribution/MutableRef.d.ts"
+      ],
+      "Pull": [
+        "Distribution/Pull.d.ts"
+      ],
+      "Random": [
+        "Distribution/Random.d.ts"
+      ],
+      "Redactable": [
+        "Distribution/Redactable.d.ts"
+      ],
+      "Ref": [
+        "Distribution/Ref.d.ts"
+      ],
+      "References": [
+        "Distribution/References.d.ts"
+      ],
+      "Request": [
+        "Distribution/Request.d.ts"
+      ],
+      "Schedule": [
+        "Distribution/Schedule.d.ts"
+      ],
+      "Scheduler": [
+        "Distribution/Scheduler.d.ts"
+      ],
+      "Scope": [
+        "Distribution/Scope.d.ts"
+      ],
+      "Tracer": [
+        "Distribution/Tracer.d.ts"
+      ],
+      "TxRef": [
+        "Distribution/TxRef.d.ts"
+      ],
+      "Bedrock": [
+        "Distribution/Bedrock.d.ts"
+      ]
+    }
+  },
+  "sideEffects": false
+}

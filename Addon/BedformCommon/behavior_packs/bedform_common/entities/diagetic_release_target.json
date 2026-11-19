@@ -1,0 +1,107 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bedform:diagetic_release_target",
+      "is_spawnable": false,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:collision_box": {
+        "width": 0.6,
+        "height": 0.6
+      },
+      "minecraft:physics": {
+        "has_collision": false,
+        "has_gravity": false
+      },
+      "minecraft:pushable_by_entity": {
+        "presets": [
+          {
+            "push_mode": "none"
+          }
+        ]
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "cause": "all",
+          "deals_damage": "no"
+        }
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:persistent": {},
+      "minecraft:body_rotation_blocked": {},
+      "minecraft:type_family": {
+        "family": [
+          "bedform_diagetic",
+          "inanimate"
+        ]
+      },
+      "minecraft:interact": {
+        "interactions": [
+          {
+            "interact_text": "action.interact.bedform.diagetic_release",
+            "on_interact": {
+              "event": "bedform:diagetic_use",
+              "target": "self"
+            },
+            "swing": true
+          }
+        ]
+      }
+    },
+    "component_groups": {
+      "lease": {
+        "minecraft:timer": {
+          "time": 1,
+          "looping": false,
+          "time_down_event": {
+            "event": "bedform:diagetic_expire_target",
+            "target": "self"
+          }
+        }
+      },
+      "expired": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "events": {
+      "bedform:diagetic_refresh_target": {
+        "sequence": [
+          {
+            "remove": {
+              "component_groups": [
+                "lease"
+              ]
+            }
+          },
+          {
+            "add": {
+              "component_groups": [
+                "lease"
+              ]
+            }
+          }
+        ]
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "lease"
+          ]
+        }
+      },
+      "bedform:diagetic_expire_target": {
+        "add": {
+          "component_groups": [
+            "expired"
+          ]
+        }
+      },
+      "bedform:diagetic_use": {}
+    }
+  }
+}

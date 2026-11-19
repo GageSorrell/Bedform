@@ -1,0 +1,39 @@
+{
+  "ClientAcceptance": false,
+  "Finished": "2026-11-19T00:14:51.962Z",
+  "NativeAcceptance": false,
+  "Node": "v24.19.0",
+  "Passed": true,
+  "Platform": "win32/x64",
+  "Started": "2026-11-19T00:04:17.721Z",
+  "Steps": [
+    {
+      "CanvasSHA256": "330b802e13f24fd2756949fb1ab9a5c73b6d6561b9abd93c0af2ba9172df4922",
+      "Command": "npm run verify --workspace bedform",
+      "Exit": 0,
+      "Log": "1-bedform-verify.log",
+      "Milliseconds": 592199
+    },
+    {
+      "CanvasSHA256": "330b802e13f24fd2756949fb1ab9a5c73b6d6561b9abd93c0af2ba9172df4922",
+      "Command": "npm run check --workspace bedform-canvas",
+      "Exit": 0,
+      "Log": "2-bedform-canvas-check.log",
+      "Milliseconds": 17300
+    },
+    {
+      "CanvasSHA256": "330b802e13f24fd2756949fb1ab9a5c73b6d6561b9abd93c0af2ba9172df4922",
+      "Command": "npm run build:pure --workspace bedform",
+      "Exit": 0,
+      "Log": "3-bedform-build-pure.log",
+      "Milliseconds": 10817
+    },
+    {
+      "CanvasSHA256": "330b802e13f24fd2756949fb1ab9a5c73b6d6561b9abd93c0af2ba9172df4922",
+      "Command": "npm run prepack --workspace bedform",
+      "Exit": 0,
+      "Log": "4-bedform-prepack.log",
+      "Milliseconds": 13918
+    }
+  ]
+}

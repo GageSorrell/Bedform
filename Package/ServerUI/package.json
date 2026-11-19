@@ -1,0 +1,51 @@
+{
+  "name": "@bedform/server-ui",
+  "version": "2.3.0-dev.1",
+  "description": "Bedform's counterpart to @minecraft/server-ui: everything it exports, extended by Bedform.",
+  "license": "MIT",
+  "author": {
+    "email": "gage@sorrell.sh",
+    "name": "Gage Sorrell",
+    "url": "https://sorrell.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git",
+    "directory": "Package/ServerUI"
+  },
+  "type": "module",
+  "main": "./Distribution/index.js",
+  "types": "./Distribution/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./Distribution/index.d.ts",
+      "import": "./Distribution/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "Distribution",
+    "License.md",
+    "ReadMe.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint Source",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "@minecraft/server-ui": "2.3.0"
+  },
+  "devDependencies": {
+    "@minecraft/server-ui": "2.3.0",
+    "typescript": "6.0.3"
+  },
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "bedform",
+    "server-ui"
+  ]
+}

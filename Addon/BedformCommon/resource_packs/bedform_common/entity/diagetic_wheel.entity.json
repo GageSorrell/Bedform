@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bedform:diagetic_wheel",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "axle": "textures/blocks/stone",
+        "wheel": "textures/blocks/planks_oak"
+      },
+      "geometry": {
+        "default": "geometry.bedform.diagetic_wheel"
+      },
+      "animations": {
+        "mount": "animation.bedform.diagetic.mount",
+        "motion": "animation.bedform.diagetic_wheel.motion"
+      },
+      "scripts": {
+        "animate": [
+          "mount",
+          "motion"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bedform.diagetic_wheel.axle",
+        "controller.render.bedform.diagetic_wheel.wheel"
+      ]
+    }
+  }
+}

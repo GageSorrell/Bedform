@@ -1,0 +1,3 @@
+# Blockception Minecraft extension: skip build outputs, BDS runtimes/backups and workspace symlinks.
+**/dist/**
+**/node_modules/**

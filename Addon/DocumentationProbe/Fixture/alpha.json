@@ -1,0 +1,17 @@
+{
+  "id": "alpha",
+  "name": "Alpha Workshop",
+  "uuid": "4933409b-aed4-4287-8eae-e221fba5a571",
+  "moduleUuid": "a5b705bc-4641-456b-bd24-b68e7e0302b1",
+  "route": 1,
+  "target": "beta",
+  "targetRoute": 2,
+  "page": {
+    "title": "Stirling Engine",
+    "type": "block",
+    "heading": "Fuel Operation",
+    "body": "Burns coal to produce power.",
+    "identifier": "probe:stirling_engine",
+    "description": "Alpha block: test Se, sE, fOp, bcp and reversed zz."
+  }
+}

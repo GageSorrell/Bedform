@@ -1,0 +1,36 @@
+{
+  "build": "53340801",
+  "engine": "1.26.63.1",
+  "evidence": {
+    "scriptedObservations": true,
+    "physicalInputVerified": false,
+    "savedPermissionsRestored": true,
+    "journalCleared": true,
+    "contention": true,
+    "inventoryUnchanged": true,
+    "helpers": 0,
+    "settledValue": 1,
+    "teleports": [
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "presentationRestored": true,
+    "runtimeRestart": true
+  },
+  "runtime": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime",
+  "world": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime\\worlds\\toggle-2T2NDE"
+}

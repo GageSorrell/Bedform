@@ -1,0 +1,2 @@
+[ "$1" = rebase ] || exit 0
+sh .husky/pull-beads.sh

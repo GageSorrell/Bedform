@@ -1,0 +1,759 @@
+Tests/activation.test.mts(17,42): error TS2345: Argument of type 'string | number | { uuid: string; version: number[]; }[]' is not assignable to parameter of type 'number'.
+  Type 'string' is not assignable to type 'number'.
+Tests/activation.test.mts(18,33): error TS2365: Operator '+' cannot be applied to types 'string | number | { uuid: string; version: number[]; }[]' and 'number'.
+Tests/activation.test.mts(28,18): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/activation.test.mts(28,45): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/activation.test.mts(56,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/activation.test.mts(56,16): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/activation.test.mts(56,25): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/activation.test.mts(56,29): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/activation.test.mts(56,38): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/activation.test.mts(56,44): error TS7031: Binding element 'world' implicitly has an 'any' type.
+Tests/activation.test.mts(56,51): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/activation.test.mts(62,70): error TS2322: Type '{ uuid: string; version: number[]; }' is not assignable to type 'never'.
+Tests/activation.test.mts(63,13): error TS2322: Type '{ module_name: string; version: string; }' is not assignable to type 'never'.
+Tests/activation.test.mts(64,75): error TS2322: Type '{ uuid: string; version: number[]; }' is not assignable to type 'never'.
+Tests/activation.test.mts(66,50): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+Tests/activation.test.mts(83,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/activation.test.mts(83,16): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/activation.test.mts(83,25): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/activation.test.mts(83,34): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/activation.test.mts(89,77): error TS2345: Argument of type 'string | number | { uuid: string; version: number[]; }[]' is not assignable to parameter of type 'string | undefined'.
+  Type 'number' is not assignable to type 'string'.
+Tests/activation.test.mts(93,50): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+Tests/activation.test.mts(105,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/activation.test.mts(105,16): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/activation.test.mts(105,20): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/activation.test.mts(105,29): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/activation.test.mts(105,35): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/activation.test.mts(105,43): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/activation.test.mts(107,69): error TS2322: Type '{ uuid: string; version: number[]; }' is not assignable to type 'never'.
+Tests/activation.test.mts(116,70): error TS2322: Type '{ uuid: string; version: number[]; }' is not assignable to type 'never'.
+Tests/activation.test.mts(124,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/activation.test.mts(124,16): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/activation.test.mts(124,20): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/activation.test.mts(124,29): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/activation.test.mts(124,35): error TS7031: Binding element 'world' implicitly has an 'any' type.
+Tests/activation.test.mts(124,42): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/activation.test.mts(142,8): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/activation.test.mts(142,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/activation.test.mts(142,21): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/activation.test.mts(142,30): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/activation.test.mts(142,36): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/activation.test.mts(142,44): error TS7031: Binding element 'world' implicitly has an 'any' type.
+Tests/activation.test.mts(142,51): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/activation.test.mts(153,45): error TS7006: Parameter 'from' implicitly has an 'any' type.
+Tests/activation.test.mts(153,51): error TS7006: Parameter 'to' implicitly has an 'any' type.
+Tests/activation.test.mts(174,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/activation.test.mts(174,17): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/activation.test.mts(174,26): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/activation.test.mts(174,30): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/activation.test.mts(174,36): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/activation.test.mts(174,42): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/activation.test.mts(177,13): error TS2322: Type '{ module_name: string; version: string; }' is not assignable to type 'never'.
+Tests/activation.test.mts(180,22): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/activation.test.mts(203,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/activation.test.mts(203,16): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/activation.test.mts(203,25): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/activation.test.mts(203,29): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/activation.test.mts(203,38): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/activation.test.mts(203,44): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/activation.test.mts(203,52): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/archive.test.mts(64,33): error TS2345: Argument of type 'Uint8Array<ArrayBufferLike> | undefined' is not assignable to parameter of type 'Uint8Array<ArrayBufferLike>'.
+  Type 'undefined' is not assignable to type 'Uint8Array<ArrayBufferLike>'.
+Tests/archive.test.mts(85,28): error TS2345: Argument of type 'Uint8Array<ArrayBufferLike> | undefined' is not assignable to parameter of type 'Uint8Array<ArrayBufferLike>'.
+  Type 'undefined' is not assignable to type 'Uint8Array<ArrayBufferLike>'.
+Tests/archive.test.mts(93,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(94,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(95,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(96,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(97,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(98,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(99,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(100,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/archive.test.mts(101,10): error TS7006: Parameter 'view' implicitly has an 'any' type.
+Tests/command-editor.test.mts(17,17): error TS2345: Argument of type 'Readonly<{ history: readonly string[]; anchor: number; cursor: number; text: string; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }>' is not assignable to parameter of type 'EditorState'.
+  Types of property 'history' are incompatible.
+    The type 'readonly string[]' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+Tests/command-editor.test.mts(18,252): error TS2345: Argument of type 'Readonly<{ history: readonly string[]; anchor: number; cursor: number; text: string; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }>' is not assignable to parameter of type 'EditorState'.
+  Types of property 'history' are incompatible.
+    The type 'readonly string[]' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+Tests/command-editor.test.mts(19,81): error TS2322: Type 'string' is not assignable to type '"older" | "newer"'.
+Tests/command-editor.test.mts(20,233): error TS2345: Argument of type 'Readonly<{ history: readonly string[]; anchor: number; cursor: number; text: string; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }>' is not assignable to parameter of type 'EditorState'.
+  Types of property 'history' are incompatible.
+    The type 'readonly string[]' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+Tests/command-editor.test.mts(103,54): error TS2345: Argument of type 'EditorAction | undefined' is not assignable to parameter of type 'EditorAction'.
+  Type 'undefined' is not assignable to type 'EditorAction'.
+Tests/command-editor.test.mts(103,77): error TS2345: Argument of type 'number | { home: boolean; } | { end: boolean; } | { shift: boolean; upArrow: boolean; } | { downArrow: boolean; shift: boolean; } | { home: boolean; shift: boolean; } | { end: boolean; shift: boolean; }' is not assignable to parameter of type 'Partial<Key>'.
+  Type 'number' has no properties in common with type 'Partial<Key>'.
+Tests/command-editor.test.mts(105,40): error TS2339: Property 'shift' does not exist on type 'number | { home: boolean; } | { end: boolean; } | { shift: boolean; upArrow: boolean; } | { downArrow: boolean; shift: boolean; } | { home: boolean; shift: boolean; } | { end: boolean; shift: boolean; }'.
+  Property 'shift' does not exist on type 'number'.
+Tests/command-editor.test.mts(127,18): error TS2532: Object is possibly 'undefined'.
+Tests/command-editor.test.mts(127,74): error TS2339: Property 'word' does not exist on type 'EditorAction'.
+  Property 'word' does not exist on type '{ type: "insert"; text: string; }'.
+Tests/command-editor.test.mts(128,18): error TS2532: Object is possibly 'undefined'.
+Tests/command-editor.test.mts(128,71): error TS2339: Property 'word' does not exist on type 'EditorAction'.
+  Property 'word' does not exist on type '{ type: "insert"; text: string; }'.
+Tests/command-editor.test.mts(129,18): error TS2532: Object is possibly 'undefined'.
+Tests/command-editor.test.mts(129,58): error TS2339: Property 'direction' does not exist on type 'EditorAction'.
+  Property 'direction' does not exist on type '{ type: "insert"; text: string; }'.
+Tests/command-editor.test.mts(168,18): error TS18048: 'action' is possibly 'undefined'.
+Tests/command-editor.test.mts(169,40): error TS2345: Argument of type 'EditorAction | undefined' is not assignable to parameter of type 'EditorAction'.
+  Type 'undefined' is not assignable to type 'EditorAction'.
+Tests/command-editor.test.mts(183,41): error TS2345: Argument of type 'string | { return: boolean; } | { tab: boolean; } | { shift: boolean; tab: boolean; } | { ctrl: boolean; } | { escape: boolean; } | { pageUp: boolean; } | { eventType: string; }' is not assignable to parameter of type 'string'.
+  Type '{ return: boolean; }' is not assignable to type 'string'.
+Tests/command-editor.test.mts(185,18): error TS2532: Object is possibly 'undefined'.
+Tests/command-editor.test.mts(185,60): error TS2339: Property 'direction' does not exist on type 'EditorAction'.
+  Property 'direction' does not exist on type '{ type: "insert"; text: string; }'.
+Tests/command-editor.test.mts(186,18): error TS2532: Object is possibly 'undefined'.
+Tests/command-editor.test.mts(186,62): error TS2339: Property 'direction' does not exist on type 'EditorAction'.
+  Property 'direction' does not exist on type '{ type: "insert"; text: string; }'.
+Tests/command-editor.test.mts(187,18): error TS2532: Object is possibly 'undefined'.
+Tests/command-editor.test.mts(187,76): error TS2339: Property 'select' does not exist on type 'EditorAction'.
+  Property 'select' does not exist on type '{ type: "insert"; text: string; }'.
+Tests/completion-input.test.mts(21,24): error TS7006: Parameter 'text' implicitly has an 'any' type.
+Tests/completion-input.test.mts(25,22): error TS7006: Parameter 'value' implicitly has an 'any' type.
+Tests/completion-input.test.mts(25,40): error TS2339: Property 'isRaw' does not exist on type 'PassThrough'.
+Tests/completion-input.test.mts(26,11): error TS7034: Variable 'writes' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/completion-input.test.mts(32,9): error TS7034: Variable 'latest' implicitly has type 'any' in some locations where its type cannot be determined.
+Tests/completion-input.test.mts(56,53): error TS2322: Type 'EditorState' is not assignable to type '{ anchor: any; cursor: any; history: never[]; text: any; historyIndex: number | undefined; draft: string; draftCursor?: number; draftAnchor?: number; }'.
+  Types of property 'history' are incompatible.
+    Type 'string[]' is not assignable to type 'never[]'.
+      Type 'string' is not assignable to type 'never'.
+Tests/completion-input.test.mts(60,48): error TS2345: Argument of type '(previous: { completion: CompletionState; editor: { anchor: any; cursor: any; history: never[]; text: any; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }; }) => { ...; }' is not assignable to parameter of type 'SetStateAction<{ completion: CompletionState; editor: { anchor: any; cursor: any; history: never[]; text: any; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }; }>'.
+  Type '(previous: { completion: CompletionState; editor: { anchor: any; cursor: any; history: never[]; text: any; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }; }) => { ...; }' is not assignable to type '(prevState: { completion: CompletionState; editor: { anchor: any; cursor: any; history: never[]; text: any; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }; }) => { ...; }'.
+    Call signature return types '{ completion: CompletionState; editor: EditorState; }' and '{ completion: CompletionState; editor: { anchor: any; cursor: any; history: never[]; text: any; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }; }' are incompatible.
+      The types of 'editor.history' are incompatible between these types.
+        Type 'string[]' is not assignable to type 'never[]'.
+          Type 'string' is not assignable to type 'never'.
+Tests/completion-input.test.mts(68,30): error TS2322: Type 'Writable & { columns: number; isTTY: boolean; rows: number; }' is not assignable to type 'WriteStream | undefined'.
+  Type 'Writable & { columns: number; isTTY: boolean; rows: number; }' is missing the following properties from type 'WriteStream': clearLine, clearScreenDown, cursorTo, moveCursor, and 60 more.
+Tests/completion-input.test.mts(68,46): error TS2740: Type 'Transform' is missing the following properties from type 'ReadStream': isRaw, setRawMode, isTTY, destroySoon, and 21 more.
+Tests/completion-input.test.mts(68,60): error TS2322: Type 'Writable & { columns: number; isTTY: boolean; rows: number; }' is not assignable to type 'WriteStream | undefined'.
+  Type 'Writable & { columns: number; isTTY: boolean; rows: number; }' is missing the following properties from type 'WriteStream': clearLine, clearScreenDown, cursorTo, moveCursor, and 60 more.
+Tests/completion-input.test.mts(80,23): error TS7005: Variable 'latest' implicitly has an 'any' type.
+Tests/completion-input.test.mts(81,48): error TS7005: Variable 'writes' implicitly has an 'any[]' type.
+Tests/completion-input.test.mts(82,22): error TS7006: Parameter 'text' implicitly has an 'any' type.
+Tests/completion-input.test.mts(132,40): error TS2322: Type 'string' is not assignable to type 'never'.
+Tests/completion-input.test.mts(157,16): error TS2339: Property 'NO_COLOR' does not exist on type '{ FORCE_COLOR: string; }'.
+Tests/completion.test.mts(19,17): error TS7006: Parameter 'text' implicitly has an 'any' type.
+Tests/completion.test.mts(21,15): error TS7006: Parameter 'model' implicitly has an 'any' type.
+Tests/completion.test.mts(21,22): error TS7006: Parameter 'input' implicitly has an 'any' type.
+Tests/completion.test.mts(21,29): error TS7006: Parameter 'key' implicitly has an 'any' type.
+Tests/completion.test.mts(38,19): error TS18048: 'entry' is possibly 'undefined'.
+Tests/completion.test.mts(38,40): error TS18048: 'entry' is possibly 'undefined'.
+Tests/completion.test.mts(46,18): error TS18048: 'candidate' is possibly 'undefined'.
+Tests/completion.test.mts(47,18): error TS18048: 'candidate' is possibly 'undefined'.
+Tests/completion.test.mts(48,41): error TS2345: Argument of type 'CompletionCandidate | undefined' is not assignable to parameter of type 'CompletionCandidate'.
+  Type 'undefined' is not assignable to type 'CompletionCandidate'.
+Tests/completion.test.mts(103,22): error TS18048: 'candidate' is possibly 'undefined'.
+Tests/completion.test.mts(104,45): error TS2345: Argument of type 'CompletionCandidate | undefined' is not assignable to parameter of type 'CompletionCandidate'.
+  Type 'undefined' is not assignable to type 'CompletionCandidate'.
+Tests/completion.test.mts(112,41): error TS2345: Argument of type 'CompletionCandidate | undefined' is not assignable to parameter of type 'CompletionCandidate'.
+  Type 'undefined' is not assignable to type 'CompletionCandidate'.
+Tests/completion.test.mts(133,41): error TS2345: Argument of type 'CompletionCandidate | undefined' is not assignable to parameter of type 'CompletionCandidate'.
+  Type 'undefined' is not assignable to type 'CompletionCandidate'.
+Tests/completion.test.mts(145,30): error TS2339: Property 'handled' does not exist on type '{ completion: CompletionState; editor: { anchor: number; cursor: number; text: string; history: string[]; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; }; }'.
+Tests/completion.test.mts(224,35): error TS2345: Argument of type '{ anchor: number; cursor: number; text: string; history: string[]; historyIndex: number | undefined; draft: string; draftCursor?: number | undefined; draftAnchor?: number | undefined; } | { ...; } | { ...; } | { ...; }' is not assignable to parameter of type 'EditorState'.
+  Object literal may only specify known properties, and 'rightArrow' does not exist in type 'EditorState'.
+Tests/console-foundation.test.mts(26,11): error TS2339: Property 'isTTY' does not exist on type 'PassThrough'.
+Tests/console-foundation.test.mts(27,11): error TS2339: Property 'isRaw' does not exist on type 'PassThrough'.
+Tests/console-foundation.test.mts(28,11): error TS2339: Property 'ref' does not exist on type 'PassThrough'.
+Tests/console-foundation.test.mts(29,11): error TS2339: Property 'unref' does not exist on type 'PassThrough'.
+Tests/console-foundation.test.mts(30,11): error TS2339: Property 'setRawMode' does not exist on type 'PassThrough'.
+Tests/console-foundation.test.mts(30,25): error TS7006: Parameter 'enabled' implicitly has an 'any' type.
+Tests/console-foundation.test.mts(30,45): error TS2339: Property 'isRaw' does not exist on type 'PassThrough'.
+Tests/console-foundation.test.mts(31,11): error TS7034: Variable 'writes' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/console-foundation.test.mts(37,60): error TS7005: Variable 'writes' implicitly has an 'any[]' type.
+Tests/console-foundation.test.mts(61,80): error TS2322: Type 'string' is not assignable to type '"linux" | "win32"'.
+Tests/console-foundation.test.mts(64,22): error TS18048: 'call' is possibly 'undefined'.
+Tests/console-foundation.test.mts(66,26): error TS18048: 'call' is possibly 'undefined'.
+Tests/console-foundation.test.mts(67,26): error TS18048: 'call' is possibly 'undefined'.
+Tests/console-foundation.test.mts(87,71): error TS2345: Argument of type '(_file: string, _args: string[], options: { cwd: string; env: ProcessEnv; shell: false; stdio: "pipe"; }) => EventEmitter<any> & { pid: number; stderr: PassThrough; stdin: PassThrough; stdout: PassThrough; }' is not assignable to parameter of type 'SpawnServer'.
+  Type 'EventEmitter<any> & { pid: number; stderr: PassThrough; stdin: PassThrough; stdout: PassThrough; }' is missing the following properties from type 'ChildProcessWithoutNullStreams': stdio, killed, connected, exitCode, and 9 more.
+Tests/console-foundation.test.mts(102,38): error TS2345: Argument of type '{ stderr: Writable & { columns: number; isTTY: boolean; rows: number; }; stdin: PassThrough; stdout: Writable & { columns: number; isTTY: boolean; rows: number; }; writes: any[]; }' is not assignable to parameter of type 'ConsoleTerminal'.
+  Types of property 'stdin' are incompatible.
+    Type 'Transform' is missing the following properties from type 'ReadStream': isRaw, setRawMode, isTTY, destroySoon, and 21 more.
+Tests/console-foundation.test.mts(117,11): error TS7034: Variable 'received' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/console-foundation.test.mts(120,9): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'string' is not assignable to type '"input" | "output"'.
+Tests/console-foundation.test.mts(129,22): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Tests/console-foundation.test.mts(130,22): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Tests/console-foundation.test.mts(131,22): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Tests/console-foundation.test.mts(132,22): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Tests/console-foundation.test.mts(135,22): error TS7005: Variable 'received' implicitly has an 'any[]' type.
+Tests/console-foundation.test.mts(138,22): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Tests/console-foundation.test.mts(146,11): error TS7034: Variable 'received' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/console-foundation.test.mts(158,53): error TS2345: Argument of type '{ stderr: Writable & { columns: number; isTTY: boolean; rows: number; }; stdin: PassThrough; stdout: Writable & { columns: number; isTTY: boolean; rows: number; }; writes: any[]; }' is not assignable to parameter of type 'ConsoleTerminal'.
+  Types of property 'stdin' are incompatible.
+    Type 'Transform' is missing the following properties from type 'ReadStream': isRaw, setRawMode, isTTY, destroySoon, and 21 more.
+Tests/console-foundation.test.mts(168,22): error TS7005: Variable 'received' implicitly has an 'any[]' type.
+Tests/console-foundation.test.mts(169,22): error TS7005: Variable 'received' implicitly has an 'any[]' type.
+Tests/console-foundation.test.mts(172,22): error TS7005: Variable 'received' implicitly has an 'any[]' type.
+Tests/console-foundation.test.mts(179,37): error TS2339: Property 'isRaw' does not exist on type 'PassThrough'.
+Tests/editor-input.test.mts(20,40): error TS7006: Parameter 'value' implicitly has an 'any' type.
+Tests/editor-input.test.mts(20,58): error TS2339: Property 'isRaw' does not exist on type 'PassThrough'.
+Tests/editor-input.test.mts(22,11): error TS7034: Variable 'writes' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/editor-input.test.mts(28,60): error TS7005: Variable 'writes' implicitly has an 'any[]' type.
+Tests/editor-input.test.mts(34,9): error TS7034: Variable 'latest' implicitly has type 'any' in some locations where its type cannot be determined.
+Tests/editor-input.test.mts(36,22): error TS7031: Binding element 'focused' implicitly has an 'any' type.
+Tests/editor-input.test.mts(36,31): error TS7031: Binding element 'columns' implicitly has an 'any' type.
+Tests/editor-input.test.mts(36,40): error TS7031: Binding element 'message' implicitly has an 'any' type.
+Tests/editor-input.test.mts(67,32): error TS2345: Argument of type '{ alternateScreen: true; exitOnCtrlC: false; interactive: true; patchConsole: false; stderr: Writable & { columns: number; isTTY: boolean; rows: number; }; stdin: PassThrough; stdout: Writable & { columns: number; isTTY: boolean; rows: number; }; writes: any[]; }' is not assignable to parameter of type 'WriteStream | RenderOptions | undefined'.
+  Type '{ alternateScreen: true; exitOnCtrlC: false; interactive: true; patchConsole: false; stderr: Writable & { columns: number; isTTY: boolean; rows: number; }; stdin: PassThrough; stdout: Writable & { columns: number; isTTY: boolean; rows: number; }; writes: any[]; }' is not assignable to type 'RenderOptions'.
+    Types of property 'stdout' are incompatible.
+      Type 'Writable & { columns: number; isTTY: boolean; rows: number; }' is not assignable to type 'WriteStream | undefined'.
+        Type 'Writable & { columns: number; isTTY: boolean; rows: number; }' is missing the following properties from type 'WriteStream': clearLine, clearScreenDown, cursorTo, moveCursor, and 60 more.
+Tests/editor-input.test.mts(83,23): error TS7005: Variable 'latest' implicitly has an 'any' type.
+Tests/editor-input.test.mts(84,22): error TS7006: Parameter 'text' implicitly has an 'any' type.
+Tests/editor-input.test.mts(113,41): error TS2339: Property 'isRaw' does not exist on type 'PassThrough'.
+Tests/editor-input.test.mts(175,16): error TS2339: Property 'NO_COLOR' does not exist on type '{ FORCE_COLOR: string; }'.
+Tests/export.test.mts(30,18): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/export.test.mts(30,45): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/export.test.mts(68,8): error TS7031: Binding element 'clean' implicitly has an 'any' type.
+Tests/export.test.mts(68,15): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/export.test.mts(68,24): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/export.test.mts(68,28): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/export.test.mts(68,37): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/export.test.mts(68,43): error TS7031: Binding element 'portable' implicitly has an 'any' type.
+Tests/export.test.mts(68,53): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/export.test.mts(68,59): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/export.test.mts(68,67): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/export.test.mts(71,18): error TS2339: Property 'dependencies' does not exist on type '{ format_version: number; header: { description: string; min_engine_version: number[]; name: string; uuid: string; version: number[]; }; modules: { type: string; uuid: string; version: number[]; }[]; unknown: { ...; }; }'.
+Tests/export.test.mts(73,57): error TS2353: Object literal may only specify known properties, and 'entry' does not exist in type '{ type: string; uuid: string; version: number[]; }'.
+Tests/export.test.mts(105,30): error TS18048: 'actual' is possibly 'undefined'.
+Tests/export.test.mts(106,30): error TS18048: 'actual' is possibly 'undefined'.
+Tests/export.test.mts(126,8): error TS7031: Binding element 'clean' implicitly has an 'any' type.
+Tests/export.test.mts(126,15): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/export.test.mts(126,24): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/export.test.mts(126,28): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/export.test.mts(126,37): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/export.test.mts(126,43): error TS7031: Binding element 'portable' implicitly has an 'any' type.
+Tests/export.test.mts(126,53): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/export.test.mts(126,59): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/export.test.mts(126,67): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/export.test.mts(156,8): error TS7031: Binding element 'clean' implicitly has an 'any' type.
+Tests/export.test.mts(156,15): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/export.test.mts(156,19): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/export.test.mts(156,28): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/export.test.mts(156,34): error TS7031: Binding element 'portable' implicitly has an 'any' type.
+Tests/export.test.mts(156,44): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/export.test.mts(156,50): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/export.test.mts(156,58): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/export.test.mts(162,50): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/export.test.mts(176,42): error TS7006: Parameter 'from' implicitly has an 'any' type.
+Tests/export.test.mts(176,48): error TS7006: Parameter 'to' implicitly has an 'any' type.
+Tests/export.test.mts(194,8): error TS7031: Binding element 'clean' implicitly has an 'any' type.
+Tests/export.test.mts(194,15): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/export.test.mts(194,19): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/export.test.mts(194,28): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/export.test.mts(194,34): error TS7031: Binding element 'portable' implicitly has an 'any' type.
+Tests/export.test.mts(194,44): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/export.test.mts(194,50): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/export.test.mts(198,47): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/export.test.mts(198,53): error TS7006: Parameter 'bytes' implicitly has an 'any' type.
+Tests/export.test.mts(198,60): error TS7006: Parameter 'options' implicitly has an 'any' type.
+Tests/export.test.mts(217,8): error TS7031: Binding element 'clean' implicitly has an 'any' type.
+Tests/export.test.mts(217,15): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/export.test.mts(217,19): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/export.test.mts(217,28): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/export.test.mts(217,34): error TS7031: Binding element 'portable' implicitly has an 'any' type.
+Tests/export.test.mts(217,44): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/export.test.mts(217,50): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/export.test.mts(217,58): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/export.test.mts(225,46): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/export.test.mts(237,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/export.test.mts(237,17): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/export.test.mts(237,26): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/export.test.mts(237,32): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/export.test.mts(237,38): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/export.test.mts(242,22): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/foundation.test.mts(14,18): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/foundation.test.mts(14,45): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/foundation.test.mts(46,27): error TS2322: Type 'string | {} | { XDG_CONFIG_HOME: string; }' is not assignable to type 'Readonly<Record<string, string | undefined>>'.
+  Type 'string' is not assignable to type 'Readonly<Record<string, string | undefined>>'.
+Tests/foundation.test.mts(46,55): error TS2322: Type 'string | {} | { XDG_CONFIG_HOME: string; }' is not assignable to type 'string'.
+  Type '{}' is not assignable to type 'string'.
+Tests/foundation.test.mts(52,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(52,17): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(52,23): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(73,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(73,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/foundation.test.mts(73,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(73,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(89,22): error TS2532: Object is possibly 'undefined'.
+Tests/foundation.test.mts(95,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(95,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/foundation.test.mts(95,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(95,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(111,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(111,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/foundation.test.mts(111,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(111,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(123,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(123,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/foundation.test.mts(123,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(123,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(138,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(138,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/foundation.test.mts(138,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(138,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(153,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(153,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/foundation.test.mts(153,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(153,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(176,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/foundation.test.mts(176,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/foundation.test.mts(176,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/foundation.test.mts(176,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/foundation.test.mts(179,22): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/install.test.mts(29,18): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/install.test.mts(29,45): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/install.test.mts(52,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(52,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(52,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(52,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/install.test.mts(52,33): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(52,41): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(75,8): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(75,17): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(92,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(92,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(92,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(92,27): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(92,35): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(138,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/install.test.mts(138,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(138,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(138,27): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(138,35): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(154,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/install.test.mts(154,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(154,21): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(154,30): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(154,36): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/install.test.mts(154,42): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(154,50): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(158,46): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/install.test.mts(164,47): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/install.test.mts(173,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(173,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(173,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(173,27): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(173,35): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(184,49): error TS7006: Parameter 'from' implicitly has an 'any' type.
+Tests/install.test.mts(184,55): error TS7006: Parameter 'to' implicitly has an 'any' type.
+Tests/install.test.mts(204,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(204,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(204,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(204,27): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(204,35): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(219,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(219,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(219,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(219,27): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(219,35): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(225,45): error TS7006: Parameter 'from' implicitly has an 'any' type.
+Tests/install.test.mts(225,51): error TS7006: Parameter 'to' implicitly has an 'any' type.
+Tests/install.test.mts(238,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(238,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(238,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(238,27): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(238,35): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(248,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/install.test.mts(248,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/install.test.mts(248,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/install.test.mts(248,27): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/install.test.mts(248,35): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/install.test.mts(255,16): error TS2339: Property 'dependencies' does not exist on type '{ format_version: number; header: { description: string; min_engine_version: number[]; name: string; uuid: string; version: number[]; }; modules: { type: string; uuid: string; version: number[]; }[]; unknown: { ...; }; }'.
+Tests/install.test.mts(264,38): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+Tests/inventory.test.mts(29,18): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/inventory.test.mts(29,45): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/inventory.test.mts(45,18): error TS7006: Parameter 'relative' implicitly has an 'any' type.
+Tests/inventory.test.mts(45,28): error TS7006: Parameter 'value' implicitly has an 'any' type.
+Tests/inventory.test.mts(58,12): error TS2339: Property 'dependencies' does not exist on type '{ extension: { preserved: boolean; }; format_version: number; header: { description: string; min_engine_version: number[]; name: string; uuid: string; version: number[]; }; modules: { type: string; uuid: string; version: number[]; }[]; }'.
+Tests/inventory.test.mts(61,12): error TS2339: Property 'dependencies' does not exist on type '{ extension: { preserved: boolean; }; format_version: number; header: { description: string; min_engine_version: number[]; name: string; uuid: string; version: number[]; }; modules: { type: string; uuid: string; version: number[]; }[]; }'.
+Tests/inventory.test.mts(95,8): error TS7031: Binding element 'add' implicitly has an 'any' type.
+Tests/inventory.test.mts(95,13): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/inventory.test.mts(95,17): error TS7031: Binding element 'inventory' implicitly has an 'any' type.
+Tests/inventory.test.mts(95,28): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/inventory.test.mts(95,34): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/inventory.test.mts(95,40): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/inventory.test.mts(128,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/inventory.test.mts(128,12): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/inventory.test.mts(128,18): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/inventory.test.mts(128,24): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/inventory.test.mts(152,8): error TS7031: Binding element 'add' implicitly has an 'any' type.
+Tests/inventory.test.mts(152,13): error TS7031: Binding element 'inventory' implicitly has an 'any' type.
+Tests/inventory.test.mts(152,24): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/inventory.test.mts(168,74): error TS7006: Parameter 'addon' implicitly has an 'any' type.
+Tests/inventory.test.mts(168,103): error TS7006: Parameter 'pack' implicitly has an 'any' type.
+Tests/inventory.test.mts(177,8): error TS7031: Binding element 'add' implicitly has an 'any' type.
+Tests/inventory.test.mts(177,13): error TS7031: Binding element 'inventory' implicitly has an 'any' type.
+Tests/inventory.test.mts(177,24): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/inventory.test.mts(181,18): error TS2339: Property 'dependencies' does not exist on type '{ extension: { preserved: boolean; }; format_version: number; header: { description: string; min_engine_version: number[]; name: string; uuid: string; version: number[]; }; modules: { type: string; uuid: string; version: number[]; }[]; }'.
+Tests/inventory.test.mts(192,47): error TS7006: Parameter 'item' implicitly has an 'any' type.
+Tests/inventory.test.mts(209,8): error TS7031: Binding element 'add' implicitly has an 'any' type.
+Tests/inventory.test.mts(209,13): error TS7031: Binding element 'inventory' implicitly has an 'any' type.
+Tests/inventory.test.mts(209,24): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/inventory.test.mts(213,18): error TS2339: Property 'dependencies' does not exist on type '{ extension: { preserved: boolean; }; format_version: number; header: { description: string; min_engine_version: number[]; name: string; uuid: string; version: number[]; }; modules: { type: string; uuid: string; version: number[]; }[]; }'.
+Tests/inventory.test.mts(215,18): error TS2339: Property 'dependencies' does not exist on type '{ extension: { preserved: boolean; }; format_version: number; header: { description: string; min_engine_version: number[]; name: string; uuid: string; version: number[]; }; modules: { type: string; uuid: string; version: number[]; }[]; }'.
+Tests/inventory.test.mts(231,8): error TS7031: Binding element 'add' implicitly has an 'any' type.
+Tests/inventory.test.mts(231,13): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/inventory.test.mts(231,22): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/inventory.test.mts(231,26): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/inventory.test.mts(231,32): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/inventory.test.mts(231,38): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/inventory.test.mts(241,49): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/inventory.test.mts(253,8): error TS7031: Binding element 'add' implicitly has an 'any' type.
+Tests/inventory.test.mts(253,13): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/inventory.test.mts(253,22): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/inventory.test.mts(253,26): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/inventory.test.mts(253,32): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/inventory.test.mts(253,38): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/inventory.test.mts(257,22): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/inventory.test.mts(276,63): error TS7006: Parameter 'addon' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(32,18): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(32,45): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/lifecycle.test.mts(70,75): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Tests/lifecycle.test.mts(72,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Tests/lifecycle.test.mts(80,21): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+Tests/lifecycle.test.mts(91,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(91,16): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(91,25): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(91,29): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(91,38): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(91,44): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(91,52): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(91,60): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(109,22): error TS18048: 'registered' is possibly 'undefined'.
+Tests/lifecycle.test.mts(116,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,16): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,25): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,29): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,38): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,44): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,50): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,58): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(116,66): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(144,8): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(144,17): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(144,26): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(144,34): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(161,8): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(161,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(161,21): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(161,30): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(161,36): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(161,44): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(161,52): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(176,8): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(176,17): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(176,26): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(176,34): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(183,13): error TS2322: Type '{ module_name: string; version: string; }' is not assignable to type 'never'.
+Tests/lifecycle.test.mts(194,8): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(194,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(194,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(194,27): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(194,35): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(194,41): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(194,49): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(194,57): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(213,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(213,12): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(213,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(213,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(213,33): error TS7031: Binding element 'snapshot' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(213,43): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(213,51): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(230,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(230,12): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(230,18): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(230,26): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(230,34): error TS7031: Binding element 'snapshot' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(230,44): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(230,52): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(248,8): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(248,17): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(248,25): error TS7031: Binding element 'snapshot' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(248,35): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(248,43): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(262,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(262,16): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(262,25): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(262,34): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(262,42): error TS7031: Binding element 'snapshot' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(262,52): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(262,60): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(266,74): error TS2322: Type '{ uuid: string; version: number[]; }' is not assignable to type 'never'.
+Tests/lifecycle.test.mts(283,8): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(283,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(283,21): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(283,30): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(283,36): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(283,44): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(283,52): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(283,60): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,16): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,25): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,29): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,38): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,44): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,52): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(300,60): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(304,73): error TS2322: Type '{ uuid: string; version: number[]; }' is not assignable to type 'never'.
+Tests/lifecycle.test.mts(322,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(322,16): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(322,20): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(322,29): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(322,35): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(322,43): error TS7031: Binding element 'snapshot' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(322,53): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(322,61): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(335,48): error TS7006: Parameter 'from' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(335,54): error TS7006: Parameter 'to' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,8): error TS7031: Binding element 'change' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,16): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,20): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,29): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,35): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,43): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,51): error TS7031: Binding element 'snapshot' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(357,61): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(365,44): error TS7006: Parameter 'from' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(365,50): error TS7006: Parameter 'to' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(382,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(382,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(382,21): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(382,27): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(382,33): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(397,8): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(397,17): error TS7031: Binding element 'remove' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(397,25): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(397,33): error TS7031: Binding element 'update' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(397,41): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(410,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(410,17): error TS7031: Binding element 'entries' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(410,26): error TS7031: Binding element 'install' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(410,35): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(410,41): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(410,47): error TS7031: Binding element 'write' implicitly has an 'any' type.
+Tests/lifecycle.test.mts(415,22): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/ownership-process.mts(18,67): error TS2794: Expected 1 arguments, but got 0. Did you forget to include 'void' in your type argument to 'Promise'?
+Tests/packed.mts(19,22): error TS7006: Parameter 'executable' implicitly has an 'any' type.
+Tests/packed.mts(19,34): error TS7006: Parameter 'args' implicitly has an 'any' type.
+Tests/packed.mts(26,18): error TS7006: Parameter 'executable' implicitly has an 'any' type.
+Tests/packed.mts(26,30): error TS7006: Parameter 'args' implicitly has an 'any' type.
+Tests/packed.mts(33,18): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/packed.mts(37,11): error TS7023: 'modules' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+Tests/packed.mts(37,55): error TS7024: Function implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+Tests/packed.mts(56,40): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/packed.mts(103,26): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/packed.mts(113,25): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/packed.mts(119,25): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+Tests/packed.mts(211,10): error TS2345: Argument of type '<A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, NodeServices>>' is not assignable to parameter of type '(_: Effect<void, unknown, unknown>) => Effect<unknown, unknown, never>'.
+  Type 'Effect<void, unknown, unknown>' is not assignable to type 'Effect<unknown, unknown, never>'.
+    Type 'unknown' is not assignable to type 'never'.
+Tests/server-session.test.mts(20,37): error TS2339: Property 'onOutput' does not exist on type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(20,47): error TS2339: Property 'onKill' does not exist on type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(23,11): error TS7034: Variable 'writes' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/server-session.test.mts(25,11): error TS7034: Variable 'kills' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/server-session.test.mts(26,11): error TS2339: Property 'pid' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(27,11): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(28,11): error TS2339: Property 'stderr' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(29,11): error TS2339: Property 'stdin' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(41,11): error TS2339: Property 'kill' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(41,19): error TS7006: Parameter 'signal' implicitly has an 'any' type.
+Tests/server-session.test.mts(42,41): error TS2345: Argument of type '{ directory: string; env: { [key: string]: string | undefined; }; platform: string; }' is not assignable to parameter of type 'ServerLaunch'.
+  Types of property 'platform' are incompatible.
+    Type 'string' is not assignable to type '"linux" | "win32"'.
+Tests/server-session.test.mts(46,15): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(47,15): error TS2339: Property 'stderr' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(50,39): error TS7005: Variable 'kills' implicitly has an 'any[]' type.
+Tests/server-session.test.mts(50,55): error TS7005: Variable 'writes' implicitly has an 'any[]' type.
+Tests/server-session.test.mts(56,61): error TS18046: 'lines' is of type 'unknown'.
+Tests/server-session.test.mts(58,47): error TS2345: Argument of type 'Uint8Array<ArrayBuffer>' is not assignable to parameter of type 'Buffer<ArrayBufferLike>'.
+  Type 'Uint8Array<ArrayBuffer>' is missing the following properties from type 'Buffer<ArrayBufferLike>': write, toJSON, equals, compare, and 66 more.
+Tests/server-session.test.mts(67,22): error TS2345: Argument of type 'Uint8Array<ArrayBuffer>' is not assignable to parameter of type 'Buffer<ArrayBufferLike>'.
+  Type 'Uint8Array<ArrayBuffer>' is missing the following properties from type 'Buffer<ArrayBufferLike>': write, toJSON, equals, compare, and 66 more.
+Tests/server-session.test.mts(69,18): error TS2532: Object is possibly 'undefined'.
+Tests/server-session.test.mts(86,11): error TS7034: Variable 'output' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/server-session.test.mts(87,34): error TS2353: Object literal may only specify known properties, and 'onOutput' does not exist in type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(87,45): error TS7006: Parameter 'line' implicitly has an 'any' type.
+Tests/server-session.test.mts(90,19): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(91,19): error TS2339: Property 'stderr' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(95,19): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(98,22): error TS7005: Variable 'output' implicitly has an 'any[]' type.
+Tests/server-session.test.mts(100,22): error TS7005: Variable 'output' implicitly has an 'any[]' type.
+Tests/server-session.test.mts(104,32): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(110,34): error TS2353: Object literal may only specify known properties, and 'onOutput' does not exist in type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(110,45): error TS7006: Parameter 'line' implicitly has an 'any' type.
+Tests/server-session.test.mts(110,54): error TS18046: 'output' is of type 'unknown'.
+Tests/server-session.test.mts(124,19): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(140,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+Tests/server-session.test.mts(144,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+Tests/server-session.test.mts(148,32): error TS2339: Property 'stdin' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(169,5): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+Tests/server-session.test.mts(173,19): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+Tests/server-session.test.mts(182,19): error TS2339: Property 'stdin' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(185,19): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+Tests/server-session.test.mts(204,34): error TS2353: Object literal may only specify known properties, and 'onOutput' does not exist in type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(204,45): error TS7006: Parameter 'line' implicitly has an 'any' type.
+Tests/server-session.test.mts(204,54): error TS18046: 'lines' is of type 'unknown'.
+Tests/server-session.test.mts(206,19): error TS2339: Property 'stdin' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(207,19): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(219,19): error TS2339: Property 'stdin' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(227,19): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+Tests/server-session.test.mts(234,19): error TS2339: Property 'stderr' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(247,41): error TS2345: Argument of type '{ directory: string; env: { [key: string]: string | undefined; }; platform: string; }' is not assignable to parameter of type 'ServerLaunch'.
+  Types of property 'platform' are incompatible.
+    Type 'string' is not assignable to type '"linux" | "win32"'.
+Tests/server-session.test.mts(261,15): error TS7034: Variable 'lines' implicitly has type 'any[]' in some locations where its type cannot be determined.
+Tests/server-session.test.mts(262,38): error TS2353: Object literal may only specify known properties, and 'onOutput' does not exist in type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(262,49): error TS7006: Parameter 'line' implicitly has an 'any' type.
+Tests/server-session.test.mts(263,23): error TS2339: Property 'stderr' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(264,23): error TS2345: Argument of type 'string | number | null' is not assignable to parameter of type 'number | undefined'.
+  Type 'null' is not assignable to type 'number | undefined'.
+Tests/server-session.test.mts(267,22): error TS7005: Variable 'lines' implicitly has an 'any[]' type.
+Tests/server-session.test.mts(294,23): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(306,34): error TS2353: Object literal may only specify known properties, and 'onOutput' does not exist in type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(307,19): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(310,19): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(317,34): error TS2353: Object literal may only specify known properties, and 'onOutput' does not exist in type '{ hold?: boolean | undefined; }'.
+Tests/server-session.test.mts(318,19): error TS2339: Property 'stdout' does not exist on type 'EventEmitter<any>'.
+Tests/server-session.test.mts(325,23): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/server-session.test.mts(325,50): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/server-session.test.mts(341,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/server-session.test.mts(341,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/server-session.test.mts(341,22): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/server-session.test.mts(341,28): error TS7031: Binding element 'run' implicitly has an 'any' type.
+Tests/server-session.test.mts(345,36): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/server-session.test.mts(365,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/server-session.test.mts(365,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/server-session.test.mts(365,22): error TS7031: Binding element 'run' implicitly has an 'any' type.
+Tests/server-session.test.mts(367,48): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/server-session.test.mts(372,36): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/server-session.test.mts(383,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/server-session.test.mts(383,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/server-session.test.mts(383,22): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/server-session.test.mts(383,28): error TS7031: Binding element 'run' implicitly has an 'any' type.
+Tests/server-session.test.mts(387,36): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/server-session.test.mts(401,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/server-session.test.mts(401,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/server-session.test.mts(401,22): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/server-session.test.mts(401,28): error TS7031: Binding element 'run' implicitly has an 'any' type.
+Tests/server-session.test.mts(404,48): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/server-session.test.mts(417,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/server-session.test.mts(417,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/server-session.test.mts(417,22): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/server-session.test.mts(417,28): error TS7031: Binding element 'run' implicitly has an 'any' type.
+Tests/server-session.test.mts(420,48): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/server-session.test.mts(432,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/server-session.test.mts(432,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/server-session.test.mts(432,22): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/server-session.test.mts(432,28): error TS7031: Binding element 'run' implicitly has an 'any' type.
+Tests/server-session.test.mts(437,30): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/server-session.test.mts(439,30): error TS2554: Expected 1 arguments, but got 0.
+Tests/start-ownership.test.mts(24,18): error TS7006: Parameter 'body' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(24,45): error TS2345: Argument of type 'Effect<void, unknown, unknown>' is not assignable to parameter of type 'Effect<void, unknown, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/start-ownership.test.mts(43,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(43,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(43,21): error TS7031: Binding element 'options' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(43,30): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(43,36): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(58,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(58,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(58,21): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(58,31): error TS7031: Binding element 'options' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(77,8): error TS7031: Binding element 'binary' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(77,16): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(77,25): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(77,29): error TS7031: Binding element 'options' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(77,38): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(77,44): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(86,24): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(87,20): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(93,20): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,8): error TS7031: Binding element 'context' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,17): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,21): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,31): error TS7031: Binding element 'options' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,40): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,45): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,51): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(106,57): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(110,24): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(111,20): error TS7006: Parameter 'file' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(121,8): error TS7031: Binding element 'binary' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(121,16): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(121,20): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(121,30): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(121,35): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(121,41): error TS7031: Binding element 'root' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(145,30): error TS2345: Argument of type 'Effect<void, Error, unknown>' is not assignable to parameter of type 'Effect<void, Error, never>'.
+  Type 'unknown' is not assignable to type 'never'.
+Tests/start-ownership.test.mts(147,42): error TS2345: Argument of type '{ executable: string; platform: string; }' is not assignable to parameter of type 'PreparedServer'.
+  Type '{ executable: string; platform: string; }' is missing the following properties from type 'PreparedServer': directory, env
+Tests/start-ownership.test.mts(150,34): error TS2345: Argument of type '{ executable: string; platform: string; }' is not assignable to parameter of type 'PreparedServer'.
+  Type '{ executable: string; platform: string; }' is missing the following properties from type 'PreparedServer': directory, env
+Tests/start-ownership.test.mts(154,58): error TS2345: Argument of type '{ realPath: (file: string) => Effect.Effect<string, never, never>; }' is not assignable to parameter of type 'FileSystem'.
+  Type '{ realPath: (file: string) => Effect<string, never, never>; }' is missing the following properties from type 'FileSystem': access, copy, copyFile, chmod, and 26 more.
+Tests/start-ownership.test.mts(158,8): error TS7031: Binding element 'binary' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(158,16): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(158,20): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(158,30): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(158,35): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(158,41): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(160,21): error TS7006: Parameter 'ownership' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(182,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(182,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(182,22): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(182,27): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(182,33): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(196,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(196,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(196,22): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(198,31): error TS7031: Binding element 'launch' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(208,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(208,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(208,22): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(208,27): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(208,33): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(210,29): error TS7006: Parameter 'owner' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(222,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(222,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(222,22): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(222,27): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(232,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(232,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(232,22): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(232,28): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(266,30): error TS2571: Object is of type 'unknown'.
+Tests/start-ownership.test.mts(268,30): error TS2571: Object is of type 'unknown'.
+Tests/start-ownership.test.mts(328,46): error TS2345: Argument of type 'Platform' is not assignable to parameter of type '"linux" | "win32"'.
+  Type '"aix"' is not assignable to type '"linux" | "win32"'.
+Tests/start-ownership.test.mts(335,8): error TS7031: Binding element 'fs' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(335,12): error TS7031: Binding element 'metadata' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(335,22): error TS7031: Binding element 'own' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(335,27): error TS7031: Binding element 'path' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(335,33): error TS7031: Binding element 'server' implicitly has an 'any' type.
+Tests/start-ownership.test.mts(355,29): error TS2794: Expected 1 arguments, but got 0. Did you forget to include 'void' in your type argument to 'Promise'?

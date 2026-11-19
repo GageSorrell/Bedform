@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bedform:diagetic_slider",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "track": "textures/blocks/stone",
+        "knob": "textures/blocks/planks_oak"
+      },
+      "geometry": {
+        "default": "geometry.bedform.diagetic_slider"
+      },
+      "animations": {
+        "mount": "animation.bedform.diagetic.mount",
+        "motion": "animation.bedform.diagetic_slider.motion"
+      },
+      "scripts": {
+        "animate": [
+          "mount",
+          "motion"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.bedform.diagetic_slider.track",
+        "controller.render.bedform.diagetic_slider.knob"
+      ]
+    }
+  }
+}

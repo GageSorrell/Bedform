@@ -1,0 +1,130 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bedform:diagetic_lever",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "properties": {
+        "bedform:diagetic_highlighted": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        },
+        "bedform:diagetic_offset_x": {
+          "type": "float",
+          "range": [
+            -256.5,
+            256.5
+          ],
+          "default": 0.0001,
+          "client_sync": true
+        },
+        "bedform:diagetic_offset_y": {
+          "type": "float",
+          "range": [
+            -256.5,
+            256.5
+          ],
+          "default": 0.0001,
+          "client_sync": true
+        },
+        "bedform:diagetic_offset_z": {
+          "type": "float",
+          "range": [
+            -256.5,
+            256.5
+          ],
+          "default": 0.0001,
+          "client_sync": true
+        },
+        "bedform:diagetic_yaw": {
+          "type": "float",
+          "range": [
+            -180.5,
+            180.5
+          ],
+          "default": 0.0001,
+          "client_sync": true
+        },
+        "bedform:diagetic_pitch": {
+          "type": "float",
+          "range": [
+            -180.5,
+            180.5
+          ],
+          "default": 0.0001,
+          "client_sync": true
+        },
+        "bedform:diagetic_roll": {
+          "type": "float",
+          "range": [
+            -180.5,
+            180.5
+          ],
+          "default": 0.0001,
+          "client_sync": true
+        },
+        "bedform:diagetic_motion": {
+          "type": "float",
+          "range": [
+            -360.5,
+            360.5
+          ],
+          "default": 0.0001,
+          "client_sync": true
+        }
+      }
+    },
+    "components": {
+      "minecraft:collision_box": {
+        "width": 0.75,
+        "height": 0.75
+      },
+      "minecraft:physics": {
+        "has_collision": false,
+        "has_gravity": false
+      },
+      "minecraft:pushable_by_entity": {
+        "presets": [
+          {
+            "push_mode": "none"
+          }
+        ]
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "cause": "all",
+          "deals_damage": "no"
+        }
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:persistent": {},
+      "minecraft:body_rotation_blocked": {},
+      "minecraft:type_family": {
+        "family": [
+          "bedform_diagetic",
+          "inanimate"
+        ]
+      },
+      "minecraft:interact": {
+        "interactions": [
+          {
+            "interact_text": "action.interact.bedform.diagetic",
+            "on_interact": {
+              "event": "bedform:diagetic_use",
+              "target": "self"
+            },
+            "swing": true
+          }
+        ]
+      }
+    },
+    "events": {
+      "bedform:diagetic_use": {}
+    }
+  }
+}

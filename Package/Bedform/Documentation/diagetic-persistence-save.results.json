@@ -1,0 +1,11 @@
+{
+  "build": "53340801",
+  "engine": "1.26.63.1",
+  "evidence": {
+    "savedActors": 7,
+    "interruptedGrab": true,
+    "physicalInputVerified": false
+  },
+  "runtime": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime",
+  "world": "E:\\MineCraft\\Addon\\LookInputDemo\\dist\\bds-runtime\\worlds\\toggle-Qnmr91"
+}

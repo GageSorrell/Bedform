@@ -1,0 +1,65 @@
+{
+  "name": "bedrock-server-manager",
+  "version": "1.0.1",
+  "author": {
+    "email": "gage@sorrell.sh",
+    "name": "Gage Sorrell",
+    "url": "https://sorrell.sh"
+  },
+  "description": "Manage Bedrock Dedicated Server addons and configuration.",
+  "type": "module",
+  "exports": {
+    ".": "./Distribution/index.js",
+    "./registry": {
+      "types": "./Distribution/registry.d.ts",
+      "import": "./Distribution/registry.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git",
+    "directory": "Package/Deprecated/BedrockServerManager"
+  },
+  "bin": {
+    "bds": "./Distribution/index.js",
+    "bedrock-server-manager": "./Distribution/index.js"
+  },
+  "files": [
+    "Distribution/**/*.js",
+    "Distribution/**/*.d.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && npm run typecheck:tools",
+    "test": "npm run build && npm run typecheck:tools && node --import tsx --test Test/*.test.mts",
+    "test:pack": "node --import tsx Test/packed.mts",
+    "lint": "eslint Source Test",
+    "prepack": "npm run build",
+    "verify": "npm run typecheck && npm run lint && npm test && npm pack --dry-run --ignore-scripts && npm run test:pack",
+    "typecheck:tools": "npm run build && tsc -p tsconfig.tools.json"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@byteland/ink-scroll-bar": "1.0.0",
+    "@effect/platform-node": "4.0.5",
+    "@effect/platform-node-shared": "4.0.5",
+    "effect": "4.0.5",
+    "@bedform/effect": "1.0.0-alpha.1",
+    "fflate": "0.8.2",
+    "ink": "7.1.1",
+    "ink-scroll-view": "0.4.0",
+    "react": "19.2.9",
+    "string-width": "8.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "ink-testing-library": "4.0.0",
+    "typescript": "6.0.3"
+  }
+}

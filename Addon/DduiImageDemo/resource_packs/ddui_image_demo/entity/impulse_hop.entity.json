@@ -1,0 +1,20 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "ddui_demo:impulse_hop",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/blocks/stone"
+      },
+      "geometry": {
+        "default": "geometry.ddui_demo.hop_cube"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

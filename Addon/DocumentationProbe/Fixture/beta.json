@@ -1,0 +1,17 @@
+{
+  "id": "beta",
+  "name": "Beta Field Guide",
+  "uuid": "84ac4262-ad19-4588-8f2b-d54bdd0f817d",
+  "moduleUuid": "a4e902a6-2570-45cd-a92e-0f11b64a4ff9",
+  "route": 2,
+  "target": "alpha",
+  "targetRoute": 1,
+  "page": {
+    "title": "Copper Wrench",
+    "type": "item",
+    "heading": "Repair Tools",
+    "body": "Repairs pipes without consuming fuel.",
+    "identifier": "probe:copper_wrench",
+    "description": "Beta item: test cW, CW, rTl, ppwf and reversed zz."
+  }
+}

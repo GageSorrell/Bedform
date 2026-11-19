@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": [
+    "Source/index.ts",
+    "Source/Canvas/**/*.ts"
+  ]
+}

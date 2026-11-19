@@ -1,0 +1,4 @@
+# Dolt may invoke Git internally; sync only once for the outer push.
+[ "${BedformBeadsPushActive:-}" = "1" ] && exit 0
+command -v bd >/dev/null 2>&1 || exit 0
+BedformBeadsPushActive=1 bd dolt push </dev/null

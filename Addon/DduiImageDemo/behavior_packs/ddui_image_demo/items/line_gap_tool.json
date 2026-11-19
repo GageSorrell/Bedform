@@ -1,0 +1,15 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:item": {
+    "description": {
+      "identifier": "ddui_demo:line_gap_tool",
+      "menu_category": { "category": "items" }
+    },
+    "components": {
+      "minecraft:display_name": { "value": "Line Gap Clock" },
+      "minecraft:icon": "clock_item",
+      "minecraft:max_stack_size": 1,
+      "ddui_demo:open_line_gap_form": {}
+    }
+  }
+}

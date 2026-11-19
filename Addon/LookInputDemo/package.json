@@ -1,0 +1,19 @@
+{
+  "name": "@sorrell/look-input-demo",
+  "version": "1.0.12",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --import tsx Tool/Build.mts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.tools.json",
+    "lint": "eslint Script Tool Test --max-warnings 0",
+    "test": "node --import tsx --test Test/*.test.mts",
+    "test:native": "node --import tsx Tool/NativeProbe.mts",
+    "test:toggle": "node --import tsx Tool/ToggleProbe.mts",
+    "test:diagetic": "node --import tsx Tool/ToggleProbe.mts --diagetic",
+    "test:diagetic:persistence": "node --import tsx Tool/ToggleProbe.mts --persistence",
+    "probe:toggle:client": "node --import tsx Tool/ToggleProbe.mts --client",
+    "demo:prepare": "node --import tsx Tool/Demonstration.mts",
+    "demo:look-input": "node --import tsx \"../../Script/Deprecated/Demonstration/Source/start.mts\" --server \"Demonstration/look-input/server\""
+  }
+}

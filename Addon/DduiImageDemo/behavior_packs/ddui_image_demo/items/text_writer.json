@@ -1,0 +1,15 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:item": {
+    "description": {
+      "identifier": "ddui_demo:text_writer",
+      "menu_category": { "category": "items" }
+    },
+    "components": {
+      "minecraft:display_name": { "value": "Text Writer" },
+      "minecraft:icon": "name_tag",
+      "minecraft:max_stack_size": 1,
+      "ddui_demo:write_text": {}
+    }
+  }
+}

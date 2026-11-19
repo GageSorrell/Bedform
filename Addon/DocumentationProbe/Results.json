@@ -1,0 +1,240 @@
+{
+  "issue": "MineCraft-9a8v.1",
+  "status": "native-expression-and-query-scope-diagnosis-pending",
+  "hostValidation": {
+    "command": "npm run check --workspace @sorrell/documentation-probe",
+    "lint": "passed",
+    "tests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "independentPackBuilds": "passed",
+    "deterministicPackBytes": "passed",
+    "sharedBytesPreservedInBothWorldOrders": "passed",
+    "emittedSearchExpressionOracle": "host-only-passed-not-shipped-in-recovery"
+  },
+  "installedExecutableMetadata": {
+    "minecraftWindows": "1.26.63.1",
+    "bedrockServer": "1.26.63.1",
+    "bdsFixtureExecuted": false
+  },
+  "verifiedClientVersion": "1.26.63.1",
+  "verifiedEngineVersion": "1.26.63.1-client",
+  "versionEvidence": "Read-only metadata of the running Minecraft.Windows process, PID 36460, Microsoft.MinecraftUWP_1.26.6301.0_x64__8wekyb3d8bbwe. No BDS fixture run.",
+  "clientObservations": [
+    {
+      "version": "1.0.1",
+      "packOrder": [
+        "alpha",
+        "beta",
+        "common"
+      ],
+      "observation": "HUD marker and Documentation launcher appeared; overlay opened, but user could not pause and had to close the game window.",
+      "inputDevice": "unspecified",
+      "result": "launcher-rendered-input-trap-failed"
+    },
+    {
+      "version": "1.0.2",
+      "packOrder": [
+        "alpha",
+        "beta",
+        "common"
+      ],
+      "observation": "User confirmed successful exit after opening Documentation; exact successful exit method not specified.",
+      "inputDevice": "unspecified",
+      "result": "at-least-one-exit-method-passed"
+    },
+    {
+      "version": "1.0.2",
+      "packOrder": [
+        "alpha",
+        "beta",
+        "common"
+      ],
+      "observation": "Both Alpha Workshop and Beta Field Guide were visible and each opened its page.",
+      "inputDevice": "unspecified",
+      "result": "two-contributions-and-directory-routing-passed-in-first-order"
+    },
+    {
+      "version": "1.0.2",
+      "packOrder": [
+        "alpha",
+        "beta",
+        "common"
+      ],
+      "observation": "Text entry works, but search results are wrong or stale. User clarified that no rows change visibility as the query changes; this does not establish whether all result rows are visible or hidden.",
+      "inputDevice": "unspecified",
+      "result": "live-search-failed"
+    },
+    {
+      "version": "unspecified-existing-import",
+      "observation": "User reports the X in the black region and Documentation / X both fail once open; Minecraft must still be manually closed. Prior successful exit does not establish working close controls.",
+      "inputDevice": "mouse",
+      "result": "close-controls-failed"
+    },
+    {
+      "version": "1.0.4",
+      "packOrder": [
+        "alpha",
+        "beta",
+        "common"
+      ],
+      "observation": "User confirmed that both the inside X and the outside Documentation / X restore inventory in the versioned 1.0.4 world.",
+      "inputDevice": "mouse",
+      "result": "both-close-controls-and-inventory-restoration-passed"
+    },
+    {
+      "version": "1.0.4",
+      "observation": "User could not see either alpha tail or beta tail diagnostic label. Search cannot be assessed from the missing diagnostics.",
+      "result": "tail-diagnostics-not-visible"
+    },
+    {
+      "version": "1.0.5",
+      "observation": "Shared Binding diagnostics heading is visible at the bottom, but neither alpha nor beta tail caption appears.",
+      "result": "shared-footer-rendered-contribution-rows-absent"
+    },
+    {
+      "version": "1.0.6",
+      "packOrder": [
+        "alpha",
+        "beta",
+        "common"
+      ],
+      "observation": "User confirms both static alpha tail and beta tail captions appear beneath the shared diagnostics heading.",
+      "result": "both-diagnostic-contributions-rendered-in-alpha-beta-order"
+    },
+    {
+      "version": "1.0.6",
+      "observation": "After typing fOp, Query changes to Query=[fOp], but both alpha/beta tails remain [not bound].",
+      "result": "query-transport-passed-tail-source-unresolved"
+    },
+    {
+      "version": "1.0.7",
+      "observation": "User repeatedly crashes while opening the imported world, including another attempt. Local events/minidumps confirm repeatable native write access violation at module+0x1ca40b9, address0x10, on1.26.63.1 and1.26.65.1.",
+      "result": "world-load-crash-failed"
+    },
+    {
+      "version": "1.0.8",
+      "observation": "User confirmed after the question was re-asked that the world loads and Documentation opens and closes. Earlier accidental answer was disregarded.",
+      "result": "recovery-load-open-close-passed"
+    },
+    {
+      "version": "1.0.9",
+      "observation": "User confirms all requested values: world loads and Documentation opens; typing St without Enter gives Query=[St], Alpha tail=[], Beta tail=[St].",
+      "result": "live-two-state-chain-passed-for-St"
+    },
+    {
+      "version": "1.0.10",
+      "observation": "Three user screenshots show Query=[zz], Query=[fOp], Query=[FOP], respectively. In all three, Alpha and Beta tails are both empty and both Search result rows remain visible. Negative zz is therefore a demonstrated false match.",
+      "result": "full-index-search-failed-screenshot-evidence"
+    },
+    {
+      "version": "1.0.11",
+      "observation": "User reports behavior unchanged from screenshots, with no delays: both tails empty and both results visible for requested negative/positive cases.",
+      "result": "native-label-state-candidate-failed-no-visible-lag"
+    },
+    {
+      "version": "1.0.12",
+      "observation": "User says minus/ascii/etc do not change and bottom region changes as before. Exact displayed values were not supplied; first three probes are intentionally constant, so this alone does not establish their failure.",
+      "result": "ambiguous-awaiting-exact-five-readouts"
+    },
+    {
+      "version": "1.0.12",
+      "observation": "User confirms Query and direct show zz. Other probes are described as unchanged without exact values. Read-only capture found Minecraft in another demo world, so no probe readouts were independently visible and no UI inputs were issued.",
+      "result": "direct-query-lookup-passed-constant-operator-values-still-missing"
+    },
+    {
+      "version": "1.0.12",
+      "observation": "User retracted ascii=[zz], saying it may have been not evaluated or blank and they do not recall. Treat ASCII operator output as unknown. A read-only capture did not show the probe; no input was issued.",
+      "result": "ascii-reading-retracted-unverified"
+    }
+  ],
+  "iterations": [
+    {
+      "version": "1.0.0",
+      "observation": "User saw a book tab with ItemStacks and explicitly confirmed that no Documentation / X label appears. Read-only world_resource_packs.json inspection confirmed Alpha, Beta and common active in that order.",
+      "conclusion": "Launcher failed to appear. No feasibility gate passed."
+    },
+    {
+      "version": "1.0.1",
+      "change": "Moved launcher patch to native ui/inventory_screen.json; added DOCS PROBE 1.0.1 HUD diagnostic through native ui/hud_screen.json. Rebuilt with bumped pack versions to avoid stale resource caching.",
+      "observation": "Launcher and HUD appeared; modal input trap required closing the game window."
+    },
+    {
+      "version": "1.0.2",
+      "change": "Removed modal capture, added global Escape/inventory-cancel exit mappings and an in-overlay native close button. Emergency exits close the full inventory screen.",
+      "observation": "Exit works; both independently built contributions are visible and open their pages. Text entry works, but query changes do not change row visibility."
+    },
+    {
+      "version": "1.0.3",
+      "change": "Read query from the edit box's uniquely named native text control, add #property_field metadata, remove a self-referential label binding, add query/tail diagnostics, and use a two-column shell to keep results visible.",
+      "observation": null
+    },
+    {
+      "version": "1.0.4",
+      "change": "Use one native visibility radio group: launcher index1, both close controls index0. Replace outer input_panel with a plain panel; remove hover capture and global exit remapping. Let edit-box cancel propagate. Include version in world title and archive filename.",
+      "observation": "Both mouse close controls restore inventory, confirmed by the user. Tail diagnostic labels are not visible."
+    },
+    {
+      "version": "1.0.5",
+      "change": "Move independent contribution diagnostics into a dedicated shared footer, remove Home/filter visibility conditions, add static captions and explicit not-bound fallback values. Reserve footer space and use separate query/tail display properties. Close state handling unchanged.",
+      "observation": "Shared footer heading renders; both contribution row captions are absent."
+    },
+    {
+      "version": "1.0.6",
+      "change": "Promote diagnostics to a top-level shared definition. Each independently built contribution carries a minimal ui/docs_probe_common.json overlay modifying diagnostics directly; only the base pack registers that shared path. Existing page registration and close wiring unchanged.",
+      "observation": "Both independently contributed diagnostic captions render, confirmed by the user."
+    },
+    {
+      "version": "1.0.7",
+      "change": "Promote page/search registry to a top-level shared definition and register both registry and diagnostics in each contribution same-file overlay. Remove obsolete nested registration file. Query transport, search expressions and close wiring unchanged.",
+      "observation": "Repeated native world-load crash; unsafe for further user testing."
+    },
+    {
+      "version": "1.0.8",
+      "change": "Recovery-only emitted packs: no experimental page/body/entry or search binding controls. Retain tested close state, query echo and static contribution status. Host index retained, actual searchSteps0. No existing world changed.",
+      "observation": "User-confirmed world load and Documentation open/close after re-asked test."
+    },
+    {
+      "version": "1.0.9",
+      "change": "Two-state binding microprobe within proven footer only: Alpha indexes St, Beta Co. No page/scroll/render registry restored. Query transport and close controls retained; 1.0.8 archived as fallback.",
+      "observation": "All requested values confirmed by user for St, including live query and both tails."
+    },
+    {
+      "version": "1.0.10",
+      "change": "Expand footer chain to full59/64-character fixture indexes and add plain-label result rows gated by match AND nonempty query. No page/scroll/navigation tree emitted; flat-grass world generation retained.",
+      "observation": "Screenshot-confirmed failure: both tails empty and both results visible for zz/fOp/FOP despite correct query echo."
+    },
+    {
+      "version": "1.0.11",
+      "change": "Replace zero-size custom panel states with1x1 transparent native text labels, always-update bindings, nonconsumable pending marker and pending display. Restore horizontal sibling state/tail layout; emit plain result rows separately. No page renderer restored.",
+      "observation": "User reports same incorrect values/results with no delays."
+    },
+    {
+      "version": "1.0.12",
+      "change": "Add direct native subtraction probes in known-working query scope, plus direct/sibling-scope query echoes outside sidebar. Search algorithm unchanged so operators and lookup can be diagnosed independently.",
+      "observation": null
+    }
+  ],
+  "gates": {
+    "compositionBothOrders": "alpha-beta-passed-beta-alpha-unproven",
+    "diagnosticContributionRegistration": "passed-both-rows-alpha-beta-1.0.6-reverse-order-unproven",
+    "inventoryAndCraftingLaunchers": "inventory-passed-crafting-unproven",
+    "keyboardIsolation": "unproven",
+    "controllerIsolation": "unproven",
+    "closeControlsAndInventoryRestoration": "passed-mouse-alpha-beta-1.0.4-controller-and-reverse-order-unproven",
+    "routingAndAvailability": "directory-routing-passed-cross-links-and-absence-unproven",
+    "headingNavigation": "disabled-in-recovery-unproven",
+    "liveCaseInsensitiveSubsequenceSearch": "failed-1.0.11-direct-expression-scope-diagnosis-pending",
+    "typeFilters": "unproven-two-type-probe-only",
+    "infoboxCompactWide": "disabled-in-recovery-unproven",
+    "editableUrlPrefillSelectionCopy": "disabled-in-recovery-unproven",
+    "urlModalIsolationAndRestoration": "unmet-inline-panel-only",
+    "closeLifetimeReset": "unmet-screen-lifetime-state",
+    "responsiveness": "unmeasured",
+    "queryTextTransport": "passed-live-query-echo-1.0.6",
+    "worldLoadStability": "1.0.8-through-1.0.10-loaded-1.0.11-pending",
+    "twoStateLiveBinding": "passed-1.0.9-St-alpha-beta",
+    "directQueryLookupOutsideSidebar": "passed-1.0.12-direct-zz"
+  }
+}

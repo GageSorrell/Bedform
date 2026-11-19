@@ -1,0 +1,11 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "ddui_demo:orbit_carrier",
+      "materials": {
+        "default": "entity_alphatest"
+      }
+    }
+  }
+}

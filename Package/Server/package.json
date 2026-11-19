@@ -1,0 +1,58 @@
+{
+  "name": "@bedform/server",
+  "version": "2.11.0-dev.1",
+  "description": "Everything @minecraft/server exports, with Bedform's extended world and player input gesture signals.",
+  "license": "MIT",
+  "author": {
+    "email": "gage@sorrell.sh",
+    "name": "Gage Sorrell",
+    "url": "https://sorrell.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GageSorrell/Bedform.git",
+    "directory": "Package/Server"
+  },
+  "type": "module",
+  "main": "./Distribution/index.js",
+  "types": "./Distribution/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./Distribution/index.d.ts",
+      "import": "./Distribution/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "Distribution",
+    "License.md",
+    "ReadMe.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:tools": "tsc -p tsconfig.tools.json",
+    "lint": "eslint Source Test",
+    "test": "npm run build && node --import tsx --test Test/*.test.mts",
+    "verify": "npm run typecheck && npm test && npm run typecheck:tools && npm run lint",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@bedform/effect": "1.0.0-alpha.1"
+  },
+  "peerDependencies": {
+    "@minecraft/server": "2.11.0"
+  },
+  "devDependencies": {
+    "@minecraft/server": "2.11.0",
+    "esbuild": "0.25.12",
+    "typescript": "6.0.3"
+  },
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "bedform",
+    "server"
+  ]
+}

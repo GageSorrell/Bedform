@@ -1,0 +1,109 @@
+{
+  "namespace": "clipboard_test",
+  "screen@common_dialogs.main_panel_no_buttons": {
+    "size": [
+      280,
+      210
+    ],
+    "layer": 2,
+    "$title_panel": "common_dialogs.standard_title_label",
+    "$title_size": [
+      "100% - 15px",
+      10
+    ],
+    "$title_max_size": [
+      "100% - 15px",
+      10
+    ],
+    "$text_name": "Clipboard test (custom JSON UI)",
+    "$title_text_binding_type": "none",
+    "$child_control": "clipboard_test.content",
+    "bindings": [
+      {
+        "binding_name": "#title_text"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#title_text - 'clipboard_test') = #title_text))",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+  "text": {
+    "type": "label",
+    "size": [
+      "100%",
+      "default"
+    ],
+    "color": [
+      0.24,
+      0.24,
+      0.24
+    ],
+    "font_type": "default"
+  },
+  "spacer": {
+    "type": "panel",
+    "size": [
+      "100%",
+      6
+    ]
+  },
+  "copy_button@common_buttons.light_text_button": {
+    "size": [
+      "100%",
+      28
+    ]
+  },
+  "content": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%"
+    ],
+    "controls": [
+      {
+        "intro@clipboard_test.text": {
+          "text": "Custom JSON UI inside the server form screen. Each button sends a vanilla clipboard button ID to this screen's controller; paste elsewhere to see whether anything was copied."
+        }
+      },
+      {
+        "spacer_1@clipboard_test.spacer": {}
+      },
+      {
+        "payload@clipboard_test.text": {
+          "text": "#form_text",
+          "color": [
+            0.1,
+            0.1,
+            0.5
+          ],
+          "bindings": [
+            {
+              "binding_name": "#form_text"
+            }
+          ]
+        }
+      },
+      {
+        "spacer_2@clipboard_test.spacer": {}
+      },
+      {
+        "copy_to_clipboard@clipboard_test.copy_button": {
+          "$pressed_button_name": "button.copy_to_clipboard",
+          "$button_text": "button.copy_to_clipboard"
+        }
+      },
+      {
+        "spacer_3@clipboard_test.spacer": {}
+      },
+      {
+        "copy_log_path@clipboard_test.copy_button": {
+          "$pressed_button_name": "button.copy_log_path_to_clipboard",
+          "$button_text": "button.copy_log_path_to_clipboard"
+        }
+      }
+    ]
+  }
+}

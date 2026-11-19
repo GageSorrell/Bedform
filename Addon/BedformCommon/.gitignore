@@ -1,0 +1,4 @@
+# Deterministic native DDUI artwork is emitted by Tool/DirectionPreview.mts and
+# Tool/TransactionalIcons.mts during builds.
+/resource_packs/bedform_common/textures/bedform/direction/
+/resource_packs/bedform_common/textures/bedform/transactional/

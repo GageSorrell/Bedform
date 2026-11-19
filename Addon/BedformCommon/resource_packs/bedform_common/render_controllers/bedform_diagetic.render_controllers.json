@@ -1,0 +1,155 @@
+{
+  "format_version": "1.10.0",
+  "render_controllers": {
+    "controller.render.bedform.diagetic_lever.base": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.base"
+      ],
+      "overlay_color": {
+        "r": 1,
+        "g": 0.84,
+        "b": 0.4,
+        "a": "query.property('bedform:diagetic_highlighted') ? 0.25 : 0"
+      },
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "stick": false
+        }
+      ]
+    },
+    "controller.render.bedform.diagetic_lever.handle": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.handle"
+      ],
+      "overlay_color": {
+        "r": 1,
+        "g": 0.84,
+        "b": 0.4,
+        "a": "query.property('bedform:diagetic_highlighted') ? 0.25 : 0"
+      },
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "base": false
+        }
+      ]
+    },
+    "controller.render.bedform.diagetic_slider.track": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.track"
+      ],
+      "overlay_color": {
+        "r": 1,
+        "g": 0.84,
+        "b": 0.4,
+        "a": "query.property('bedform:diagetic_highlighted') ? 0.25 : 0"
+      },
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "knob": false
+        }
+      ]
+    },
+    "controller.render.bedform.diagetic_slider.knob": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.knob"
+      ],
+      "overlay_color": {
+        "r": 1,
+        "g": 0.84,
+        "b": 0.4,
+        "a": "query.property('bedform:diagetic_highlighted') ? 0.25 : 0"
+      },
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "track": false
+        }
+      ]
+    },
+    "controller.render.bedform.diagetic_wheel.axle": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.axle"
+      ],
+      "overlay_color": {
+        "r": 1,
+        "g": 0.84,
+        "b": 0.4,
+        "a": "query.property('bedform:diagetic_highlighted') ? 0.25 : 0"
+      },
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "wheel": false
+        }
+      ]
+    },
+    "controller.render.bedform.diagetic_wheel.wheel": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.wheel"
+      ],
+      "overlay_color": {
+        "r": 1,
+        "g": 0.84,
+        "b": 0.4,
+        "a": "query.property('bedform:diagetic_highlighted') ? 0.25 : 0"
+      },
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "axle": false
+        }
+      ]
+    }
+  }
+}

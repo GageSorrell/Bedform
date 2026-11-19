@@ -1,0 +1,25 @@
+{
+  "name": "pull-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pull monorepo code and optional Beads data together.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "lint": "eslint Source Test",
+    "test": "npm run build && node --import tsx --test Test/*.test.mts"
+  },
+  "dependencies": {
+    "@clack/prompts": "1.8.1",
+    "@effect/platform-node": "4.0.5",
+    "@effect/platform-node-shared": "4.0.5",
+    "effect": "4.0.5",
+    "simple-git": "4.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "typescript": "6.0.3"
+  }
+}

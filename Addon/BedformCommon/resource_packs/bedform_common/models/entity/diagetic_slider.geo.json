@@ -1,0 +1,235 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.bedform.diagetic_slider",
+        "texture_width": 16,
+        "texture_height": 16,
+        "visible_bounds_width": 2,
+        "visible_bounds_height": 2,
+        "visible_bounds_offset": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "offset",
+          "parent": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "mount_yaw",
+          "parent": "offset",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "mount_pitch",
+          "parent": "mount_yaw",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "mount_roll",
+          "parent": "mount_pitch",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "track",
+          "parent": "mount_roll",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -7,
+                -1,
+                -1
+              ],
+              "size": [
+                14,
+                2,
+                1
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    1,
+                    7
+                  ],
+                  "uv_size": [
+                    14,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    1,
+                    7
+                  ],
+                  "uv_size": [
+                    14,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    7.5,
+                    7
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    7.5,
+                    7
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    1,
+                    7.5
+                  ],
+                  "uv_size": [
+                    14,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    1,
+                    7.5
+                  ],
+                  "uv_size": [
+                    14,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "knob",
+          "parent": "mount_roll",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -3,
+                -2,
+                -3
+              ],
+              "size": [
+                6,
+                4,
+                2
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    5,
+                    6
+                  ],
+                  "uv_size": [
+                    6,
+                    4
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    5,
+                    6
+                  ],
+                  "uv_size": [
+                    6,
+                    4
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    7,
+                    6
+                  ],
+                  "uv_size": [
+                    2,
+                    4
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    7,
+                    6
+                  ],
+                  "uv_size": [
+                    2,
+                    4
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    5,
+                    7
+                  ],
+                  "uv_size": [
+                    6,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    5,
+                    7
+                  ],
+                  "uv_size": [
+                    6,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,650 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "Canvas": {
+      "$ref": "#/$defs/Canvas"
+    },
+    "DDUI": {
+      "$ref": "#/$defs/DDUI"
+    },
+    "Development": {
+      "$ref": "#/$defs/Development"
+    },
+    "Physics": {
+      "$ref": "#/$defs/Physics"
+    },
+    "build": {
+      "$ref": "#/$defs/Build"
+    },
+    "$schema": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Published JSON Schema URL used by editors."
+    }
+  },
+  "additionalProperties": false,
+  "description": "Bedform shared project configuration.",
+  "$defs": {
+    "CanvasImage": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Z][A-Za-z0-9]*$",
+          "maxLength": 24,
+          "description": "Unique PascalCase key in the generated Images record, at most 24 characters."
+        },
+        "Source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "PNG path relative to the selected configuration file."
+        },
+        "FrameCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096,
+          "description": "Equal-height frames in a vertical PNG strip; defaults to one."
+        },
+        "FrameTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "description": "Elapsed feature ticks per frame; defaults to one, independent of particle age."
+        }
+      },
+      "required": [
+        "Name",
+        "Source"
+      ],
+      "additionalProperties": false,
+      "description": "A static PNG or equal-frame vertical flipbook registration."
+    },
+    "Canvas": {
+      "type": "object",
+      "properties": {
+        "Namespace": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!minecraft$)[a-z][a-z0-9_]*$",
+          "maxLength": 24,
+          "description": "Consumer namespace for generated image textures and particle identifiers."
+        },
+        "ResourcePack": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Destination resource pack relative to the configuration file; required when multiple packs are discovered."
+        },
+        "Images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CanvasImage"
+          },
+          "minItems": 1,
+          "maxItems": 256,
+          "description": "Shared Canvas image registrations; generated/canvas/images.ts is virtual during builds."
+        }
+      },
+      "required": [
+        "Namespace",
+        "Images"
+      ],
+      "additionalProperties": false,
+      "description": "Shared image compilation for Intent, imperative surfaces and spatial React consumers."
+    },
+    "DDUI": {
+      "type": "object",
+      "properties": {
+        "StrictMode": {
+          "type": "boolean",
+          "description": "Show DDUI diagnostics in forms and logs; defaults to false.",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "description": "Functional DDUI runtime build settings."
+    },
+    "Development": {
+      "type": "object",
+      "properties": {
+        "AllowDevelopmentModulesInProduction": {
+          "type": "boolean",
+          "description": "Permit Prototype runtime modules in production builds without injecting Prototype assets or startup.",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "description": "Explicit permission for development modules in ordinary production builds."
+    },
+    "Vector": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "additionalProperties": false,
+      "description": "Coordinates in model-local blocks or the documented physical units."
+    },
+    "Pose": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/Vector"
+        },
+        "rotation": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            },
+            "w": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "z",
+            "w"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "position",
+        "rotation"
+      ],
+      "additionalProperties": false,
+      "description": "Model-local collider transform."
+    },
+    "Collision": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "box",
+                "sphere",
+                "ellipsoid",
+                "capsule"
+              ]
+            },
+            "fit": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "fit"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "box",
+                "sphere",
+                "ellipsoid",
+                "capsule"
+              ]
+            },
+            "halfExtents": {
+              "$ref": "#/$defs/Vector"
+            },
+            "pose": {
+              "$ref": "#/$defs/Pose"
+            }
+          },
+          "required": [
+            "kind",
+            "halfExtents"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "complex"
+              ]
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "compound"
+              ]
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Collision"
+              },
+              "minItems": 1,
+              "maxItems": 64
+            }
+          },
+          "required": [
+            "kind",
+            "children"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Enclosing fitted primitive, explicit primitive, exact partition, or compound collider."
+    },
+    "Registration": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Unique model registration name."
+            },
+            "collision": {
+              "$ref": "#/$defs/Collision"
+            },
+            "centerOfMass": {
+              "$ref": "#/$defs/Vector"
+            },
+            "restitution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "gravity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "linearVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "angularVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "representation": {
+              "type": "string",
+              "enum": [
+                "cuboid"
+              ]
+            },
+            "geometry": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Geometry path relative to the resource pack."
+            },
+            "geometryIdentifier": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Geometry identifier defined by the source asset."
+            },
+            "materials": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "textures": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "mass": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "density": {
+              "not": {}
+            }
+          },
+          "required": [
+            "name",
+            "representation",
+            "geometry",
+            "geometryIdentifier",
+            "materials",
+            "textures"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Unique model registration name."
+            },
+            "collision": {
+              "$ref": "#/$defs/Collision"
+            },
+            "centerOfMass": {
+              "$ref": "#/$defs/Vector"
+            },
+            "restitution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "gravity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "linearVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "angularVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "representation": {
+              "type": "string",
+              "enum": [
+                "cuboid"
+              ]
+            },
+            "geometry": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Geometry path relative to the resource pack."
+            },
+            "geometryIdentifier": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Geometry identifier defined by the source asset."
+            },
+            "materials": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "textures": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "mass": {
+              "not": {}
+            },
+            "density": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "name",
+            "representation",
+            "geometry",
+            "geometryIdentifier",
+            "materials",
+            "textures",
+            "density"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Unique model registration name."
+            },
+            "collision": {
+              "$ref": "#/$defs/Collision"
+            },
+            "centerOfMass": {
+              "$ref": "#/$defs/Vector"
+            },
+            "restitution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "gravity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "linearVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "angularVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "representation": {
+              "type": "string",
+              "enum": [
+                "particle"
+              ]
+            },
+            "meshSolid": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Evaluated mesh-solid path relative to the configuration file."
+            },
+            "rendererDescriptor": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Particle renderer descriptor path relative to the configuration file."
+            },
+            "mass": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "density": {
+              "not": {}
+            }
+          },
+          "required": [
+            "name",
+            "representation",
+            "meshSolid",
+            "rendererDescriptor"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Unique model registration name."
+            },
+            "collision": {
+              "$ref": "#/$defs/Collision"
+            },
+            "centerOfMass": {
+              "$ref": "#/$defs/Vector"
+            },
+            "restitution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "gravity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "linearVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "angularVelocity": {
+              "$ref": "#/$defs/Vector"
+            },
+            "representation": {
+              "type": "string",
+              "enum": [
+                "particle"
+              ]
+            },
+            "meshSolid": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Evaluated mesh-solid path relative to the configuration file."
+            },
+            "rendererDescriptor": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Particle renderer descriptor path relative to the configuration file."
+            },
+            "mass": {
+              "not": {}
+            },
+            "density": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "name",
+            "representation",
+            "meshSolid",
+            "rendererDescriptor",
+            "density"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Rigid model registration with mutually exclusive mass or density; omitted mass defaults to one kilogram."
+    },
+    "Physics": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "enum": [
+            1
+          ],
+          "description": "Physics compiler input format version."
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!minecraft$)[a-z][a-z0-9_]*$",
+          "description": "Custom namespace for generated physics assets."
+        },
+        "behaviorPack": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Behavior pack root relative to the configuration file."
+        },
+        "resourcePack": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Resource pack root relative to the configuration file."
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Registration"
+          },
+          "minItems": 1,
+          "maxItems": 128,
+          "description": "Models compiled into the physics overlay."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "namespace",
+        "behaviorPack",
+        "resourcePack",
+        "models"
+      ],
+      "additionalProperties": false,
+      "description": "Existing standalone physics compiler options, nested without changing their names or path semantics."
+    },
+    "Script": {
+      "type": "object",
+      "properties": {
+        "entry": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source-relative script entrypoint."
+        },
+        "output": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source-relative output matching a behavior-pack script module entry."
+        }
+      },
+      "required": [
+        "entry",
+        "output"
+      ],
+      "additionalProperties": false,
+      "description": "Explicit source-to-manifest script mapping."
+    },
+    "Build": {
+      "type": "object",
+      "properties": {
+        "behaviorPacks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Source-relative behavior pack directories; omitted values use conventional discovery."
+        },
+        "resourcePacks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Source-relative resource pack directories; omitted values use conventional discovery."
+        },
+        "scripts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Script"
+          },
+          "description": "Explicit script mappings; omitted mappings use unambiguous conventional discovery."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared add-on staging and official-tool packaging settings."
+    }
+  }
+}
