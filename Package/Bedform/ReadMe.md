@@ -21,6 +21,14 @@ asset-backed runtime use. Pure
 `bedform/Spatial/Measurement` and `Spatial.Measurement`, including font presence,
 byte limits, wrapping, centering pads and resource-pack overrides.
 
+The [shared React client](Documentation/react-port.md) supplies all stable hooks,
+`use`, component types and both automatic JSX runtimes at `bedform/Spatial/React`
+and `Spatial.React`. Imports are inert. The [shared spatial runtime](Documentation/spatial-runtime.md)
+adds private/shared React root lifetimes and per-viewer backend leases.
+[Spatial components and layout](Documentation/spatial-layout.md) supply typed widgets,
+strict Text/child rules and shared committed geometry through `Spatial.Components`
+and `Spatial.Layout`. Native drawing requires an injected surface implementation.
+
 Register static PNGs and vertical flipbooks through
 [Canvas.Images](Documentation/canvas-images.md). Builds supply a typed virtual
 descriptor module and stage image textures and particles into the selected

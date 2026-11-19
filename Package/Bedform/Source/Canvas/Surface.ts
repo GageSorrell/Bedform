@@ -11,8 +11,11 @@
  * @license   MIT
  */
 
+import type { Rgba, TintInput } from "./Color.js";
 import type { Vector3 } from "@minecraft/server";
 import { WithAssets } from "./Dependency.js";
+
+export type { Channels, Rgba, TintInput } from "./Color.js";
 
 /**
  * Molang variables read by every Canvas surface particle. Floats are set with setFloat, Color with
@@ -78,42 +81,6 @@ export const DefaultLimits = Object.freeze({ MaxSpawns: 2_048,
  */
 export const Defaults = Object.freeze({ LayerDepth: 0.002,
     MaxDistance: 64 } as const);
-
-/**
- * Normalized RGBA, as MolangVariableMap.setColorRGBA expects.
- *
- * @category Model
- * @since 1.0.0
- */
-export interface Rgba
-{
-    readonly red: number;
-    readonly green: number;
-    readonly blue: number;
-    readonly alpha: number;
-}
-
-/**
- * Normalized channels with optional alpha.
- *
- * @category Model
- * @since 1.0.0
- */
-export interface Channels
-{
-    readonly red: number;
-    readonly green: number;
-    readonly blue: number;
-    readonly alpha?: number;
-}
-
-/**
- * Tint input: normalized channels, or #RRGGBB / #RRGGBBAA.
- *
- * @category Model
- * @since 1.0.0
- */
-export type TintInput = string | Channels;
 
 /**
  * Default tint: Canvas ink #4D4D4D at alpha 1.

@@ -272,6 +272,30 @@
     "./Canvas/Dependency": {
       "types": "./Distribution/Canvas/Dependency.d.ts",
       "import": "./Distribution/Canvas/Dependency.js"
+    },
+    "./Spatial/React": {
+      "types": "./Distribution/Spatial/React/index.d.ts",
+      "import": "./Distribution/Spatial/React/index.js"
+    },
+    "./Spatial/React/jsx-runtime": {
+      "types": "./Distribution/Spatial/React/jsx-runtime.d.ts",
+      "import": "./Distribution/Spatial/React/jsx-runtime.js"
+    },
+    "./Spatial/React/jsx-dev-runtime": {
+      "types": "./Distribution/Spatial/React/jsx-dev-runtime.d.ts",
+      "import": "./Distribution/Spatial/React/jsx-dev-runtime.js"
+    },
+    "./Spatial/Renderer": {
+      "types": "./Distribution/Spatial/Renderer.d.ts",
+      "import": "./Distribution/Spatial/Renderer.js"
+    },
+    "./Spatial/Components": {
+      "types": "./Distribution/Spatial/Components.d.ts",
+      "import": "./Distribution/Spatial/Components.js"
+    },
+    "./Spatial/Layout": {
+      "types": "./Distribution/Spatial/Layout.d.ts",
+      "import": "./Distribution/Spatial/Layout.js"
     }
   },
   "scripts": {
@@ -344,7 +368,11 @@
     "test:react-vendor": "npm run build && node --import tsx --test Test/ReactVendor.test.mts",
     "test:canvas-images": "npm run build && node --import tsx --test Test/CanvasImages.test.mts",
     "build:canvas": "node --import tsx Tool/PrepareCanvas.mts",
-    "test:canvas-packs": "npm run build && node --import tsx --test Test/CanvasPacks.test.mts"
+    "test:canvas-packs": "npm run build && node --import tsx --test Test/CanvasPacks.test.mts",
+    "test:react": "npm run build && node --import tsx --test Test/ReactVendor.test.mts Test/ReactPublic.test.mts Test/ReactPacked.test.mts Test/ReactDifferential.test.mts",
+    "test:react:differential": "node --import tsx --test Test/ReactDifferential.test.mts",
+    "test:spatial-runtime": "npm run build && node --import tsx --test Test/SpatialRuntime.test.mts Test/ReactPacked.test.mts",
+    "test:spatial-layout": "npm run build && node --import tsx --test Test/SpatialLayout.test.mts Test/ReactPacked.test.mts"
   },
   "peerDependenciesMeta": {
     "effect": {
@@ -362,7 +390,8 @@
     "ignore": "5.3.2",
     "jiti": "2.7.0",
     "pngjs": "7.0.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "@types/react": "19.3.0"
   },
   "devDependencies": {
     "@effect/platform-node": "^4.0.5",
