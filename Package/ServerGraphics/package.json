@@ -1,6 +1,6 @@
 {
   "name": "@bedform/server-graphics",
-  "version": "1.0.0-dev.1",
+  "version": "1.0.0-beta.1",
   "description": "Bedform's counterpart to @minecraft/server-graphics: everything it exports, extended by Bedform.",
   "license": "MIT",
   "author": {

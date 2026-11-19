@@ -1,6 +1,6 @@
 {
   "name": "@bedform/server-admin",
-  "version": "1.0.0-beta.1.26.66-stable-dev.1",
+  "version": "1.0.0-beta.1.26.66-stable-beta.1",
   "description": "Bedform's counterpart to @minecraft/server-admin: everything it exports, extended by Bedform.",
   "license": "MIT",
   "author": {

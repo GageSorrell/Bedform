@@ -1,6 +1,6 @@
 {
   "name": "@bedform/markup-generators-plugin",
-  "version": "2.3.3-dev.1",
+  "version": "2.3.3-beta.1",
   "description": "Bedform's counterpart to @minecraft/markup-generators-plugin: everything it exports, extended by Bedform.",
   "license": "MIT",
   "author": {

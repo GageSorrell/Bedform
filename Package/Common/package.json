@@ -1,6 +1,6 @@
 {
   "name": "@bedform/common",
-  "version": "1.3.0-dev.1",
+  "version": "1.3.0-beta.1",
   "description": "Bedform's counterpart to @minecraft/common: everything it exports, extended by Bedform.",
   "license": "MIT",
   "author": {

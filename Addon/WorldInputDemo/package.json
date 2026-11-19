@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@bedform/server": "2.11.0-dev.1"
+    "@bedform/server": "2.11.0-beta.1"
   },
   "scripts": {
     "build": "node --import tsx Tool/Build.mts",
