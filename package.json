@@ -32,7 +32,8 @@
     "typecheck:tools": "tsc -p tsconfig.tools.json && npm run typecheck:tools --workspaces --if-present",
     "demo:create": "node --import tsx Script/Deprecated/Demonstration/Source/cli.mts",
     "demo:start": "node --import tsx Script/Deprecated/Demonstration/Source/start.mts",
-    "mirrors:sync": "node --import tsx Script/sync-minecraft-mirrors.mts"
+    "mirrors:sync": "node --import tsx Script/sync-minecraft-mirrors.mts",
+    "publish:packages": "node --import tsx Script/publish.mts"
   },
   "devDependencies": {
     "@sorrell/eslint-plugin": "1.4.0",
