@@ -19,6 +19,7 @@
   "files": [
     "Distribution",
     "License.md",
+    "ThirdPartyNotices.md",
     "ReadMe.md",
     "Documentation",
     "tsconfig.json",
@@ -288,7 +289,7 @@
     "typecheck:tools": "tsc -p tsconfig.tools.json",
     "lint": "eslint Source Test Tool",
     "test": "npm run build && node --import tsx --test Test/*.test.mts",
-    "verify": "npm run text-metrics:check && npm run check:config && npm run typecheck && npm test && npm run typecheck:tools && npm run lint",
+    "verify": "npm run text-metrics:check && npm run react-vendor:check && npm run check:config && npm run typecheck && npm test && npm run typecheck:tools && npm run lint",
     "lint:vectors": "eslint Source/Vector2.ts Source/Vector3.ts Source/Internal/Vector.ts Test/Vector*.mts",
     "test:vectors": "npm run build:pure && node --import tsx --test Test/Vector*.test.mts",
     "verify:vectors": "npm run typecheck:pure && npm run build:pure && npm run typecheck:tools && npm run lint && npm run test:pure",
@@ -338,6 +339,9 @@
     "test:prototype": "npm run build && node --import tsx --test Test/Prototype*.test.mts",
     "text-metrics": "node --import tsx Tool/TextMetrics.mts",
     "text-metrics:check": "node --import tsx Tool/TextMetrics.mts --check",
+    "react-vendor": "node --import tsx Tool/ReactVendor.mts",
+    "react-vendor:check": "node --import tsx Tool/ReactVendor.mts --check",
+    "test:react-vendor": "npm run build && node --import tsx --test Test/ReactVendor.test.mts",
     "test:canvas-images": "npm run build && node --import tsx --test Test/CanvasImages.test.mts",
     "build:canvas": "node --import tsx Tool/PrepareCanvas.mts",
     "test:canvas-packs": "npm run build && node --import tsx --test Test/CanvasPacks.test.mts"
