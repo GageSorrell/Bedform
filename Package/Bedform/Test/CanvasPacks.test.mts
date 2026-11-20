@@ -25,6 +25,8 @@ import { prepareBuild } from "../Distribution/Build/Settings.js";
 import { buildAddon } from "../Distribution/Build/Addon.js";
 
 const PackageRoot = fileURLToPath(new URL("../", import.meta.url));
+const CanvasVersion = JSON.parse(await Fs.readFile(new URL(
+    "../../../Addon/BedformCanvas/package.json", import.meta.url), "utf8")).version.split(".").map(Number);
 
 /**
  * Creates an isolated owned directory with scoped cleanup.
@@ -269,7 +271,7 @@ test("explicit Canvas dependencies include assets without any runtime module and
     const file = Path.join(fixture.resource, "manifest.json");
     const value = JSON.parse(await Fs.readFile(file, "utf8"));
     value.dependencies = [ { uuid: Identity.Resource,
-        version: [ 1, 0, 0 ] } ];
+        version: CanvasVersion } ];
     await Fs.writeFile(file, JSON.stringify(value));
     const result = await fixture.run();
     const before = await Fs.readFile(result.archive);
@@ -346,7 +348,7 @@ test("canonical source pack copies are reused once; conflicting copied content a
         source: fixture.resource } ]), /reuses a BedformCanvas UUID/u);
     manifest.modules[0].uuid = "ordinary-module";
     manifest.dependencies = [ { uuid: Identity.Script,
-        version: [ 1, 0, 0 ] } ];
+        version: CanvasVersion } ];
     await Fs.writeFile(Path.join(fixture.resource, "manifest.json"), JSON.stringify(manifest));
     await assert.rejects(Select([ { kind: "resource_packs",
         source: fixture.resource } ]), /module UUID/u);

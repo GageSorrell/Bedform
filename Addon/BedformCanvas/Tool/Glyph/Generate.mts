@@ -21,7 +21,7 @@ import { Allocate, type ExtraName, ExtraNames, GlyphBase, IsTenCharacter, type L
     TenGlyph } from "./Allocation.mts";
 import { Cell, LegacyExtraCells, LegacyGlyphCells, type Pixels, WideWidth } from "./Legacy.mts";
 import { type Inputs, ReadInputs, WorkspaceRoot } from "./Input.mts";
-import { ParticleDefinition, SurfaceOutput, SurfaceOutputs } from "../Particle.mts";
+import { ParticleDefinition, ParticleVariants, SurfaceOutput, SurfaceOutputs } from "../Particle.mts";
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { LegacySupplementCells } from "./Supplement.mts";
 import { PNG } from "pngjs";
@@ -603,13 +603,12 @@ export function Generate(root: string = WorkspaceRoot): Generated
     {
         images.set(`${Output.Font}/glyph_${PageName(key)}.png`, data);
         images.set(`${Output.Textures}/glyph_${PageName(key).toLowerCase()}.png`, textures.get(key)!);
-        for (const oriented of [ false, true ])
+        for (const variant of ParticleVariants)
         {
-            const suffix = oriented ? "_oriented" : "";
             const page = PageName(key).toLowerCase();
-            texts.set(`${Output.Particles}/glyph_${page}${suffix}.json`, ParticleDefinition(
+            texts.set(`${Output.Particles}/glyph_${page}${variant.Suffix}.json`, ParticleDefinition(
                 `bedform_canvas:glyph_${page}`, `textures/bedform_canvas/glyph/glyph_${page}`, 256,
-                oriented));
+                variant.Oriented, 256, variant.Depth));
         }
     }
 

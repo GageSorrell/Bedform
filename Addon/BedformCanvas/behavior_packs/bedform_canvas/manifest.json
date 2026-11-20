@@ -4,27 +4,27 @@
     "name": "Bedform Canvas Behavior",
     "description": "Shared terminal and spatial display foundation for Bedform.",
     "uuid": "c9d18475-cf4a-4ae1-bf29-2154f9e7c10a",
-    "version": [1, 0, 0],
+    "version": [1, 0, 2],
     "min_engine_version": [1, 26, 60]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "abfd850a-2928-4d67-b16b-5cf387b1973d",
-      "version": [1, 0, 0]
+      "version": [1, 0, 2]
     },
     {
       "type": "script",
       "language": "javascript",
       "entry": "scripts/main.js",
       "uuid": "e96cb050-1354-44fd-871d-096e14bf8295",
-      "version": [1, 0, 0]
+      "version": [1, 0, 2]
     }
   ],
   "dependencies": [
     {
       "uuid": "5cb152c6-0965-4e0a-9870-0e0bebca1398",
-      "version": [1, 0, 0]
+      "version": [1, 0, 2]
     },
     {
       "module_name": "@minecraft/server",

@@ -4,14 +4,14 @@
     "name": "Bedform Canvas Resources",
     "description": "Shared terminal and spatial display resource foundation for Bedform.",
     "uuid": "5cb152c6-0965-4e0a-9870-0e0bebca1398",
-    "version": [1, 0, 0],
+    "version": [1, 0, 2],
     "min_engine_version": [1, 26, 60]
   },
   "modules": [
     {
       "type": "resources",
       "uuid": "850c8f8a-aa4c-4464-bc5e-0f14d1ba67dc",
-      "version": [1, 0, 0]
+      "version": [1, 0, 2]
     }
   ]
 }

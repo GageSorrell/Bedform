@@ -1,0 +1,52 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bedform_canvas:interaction_proxy",
+      "is_spawnable": false,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "bedform_canvas_presentation",
+          "inanimate"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.1,
+        "height": 0.1
+      },
+      "minecraft:physics": {
+        "has_collision": false,
+        "has_gravity": false
+      },
+      "minecraft:pushable_by_entity": {
+        "presets": [
+          {
+            "push_mode": "none"
+          }
+        ]
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
+      "minecraft:health": {
+        "value": 1,
+        "max": 1
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "all",
+            "deals_damage": "no"
+          }
+        ]
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/bedform_canvas/empty.json"
+      }
+    }
+  }
+}

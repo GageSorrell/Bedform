@@ -10,10 +10,10 @@
  */
 
 import { FindClient, ReadArchive, ReadClient } from "../../../Package/Bedform/Tool/TextMetrics.mjs";
+import { ParticleDefinition, ParticleVariants } from "./Particle.mts";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { PNG } from "pngjs";
-import { ParticleDefinition } from "./Particle.mts";
 import path from "node:path";
 
 const Root = fileURLToPath(new URL("../", import.meta.url));
@@ -291,13 +291,14 @@ export function Generate(check: boolean = false): void
         const texture = `textures/bedform_canvas/intent/${name}`;
         const particle = `bedform_canvas:intent_${name.replaceAll("-", "_")}`;
         write(`resource_packs/bedform_canvas/${texture}.png`, PNG.sync.write(strip));
-        for (const oriented of [ false, true ])
+        for (const variant of ParticleVariants)
         {
-            const definition = JSON.parse(ParticleDefinition(particle, texture, width, oriented));
+            const definition = JSON.parse(ParticleDefinition(particle, texture, width, variant.Oriented,
+                width, variant.Depth));
             definition.particle_effect.components["minecraft:particle_appearance_billboard"].uv
                 .texture_height = strip.height;
             write(`resource_packs/bedform_canvas/particles/intent_${name.replaceAll("-", "_")}` +
-                `${oriented ? "_oriented" : ""}.json`,
+                `${variant.Suffix}.json`,
             Buffer.from(JSON.stringify(definition, null, 2) + "\n"));
         }
 

@@ -54,23 +54,31 @@ children use the padded content origin and contribute no natural flow size.
 React's hidden host state hide descendants. No arbitrary ancestor clipping is
 introduced. `ScrollView` provides clamped nonnegative offsets, content viewport
 rectangles and their intersected clips for both presentation and hit testing.
-Scrollbar artwork, hover/arrow behavior and gestures remain with `ty2k.21`.
+An overflowing `ScrollView` whose scrollbar is not `"hidden"` also commits
+`Item.Track`, the rectangle where its scrollbar would be drawn, which
+[pointer targeting](spatial-pointer.md) hits even while a `"hover"` bar is not
+shown. Scrollbar artwork, arrows and gestures remain with `ty2k.21`.
 
 `InputScope` contributes no visual box or flow gap. Its item requirements and
 access policies accumulate with those on ancestors; pointer settings inherit
-with nearer overrides. These remain metadata for the admission layer.
-`Pointer.Visible={false}` hides the eventual pointer line without hiding targets.
+with nearer overrides. [Access control](spatial-access.md) applies the policies.
+`Pointer.Visible={false}` hides the pointer line without hiding targets.
+`Pointer.MaxDistance` and the reactive `Pointer.Color` callback are described in
+[pointer targeting](spatial-pointer.md).
 
 ## Text and child contracts
 
 All external display text is a `Text` child, including control labels. Text
 accepts scalar content and nested `Text`; nested runs can change `Color` and
 repeat equal `Font`, `Fallback` and `FallbackScope` settings. Other nested layout
-or text-setting changes are errors. Layout retains inline color ranges and
+or text-setting changes are errors, including alignment, visibility and
+access/pointer policy overrides: an inline run has no independent box or target.
+Layout retains inline color ranges and
 code-point-safe line boundaries (range indices use UTF-16), measured with the
-shared Minecraft font tables. `Measure` can override line widths. Font fallback
-resolution, native byte limits, primitive placement and client calibration remain
-with the text renderer (`ty2k.11`); this layout is not evidence of native paint.
+shared Minecraft font tables. `Measure` can override line widths. The
+[text surface](spatial-text.md) encodes color runs, enforces native byte limits
+and places each line from this layout. Font fallback/substitution and physical
+client calibration remain separate qualification work.
 
 Containers exclude strings and numbers from their child types, including arrays.
 `Slot` admits no child or one `ItemStack`. `ItemStack`, `Image`, `Mob`, `Divider`
@@ -109,6 +117,10 @@ explicit component colors and dimensions override defaults. `Theme.Dark` and
 to native Minecraft screen assets.
 
 ## Surface and verification
+
+The [text surface](spatial-text.md) consumes the same encoded per-line layout,
+including nested colors, native byte wrapping and measured alignment. Partially
+clipped Text lines are omitted from both text drawing and text hit-testing.
 
 `Root.Layout` and `SurfaceFrame.Layout` reference the same frozen result for each
 valid commit: View poses/extents, item bounds/content, layers, text lines/runs,

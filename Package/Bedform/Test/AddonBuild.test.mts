@@ -71,6 +71,7 @@ const fixture = async (context: TestContext): Promise<string> =>
     await Fs.writeFile(Path.join(Root, ".gitignore"), "dist/\r\n");
     await Fs.writeFile(Path.join(Root, "Script/screen.tsx"), "export const Screen = (props: {title:string}) => { return props.title; };");
     await Fs.writeFile(Path.join(Root, "Script/main.tsx"), `
+        /** @jsxImportSource bedform/DDUI */
         import { StrictMode, isValidElement } from "bedform/DDUI";
         import { Screen } from "./screen.js";
         const element = <Screen title="fixture" />;
@@ -127,7 +128,8 @@ test("real official archives use one strict selection for runtime and imported T
         {
             Events.length = 0;
             const Prepared = await prepareBuild({ root: Root,
-                strict: Flag }, (message) => Events.push(message));
+                strict: Flag,
+                development: Flag ?? Configured ?? false }, (message) => Events.push(message));
             const Result = await buildAddon(Prepared, { log: (message) => Events.push(message) });
             Assert.equal(Result.archive, Path.join(Root, "dist/example.mcaddon"));
             const Actual = await proof(Result.archive);

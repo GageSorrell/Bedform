@@ -104,11 +104,11 @@ when both values match. Diagnostics precede staging or compilation.
 Host integrations can use `parseBuildArguments`, `prepareBuild`, and
 `resolveBuildSettings` from `bedform/Build/Settings`. `prepareBuild` loads the
 project and returns its authored input plus effective settings before any writes.
-The returned `bundle` options select automatic JSX, the development source
-metadata flag, and a literal build-mode substitution together. `typescript`
-contains the matching JSX settings. The pure `bedform/DDUI/BuildMode` entrypoint
-exposes the substituted boolean with an unbundled false default. The published
-`bedform/DDUI/jsx-runtime` and `jsx-dev-runtime` use this same selection.
+The returned `bundle` and `typescript` options select automatic JSX from
+`bedform/Spatial/React`: `react-jsx` by default and `react-jsxdev` with
+`--development`. Per-file `@jsxImportSource` overrides remain supported. The legacy
+DDUI diagnostic substitution is independent of JSX selection; its remaining
+configuration, CLI flag and declarative exports are scheduled for removal in `9rdk.12`.
 
 ## Script add-on builds
 
@@ -139,11 +139,15 @@ JavaScript, or explicit `build.scripts` mappings:
 Every output must uniquely match a discovered behavior-pack script-module entry.
 Dependencies resolve from the original project; builds do not install packages.
 When a root `tsconfig.json` exists, the build checks its sources and mapped entries
-with the effective DDUI JSX settings. A strict-aware esbuild pass compiles JSX
-and substitutes the runtime mode before Microsoft's `bundleTask` bundles scripts.
+with the effective Spatial React JSX settings. A staging-only compiler config
+inherits the project settings and aligns esbuild with the typechecker, including
+inherited path aliases. A neutral esbuild pass compiles JSX before Microsoft's
+`bundleTask` bundles scripts.
 Native Minecraft modules remain external; Node and host configuration/build
-imports fail. The pure JSX runtimes create function-component descriptors;
-native controls, rendering, hooks, and diagnostics remain separate work.
+imports fail. The shared React JSX runtimes create ordinary React elements;
+rendering starts only through the explicitly initialized Spatial runtime.
+See [Spatial React build integration](spatial-build.md) for Canvas image descriptors,
+entry discovery, per-file engines and installed-consumer qualification.
 
 Each build owns a fresh `Intermediate/bedform/build-*` workspace. Pack assets,
 UUIDs and script-module paths are retained. Staged manifests preserve authored
@@ -182,8 +186,8 @@ Type-only imports erased by compilation are permitted. Unrelated application
 folders named `Prototype` are unaffected.
 
 Use `bedform build --development` for a development build. This is independent
-of `--ddui-strict`: development mode permits development modules; DDUI strict
-selection controls its diagnostics and JSX source metadata.
+of `--ddui-strict`: development mode permits development modules and selects
+development Spatial React JSX; the legacy DDUI flag controls its own diagnostics.
 
 An intentional production consumer can set:
 

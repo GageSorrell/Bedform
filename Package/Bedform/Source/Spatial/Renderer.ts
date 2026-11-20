@@ -58,12 +58,14 @@ export interface World {
 }
 
 /**
- * Tick scheduling used by this runtime. Native System satisfies this structural interface.
+ * Tick scheduling used by this runtime. Native System satisfies this structural interface; its
+ * optional currentTick supports placement deadlines that exclude the initial presentation tick.
  *
  * @category Interface
  * @since 1.0.0
  */
 export interface System extends ReactHostSystem {
+    readonly currentTick?: number;
     readonly runInterval: (callback: () => void, ticks?: number) => number;
 }
 
@@ -165,7 +167,9 @@ export type RootOptions = PrivateRoot | SharedRoot;
  * Managed application lifetime. Render rejects after retirement. Unmount retires immediately and
  * returns the same Promise on every call, resolving after React cleanup and all resource releases.
  * Native presentation is fenced immediately, including during reentrant effect/backend callbacks.
- * Own supports subscriptions and other root resources beyond per-viewer surface leases.
+ * Own supports subscriptions and other root resources beyond per-viewer surface leases. Audience lists
+ * the ids of the viewers currently holding a presentation lease, as of the last runtime tick; it is
+ * empty after retirement, and is what pointer targeting uses to decide who can aim at this root.
  *
  * @category Interface
  * @since 1.0.0
@@ -174,6 +178,7 @@ export interface Root {
     readonly Id: number;
     readonly Disposed: boolean;
     readonly Layout: Layout.Result | undefined;
+    readonly Audience: ReadonlyArray<string>;
     readonly Render: (node: ReactNode) => void;
     readonly Unmount: () => Promise<void>;
     readonly Own: (cleanup: () => void) => () => void;
@@ -592,6 +597,17 @@ class Application
     }
 
     /**
+     * Returns the ids of viewers currently holding a presentation lease, as a frozen snapshot.
+     *
+     * @category Getter
+     * @since 1.0.0
+     */
+    GetAudience(): ReadonlyArray<string>
+    {
+        return this.Active ? Object.freeze([ ...this.Leases.keys() ]) : Object.freeze([]);
+    }
+
+    /**
      * Reports an error through this application's own observer or the trusted runtime observer.
      *
      * @category ErrorHandling
@@ -975,6 +991,10 @@ export function CreateRoot(runtime: Runtime, options: RootOptions): Root
     );
     controller.Roots.add(application);
     return Object.freeze({
+        get Audience(): ReadonlyArray<string>
+        {
+            return application.GetAudience();
+        },
         get Disposed(): boolean
         {
             return !application.Active;

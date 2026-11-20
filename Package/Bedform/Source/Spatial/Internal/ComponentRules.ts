@@ -166,11 +166,17 @@ export function TextStyleOf(
             "MinHeight",
             "Padding",
             "Gap",
+            "Align",
+            "Justify",
             "Grow",
             "Position",
             "X",
             "Y",
             "Layer",
+            "Visible",
+            "RequiredItem",
+            "Access",
+            "Pointer",
             "LineGap",
             "TextAlign",
             "Measure",
@@ -377,6 +383,11 @@ export function CheckProps(type: string, props: Readonly<Record<string, unknown>
                 throw new Error("Invalid Pointer flag.");
             }
         }
+
+        if (pointer.Color !== undefined && typeof pointer.Color !== "function")
+        {
+            throw new Error("Pointer.Color must be a callback.");
+        }
     }
 
     if (props.Access !== undefined)
@@ -398,6 +409,11 @@ export function CheckProps(type: string, props: Readonly<Record<string, unknown>
         if (access.Allows !== undefined && typeof access.Allows !== "function")
         {
             throw new Error("Invalid Access predicate.");
+        }
+
+        if (access.LockedTo !== undefined && (typeof access.LockedTo !== "string" || !access.LockedTo))
+        {
+            throw new Error("Access.LockedTo must be a nonempty player id.");
         }
     }
 

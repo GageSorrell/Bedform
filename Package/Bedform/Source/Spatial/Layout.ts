@@ -9,12 +9,13 @@
  * @license   MIT
  */
 
-import * as Measurement from "./Measurement.js";
 import type * as Types from "./ComponentTypes.js";
 import { CheckProps, CheckText, ChildContext, PoseOf, TextStyleOf } from "./Internal/ComponentRules.js";
 import type { Context } from "./Internal/ComponentRules.js";
 import { Kind } from "./Internal/ComponentKind.js";
 import type { Node } from "./Internal/Surface.js";
+import { Prepare } from "./Internal/TextLines.js";
+import type { PreparedLine } from "./Internal/TextLines.js";
 
 /**
  * Local layout coordinates, in pixels, with X right and Y down.
@@ -51,7 +52,7 @@ export interface Policy {
 }
 
 /**
- * A native line's intrinsic metrics before the later primitive/font-substitution pipeline.
+ * A visual line's intended visible placement and source range before native centering compensation.
  * Start and Length address UTF-16 code units; wrapping never splits a Unicode code point.
  *
  * @category Model
@@ -86,15 +87,27 @@ export interface Run {
 export interface TextLayout {
     readonly Value: string;
     readonly Runs: ReadonlyArray<Run>;
-    readonly Lines: ReadonlyArray<Line>;
+    readonly Lines: ReadonlyArray<PreparedLine>;
     readonly Font: NonNullable<Types.TextProps["Font"]>;
     readonly Fallback: Types.Fallback;
     readonly FallbackScope: "Line" | "Text";
 }
 
 /**
+ * Cross-axis thickness, in layout pixels, of the rectangle where a ScrollView's scrollbar is drawn.
+ *
+ * @category Constant
+ * @since 1.0.0
+ */
+export const ScrollbarThickness = 6 as const;
+
+/**
  * One committed visual box, shared by surface rendering and analytic targeting.
- * Clip is absent outside ScrollView; an empty clip is explicitly zero-sized.
+ * Clip is absent outside ScrollView; an empty clip is explicitly zero-sized. Track is present only on a
+ * ScrollView whose content overflows its scroll axis and whose scrollbar is not "hidden": it is the
+ * rectangle where the scrollbar would be drawn, along the content box's right edge (vertical) or bottom
+ * edge (horizontal), painted above the ScrollView's descendants and clipped like the ScrollView itself.
+ * A "hover" track is targetable whether or not its scrollbar is currently shown.
  *
  * @category Model
  * @since 1.0.0
@@ -113,6 +126,7 @@ export interface Item extends Policy {
     readonly Props: Readonly<Record<string, unknown>>;
     readonly Text?: TextLayout;
     readonly Scroll?: Point;
+    readonly Track?: Box;
 }
 
 /**
@@ -438,7 +452,7 @@ function Content(node: Node): Pick<TextLayout, "Value" | "Runs">
         }
     };
 
-    visit(node, node.Id, (node.Props.Color as NonNullable<Types.TextProps["Color"]>) ?? "#FFFFFF");
+    visit(node, node.Id, (node.Props.Color as NonNullable<Types.TextProps["Color"]>) ?? "#4D4D4D");
     return {
         Runs: Object.freeze(runs),
         Value: value
@@ -452,59 +466,10 @@ function Content(node: Node): Pick<TextLayout, "Value" | "Runs">
  * @category Mapping
  * @since 1.0.0
  */
-function Lines(plan: Plan, width?: number): ReadonlyArray<Line>
+function Lines(plan: Plan, width?: number): ReadonlyArray<PreparedLine>
 {
-    const content = Content(plan.Node).Value;
-    const font = (plan.Props.Font ?? "Mojangles") as NonNullable<Types.TextProps["Font"]>;
-    const override = plan.Props.Measure as Types.TextProps["Measure"];
-    const measure = (value: string): number =>
-        Measurement.LineWidth(value, {
-            Font: font,
-            Override: override as Measurement.Options["Override"]
-        });
-    const lines: Array<Line> = [];
-    let start = 0;
-    let value = "";
-    const push = (): void =>
-    {
-        const lineWidth = measure(value);
-        const align = plan.Props.TextAlign ?? "start";
-        const remaining = Math.max(0, (width ?? lineWidth) - lineWidth);
-        lines.push(
-            Object.freeze({
-                Length: value.length,
-                Start: start,
-                Value: value,
-                Width: lineWidth,
-                X: align === "center" ? remaining / 2 : align === "end" ? remaining : 0,
-                Y:
-                    lines.length *
-                    ((font === "Legacy" ? 12 : 10) + ((plan.Props.LineGap as number) ?? 0))
-            })
-        );
-        start += value.length;
-        value = "";
-    };
-
-    for (const character of content)
-    {
-        if (character === "\n")
-        {
-            push();
-            start++;
-            continue;
-        }
-
-        if (width !== undefined && value && measure(value + character) > width)
-        {
-            push();
-        }
-
-        value += character;
-    }
-
-    push();
-    return Object.freeze(lines);
+    const content = Content(plan.Node);
+    return Prepare(content.Value, content.Runs, plan.Props as Types.TextProps, width);
 }
 
 /**
@@ -677,6 +642,25 @@ export function Compute(nodes: ReadonlyArray<Node>, revision: number = 0): Resul
                 Y: Math.min((props.ScrollY as number) ?? 0, extentHeight - content.Height)
             })
             : undefined;
+        const vertical = props.Orientation !== "horizontal";
+        const track =
+            viewport &&
+            props.scrollbarVisibility !== "hidden" &&
+            (vertical ? extentHeight > content.Height : extentWidth > content.Width)
+                ? vertical
+                    ? Rect(
+                        content.X + Math.max(0, content.Width - ScrollbarThickness),
+                        content.Y,
+                        Math.min(ScrollbarThickness, content.Width),
+                        content.Height
+                    )
+                    : Rect(
+                        content.X,
+                        content.Y + Math.max(0, content.Height - ScrollbarThickness),
+                        content.Width,
+                        Math.min(ScrollbarThickness, content.Height)
+                    )
+                : undefined;
         const item: Item = Object.freeze({
             Bounds: bounds,
             Clip: clip,
@@ -691,6 +675,7 @@ export function Compute(nodes: ReadonlyArray<Node>, revision: number = 0): Resul
             ViewId: viewId,
             ...plan.Policy,
             Scroll: scroll,
+            ...(track ? { Track: track } : {}),
             Text:
                 plan.Node.Type === Kind.Text
                     ? Object.freeze({
@@ -857,9 +842,35 @@ export function HitTest(layout: Result, viewId: number, point: Point): ReadonlyA
                 item.ViewId === viewId &&
                 !item.Hidden &&
                 contains(item.Bounds) &&
-                (!item.Clip || contains(item.Clip))
+                (!item.Clip || contains(item.Clip)) &&
+                (!item.Text || item.Text.Lines.some((line: PreparedLine) =>
+                    TextLineVisible(item, line) && contains({
+                        Height: item.Text!.Font === "Legacy" ? 12 : 10,
+                        Width: line.Width,
+                        X: item.Content.X + line.X,
+                        Y: item.Content.Y + line.Y
+                    })))
         ).sort((a: Item, b: Item) => b.Layer - a.Layer || b.Order - a.Order)
     );
+}
+
+/**
+ * Tests whether a complete text line, including its padding ink, fits the inherited ScrollView clip.
+ * Native text has no scissor; omitted lines are also excluded from analytic targeting.
+ *
+ * @category Predicate
+ * @since 1.0.0
+ */
+export function TextLineVisible(item: Item, line: PreparedLine): boolean
+{
+    const clip = item.Clip;
+    const x = item.Content.X + line.X;
+    const y = item.Content.Y + line.Y;
+    const height = item.Text!.Font === "Legacy" ? 12 : 10;
+    return !item.Hidden && line.Width > 0 && (!clip ||
+        (x >= clip.X && y >= clip.Y &&
+            x + Math.max(line.Width, line.PaddedWidth - line.PrefixWidth) <= clip.X + clip.Width &&
+            y + height <= clip.Y + clip.Height));
 }
 
 /**

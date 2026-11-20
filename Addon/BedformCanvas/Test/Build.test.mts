@@ -23,6 +23,8 @@ import { unzipSync } from "fflate";
 
 const Root = fileURLToPath(new URL("../", import.meta.url));
 const Execute = promisify(execFile);
+const Version = JSON.parse(await readFile(path.join(Root, "package.json"), "utf8"))
+    .version.split(".").map(Number);
 
 /**
  * Copies only build inputs, independently of dist outputs or an installed client.
@@ -58,8 +60,13 @@ test("isolated builds pin identities, versions, notices and script configuration
         assert.deepEqual(Object.keys(addon), [ "bedform-canvas-bp.mcpack", "bedform-canvas-rp.mcpack" ]);
         const bp = unzipSync(addon["bedform-canvas-bp.mcpack"]);
         const rp = unzipSync(addon["bedform-canvas-rp.mcpack"]);
-        assert.deepEqual(Object.keys(bp), [ "AssetProvenance.md", "License.txt", "manifest.json",
-            "scripts/main.js" ]);
+        const authoredBehavior = (await readdir(path.join(firstSource, "behavior_packs/bedform_canvas"),
+            { recursive: true,
+                withFileTypes: true })).filter((entry: Dirent) => entry.isFile())
+            .map((entry: Dirent) => path.relative(path.join(firstSource, "behavior_packs/bedform_canvas"),
+                path.join(entry.parentPath, entry.name)).replaceAll("\\", "/"));
+        assert.deepEqual(Object.keys(bp), [ ...authoredBehavior, "AssetProvenance.md", "License.txt",
+            "scripts/main.js" ].sort());
         // Every authored or generated resource file is packed, plus the two generated notices.
         const authored = (await readdir(path.join(firstSource, "resource_packs/bedform_canvas"),
             { recursive: true,
@@ -79,7 +86,7 @@ test("isolated builds pin identities, versions, notices and script configuration
             for (const entry of [ manifest.header, ...manifest.modules ])
             {
                 identities.push(entry.uuid);
-                assert.deepEqual(entry.version, [ 1, 0, 0 ]);
+                assert.deepEqual(entry.version, Version);
             }
 
             assert.deepEqual(Buffer.from(files["License.txt"]),
@@ -93,7 +100,7 @@ test("isolated builds pin identities, versions, notices and script configuration
             "5cb152c6-0965-4e0a-9870-0e0bebca1398", "850c8f8a-aa4c-4464-bc5e-0f14d1ba67dc" ]);
         const behavior = JSON.parse(Buffer.from(bp["manifest.json"]).toString());
         assert.deepEqual(behavior.dependencies, [ { uuid: identities[3],
-            version: [ 1, 0, 0 ] }, { module_name: "@minecraft/server",
+            version: Version }, { module_name: "@minecraft/server",
             version: "2.10.0" } ]);
         assert.equal(behavior.modules[1].entry, "scripts/main.js");
         assert.equal(behavior.modules[1].language, "javascript");
@@ -117,7 +124,7 @@ test("isolated builds pin identities, versions, notices and script configuration
         await import(`data:text/javascript;base64,${Buffer.from(linked).toString("base64")}`);
         assert.deepEqual(subscriptions.sort(), [ "die", "leave", "script" ]);
         assert.deepEqual(await readdir(path.join(firstSource, "behavior_packs/bedform_canvas")),
-            [ "manifest.json" ]);
+            [ "entities", "loot_tables", "manifest.json" ]);
         assert.deepEqual(await readdir(path.join(directory, "out-first")), [ "bedform-canvas.mcaddon" ]);
     }
     finally
@@ -194,7 +201,7 @@ test("invalid metadata, runtime and notice collisions preserve the last successf
             const manifest = JSON.parse(originalManifest.toString());
             if (change === "version")
             {
-                manifest.header.version = [ 1, 0, 1 ];
+                manifest.header.version = Version.map((value: number) => value + 1);
             }
 
             if (change === "uuid")

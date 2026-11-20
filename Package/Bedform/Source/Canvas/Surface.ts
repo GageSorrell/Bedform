@@ -46,6 +46,17 @@ export const ParticleVariable = Object.freeze({
 export const OrientedSuffix = "_oriented" as const;
 
 /**
+ * Suffix, after OrientedSuffix, of the depth-writing oriented variant of every Canvas surface
+ * particle. Plain oriented particles use the blended particles_blend material, which never writes
+ * depth, so overlapping layers draw in client order; depth variants use alpha-tested particles_alpha so
+ * layer offsets order them. Select them with Pose.DepthWrite.
+ *
+ * @category Constant
+ * @since 1.0.0
+ */
+export const DepthSuffix = "_depth" as const;
+
+/**
  * Canvas's plain tintable rectangle particle and its 16 by 16 white texture size.
  *
  * @category Constant
@@ -429,7 +440,9 @@ export function Flatten(root: Node, clip?: Box): Array<Placed>
 /**
  * Surface placement. Position is the world point of surface pixel Pivot (default 0, 0); Scale is
  * blocks per surface pixel. Fixed orientation supplies the surface's world right and up directions;
- * FaceViewer turns the whole surface toward each viewer's head, keeping world up.
+ * FaceViewer turns the whole surface toward each viewer's head, keeping world up. DepthWrite selects
+ * the depth-writing particle variants (see DepthSuffix): alpha-tested, so partial translucency is cut
+ * out, and their visible side awaits client qualification.
  *
  * @category Model
  * @since 1.0.0
@@ -442,6 +455,7 @@ export interface Pose
     readonly Orientation: "FaceViewer" | Readonly<{ Right: Readonly<Vector3>;
         Up: Readonly<Vector3> }>;
     readonly LayerDepth?: number;
+    readonly DepthWrite?: boolean;
 }
 
 /**
@@ -614,7 +628,7 @@ export function Project(placed: ReadonlyArray<Placed>, pose: Pose, basis: Basis)
                 [ParticleVariable.V]: sprite.UV.Y,
                 [ParticleVariable.Width]: sprite.UV.Width }),
             Location: location,
-            Particle: sprite.Particle + OrientedSuffix });
+            Particle: sprite.Particle + OrientedSuffix + (pose.DepthWrite === true ? DepthSuffix : "") });
     });
 }
 

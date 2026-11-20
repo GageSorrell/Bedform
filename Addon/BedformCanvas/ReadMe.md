@@ -1,6 +1,6 @@
 # Bedform Canvas
 
-Private workspace `bedform-canvas` 1.0.0 provides the independently buildable behavior
+Private workspace `bedform-canvas` provides the independently buildable behavior
 and resource pack scaffold for shared Bedform terminal/spatial display resources.
 Both manifests use format 2 and engine minimum 1.26.60. The behavior pack depends on
 the resource pack at the same version and `@minecraft/server` 2.10.0. Its data and
@@ -109,3 +109,9 @@ arrows' lower-right shadows, animation timing and archive reproducibility. The
 documents audiences, metrics, layers, budgets and failure cleanup. Server-side audiences
 are qualified natively by `.9`; two-client appearance, occlusion and text calibration
 remain `.10` acceptance work.
+
+## Widget resources
+
+The generated spatial widget catalogue, actor contract, provenance and qualification
+commands are documented in [Widgets](Documentation/Widgets.md). `npm run check` verifies
+their freshness together with all existing Canvas resources.

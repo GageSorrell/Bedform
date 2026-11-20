@@ -1,5 +1,5 @@
 /**
- * Strict-aware script add-on builds using official bundle and archive tasks.
+ * Spatial React script add-on builds with shared asset staging and official bundle/archive tasks.
  *
  * @module bedform/Build/Addon
  *
@@ -408,7 +408,8 @@ const typecheck = async (root: string, entries: ReadonlyArray<Script>, prepared:
     const Parsed = Ts.parseJsonConfigFileContent(Read.config ?? {}, Ts.sys, root, {
         noEmit: true,
         emitDeclarationOnly: false,
-        jsx: prepared.settings.strict ? Ts.JsxEmit.ReactJSXDev : Ts.JsxEmit.ReactJSX,
+        jsx: prepared.settings.typescript.jsx === "react-jsxdev" ?
+            Ts.JsxEmit.ReactJSXDev : Ts.JsxEmit.ReactJSX,
         jsxImportSource: prepared.settings.typescript.jsxImportSource
     }, File);
     const Diagnostics = [ ...(Read.error ? [ Read.error ] : []), ...Parsed.errors ];
@@ -624,6 +625,12 @@ export const buildAddon = async (prepared: PreparedBuild, options: AddonBuildOpt
     Log(`Staging add-on in ${Workspace}`);
     try
     {
+        const BundleConfig = Path.join(Workspace, "tsconfig.bundle.json");
+        const ProjectConfig = Path.join(Root, "tsconfig.json");
+        await Fs.writeFile(BundleConfig, JSON.stringify({
+            ...await exists(ProjectConfig) ? { extends: ProjectConfig } : {},
+            compilerOptions: prepared.settings.typescript
+        }));
         Signal?.throwIfAborted();
         const Stage = Path.join(Workspace, "source");
         const Common = await stageCommon(Workspace, Signal);
@@ -657,6 +664,7 @@ export const buildAddon = async (prepared: PreparedBuild, options: AddonBuildOpt
             // The official task has no define/JSX extension point. Resolve these in a complete
             // neutral prebundle, then pass its JS (with only native externals) to the official task.
             const Bundle = await build({ ...prepared.settings.bundle,
+                tsconfig: BundleConfig,
                 absWorkingDir: Root,
                 entryPoints: [ Script.entry ],
                 outfile: Compiled,

@@ -1,0 +1,21 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bedform_canvas:interaction_proxy",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bedform_canvas/widget/transparent"
+      },
+      "geometry": {
+        "default": "geometry.bedform_canvas.interaction_proxy"
+      },
+      "render_controllers": [
+        "controller.render.bedform_canvas.empty"
+      ],
+      "enable_attachables": false
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "format_version": "1.10.0",
+  "particle_effect": {
+    "components": {
+      "minecraft:emitter_lifetime_once": {
+        "active_time": 0.05
+      },
+      "minecraft:emitter_rate_instant": {
+        "num_particles": 1
+      },
+      "minecraft:emitter_shape_point": {
+        "offset": [
+          0,
+          0,
+          0
+        ]
+      },
+      "minecraft:particle_appearance_billboard": {
+        "facing_camera_mode": "direction_z",
+        "direction": {
+          "custom_direction": [
+            "variable.surface_direction.x",
+            "variable.surface_direction.y",
+            "variable.surface_direction.z"
+          ],
+          "mode": "custom"
+        },
+        "size": [
+          "variable.surface_size_x",
+          "variable.surface_size_y"
+        ],
+        "uv": {
+          "texture_height": 6,
+          "texture_width": 6,
+          "uv": [
+            "variable.surface_u",
+            "variable.surface_v"
+          ],
+          "uv_size": [
+            "variable.surface_uv_width",
+            "variable.surface_uv_height"
+          ]
+        }
+      },
+      "minecraft:particle_appearance_tinting": {
+        "color": [
+          "variable.color.r",
+          "variable.color.g",
+          "variable.color.b",
+          "variable.color.a"
+        ]
+      },
+      "minecraft:particle_initial_speed": 0,
+      "minecraft:particle_lifetime_expression": {
+        "max_lifetime": 0.1
+      },
+      "minecraft:particle_motion_parametric": {
+        "relative_position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": "variable.surface_roll"
+      }
+    },
+    "description": {
+      "basic_render_parameters": {
+        "material": "particles_alpha",
+        "texture": "textures/bedform_canvas/widget/slider_thumb"
+      },
+      "identifier": "bedform_canvas:widget_slider_thumb_oriented_depth"
+    }
+  }
+}

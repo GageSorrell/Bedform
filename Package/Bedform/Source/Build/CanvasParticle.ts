@@ -9,18 +9,61 @@
  * @license   MIT
  */
 
-import { LifetimeTicks, OrientedSuffix, ParticleVariable } from "../Canvas/Surface.js";
+import { DepthSuffix, LifetimeTicks, OrientedSuffix, ParticleVariable } from "../Canvas/Surface.js";
+
+/**
+ * One generated particle variant: whether it faces the Direction variable, whether it writes depth,
+ * and the suffix its file and identifier add to the base particle identifier.
+ *
+ * @category Model
+ * @since 1.0.0
+ */
+export interface ParticleVariant {
+    readonly Oriented: boolean;
+    readonly Depth: boolean;
+    readonly Suffix: string;
+}
+
+/**
+ * The variants generated for every Canvas particle: camera-facing, oriented (blended, no depth
+ * writes), and oriented depth-writing (alpha-tested particles_alpha) for layered surfaces.
+ *
+ * @category Constant
+ * @since 1.0.0
+ */
+export const ParticleVariants: ReadonlyArray<ParticleVariant> = Object.freeze([
+    Object.freeze({ Depth: false,
+        Oriented: false,
+        Suffix: "" }),
+    Object.freeze({ Depth: false,
+        Oriented: true,
+        Suffix: OrientedSuffix }),
+    Object.freeze({ Depth: true,
+        Oriented: true,
+        Suffix: OrientedSuffix + DepthSuffix })
+]);
 
 /**
  * Serializes one particle definition. Oriented variants face the Direction variable and roll about
- * it; camera-facing variants roll in screen space. Particles last LifetimeTicks (two ticks).
+ * it; camera-facing variants roll in screen space. Particles last LifetimeTicks (two ticks). The
+ * default particles_blend material blends but never writes depth, so overlapping particles draw in
+ * client order regardless of their depth offsets. Depth variants of oriented particles use
+ * particles_alpha instead: alpha-tested (no partial translucency), depth-writing and, unlike
+ * particles_blend, not explicitly double-sided.
+ *
+ * @throws { TypeError } If a depth variant is requested for a camera-facing particle.
  *
  * @category Serialization
  * @since 1.0.0
  */
 export function ParticleDefinition(identifier: string, texture: string, textureSize: number,
-    oriented: boolean, textureHeight: number = textureSize): string
+    oriented: boolean, textureHeight: number = textureSize, depth: boolean = false): string
 {
+    if (depth && !oriented)
+    {
+        throw new TypeError("Only oriented Canvas particles have depth-writing variants.");
+    }
+
     const billboard: Record<string, unknown> = {
         facing_camera_mode: oriented ? "direction_z" : "rotate_xyz",
         ...oriented ? { direction: { custom_direction: [ "x", "y", "z" ].map((axis: string) =>
@@ -48,9 +91,9 @@ export function ParticleDefinition(identifier: string, texture: string, textureS
                     rotation: ParticleVariable.Roll }
             },
             description: {
-                basic_render_parameters: { material: "particles_blend",
+                basic_render_parameters: { material: depth ? "particles_alpha" : "particles_blend",
                     texture },
-                identifier: identifier + (oriented ? OrientedSuffix : "")
+                identifier: identifier + (oriented ? OrientedSuffix : "") + (depth ? DepthSuffix : "")
             }
         } }, null, 2) + "\n";
 }

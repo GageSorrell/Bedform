@@ -306,6 +306,8 @@ const Results: Record<string, unknown> = { Passed: false,
     NativeAcceptance: false,
     ClientAcceptance: false,
     StartedAt: new Date().toISOString() };
+const TextOnly = process.argv.includes("--text-only");
+Results.Selection = TextOnly ? "CanvasIntentAndSpatialText" : "CanvasIntentWidgetsAndSpatialText";
 const ResultsFile = path.join(Root, "dist/native.results.json");
 try
 {
@@ -334,10 +336,11 @@ try
                 version: ServerModule }, canvasDependency ]);
     }
 
-    await Fixture(Pack.Driver, "Canvas Native Driver", await Bundle("Test/Native/Driver.mts"),
-        [ { module_name: "@minecraft/server",
-            version: ServerModule }, { module_name: "@minecraft/server-gametest",
-            version: GameTestModule } ]);
+    await Fixture(Pack.Driver, "Canvas Native Driver", await Bundle("Test/Native/Driver.mts",
+        { NativeTextOnly: JSON.stringify(TextOnly) }),
+    [ { module_name: "@minecraft/server",
+        version: ServerModule }, { module_name: "@minecraft/server-gametest",
+        version: GameTestModule } ]);
     const original = behavior["scripts/main.js"];
     const observed = Buffer.concat([ Buffer.from("import * as BedformNativeObserverServer from " +
         "\"@minecraft/server\";\n" + await Bundle("Test/Native/Observer.mts", {}, "iife") + ObserverSuffix),
@@ -416,7 +419,8 @@ try
         Phases: [ first, second, third ],
         FinishedAt: new Date().toISOString(),
         // Server-side native qualification only; real-client acceptance remains MineCraft-zcmm.10.
-        NativeAcceptance: true,
+        NativeAcceptance: !TextOnly,
+        SpatialTextAcceptance: true,
         Passed: true });
     await writeFile(ResultsFile, JSON.stringify(Results, null, 2) + "\n");
     console.log(`Canvas native qualification passed; see ${path.relative(process.cwd(), ResultsFile)}`);

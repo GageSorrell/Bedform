@@ -14,6 +14,7 @@
 /* eslint-disable @typescript-eslint/typedef, sort-keys */
 
 import * as Surface from "bedform/Canvas/Surface";
+import { ParticleDefinition, ParticleVariants } from "../Source/Build/CanvasParticle.js";
 import type { Vector3 } from "@minecraft/server";
 import assert from "node:assert/strict";
 import { build } from "esbuild";
@@ -286,6 +287,39 @@ test("fixed and viewer-facing poses project position, size, depth layers and rol
         z: 0 }, { x: 2,
         y: 0,
         z: 0 }), TypeError);
+});
+
+test("DepthWrite poses select depth-writing particle variants that the serializer generates", () =>
+{
+    const placed = Surface.Flatten(Surface.Fill({ X: 0,
+        Y: 0,
+        Width: 4,
+        Height: 4 }, undefined, { Layer: -3 }));
+    const basis = Surface.FixedBasis(Wall.Orientation === "FaceViewer" ? { x: 1,
+        y: 0,
+        z: 0 } : Wall.Orientation.Right, { x: 0,
+        y: 1,
+        z: 0 });
+    const [ blended ] = Surface.Project(placed, Wall, basis);
+    const [ depth ] = Surface.Project(placed, { ...Wall,
+        DepthWrite: true,
+        LayerDepth: 0.01 }, basis);
+    assert.equal(blended.Particle, Surface.Rectangle.Particle + Surface.OrientedSuffix);
+    assert.equal(depth.Particle, Surface.Rectangle.Particle + Surface.OrientedSuffix + Surface.DepthSuffix);
+    Near(depth.Location.z, -0.03);
+    assert.deepEqual(ParticleVariants.map((variant) => variant.Suffix),
+        [ "", Surface.OrientedSuffix, Surface.OrientedSuffix + Surface.DepthSuffix ]);
+    for (const variant of ParticleVariants)
+    {
+        const effect = JSON.parse(ParticleDefinition("test:image", "textures/test", 16, variant.Oriented, 32,
+            variant.Depth)).particle_effect;
+        assert.equal(effect.description.identifier, "test:image" + variant.Suffix);
+        assert.equal(effect.description.basic_render_parameters.material,
+            variant.Depth ? "particles_alpha" : "particles_blend");
+        assert.equal(effect.components["minecraft:particle_appearance_billboard"].uv.texture_height, 32);
+    }
+
+    assert.throws(() => ParticleDefinition("test:image", "textures/test", 16, false, 16, true), TypeError);
 });
 
 test("emission is private per viewer and skips invalid, foreign, distant and empty audiences", () =>

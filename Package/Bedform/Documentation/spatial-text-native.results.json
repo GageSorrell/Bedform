@@ -1,0 +1,77 @@
+{
+  "Passed": true,
+  "SpatialTextAcceptance": true,
+  "NativeAcceptance": false,
+  "ClientAcceptance": false,
+  "Selection": "CanvasIntentAndSpatialText",
+  "StartedAt": "2026-11-19T22:50:10.471Z",
+  "FinishedAt": "2026-11-19T22:51:22.913Z",
+  "Engine": {
+    "Version": "1.26.63.1",
+    "Build": "53340801",
+    "Sha256": "40829d7cbedefca14ed28122b7d9eb7284fc9595ef64d2d6b3f33a3be54bcc56",
+    "Source": "C:/MineCraft/Server"
+  },
+  "Archive": {
+    "Path": "dist/bedform-canvas.mcaddon",
+    "Sha256": "4f3cad3abc3fcad832799ec25d0b4f6b26cb024dc7b951cb4358ed4b73e178d9",
+    "InstalledFiles": 394,
+    "InstalledMatchesBuild": true,
+    "ObservedScriptSuffixMatches": true
+  },
+  "Modules": {
+    "Canvas": [
+      {
+        "module_name": "@minecraft/server",
+        "version": "2.10.0"
+      }
+    ],
+    "Consumers": {
+      "@minecraft/server": "2.10.0"
+    },
+    "Driver": {
+      "@minecraft/server": "2.10.0",
+      "@minecraft/server-gametest": "1.0.0-beta"
+    },
+    "Experiments": [
+      "gametest (Beta APIs)"
+    ]
+  },
+  "Runtime": "Addon/BedformCanvas/dist/bds-runtime",
+  "World": "canvas-native-aLgSP5",
+  "SpatialText": {
+    "Lines": 2,
+    "NativeAllocations": 14,
+    "Removed": 14,
+    "NativeSetText": 3,
+    "ArbitraryRGB": true,
+    "DefaultDarkGray": true,
+    "ExplicitAlpha": true,
+    "PrivateAudience": true,
+    "ByteWrapped": true,
+    "StaticResendTicks": 5,
+    "Clipping": "Partially clipped lines omitted; no native scissor",
+    "ClientAppearance": false
+  },
+  "Phases": [
+    {
+      "Name": "observed",
+      "ExitCode": 0,
+      "EngineWarnings": []
+    },
+    {
+      "Name": "restart",
+      "ExitCode": 0,
+      "EngineWarnings": []
+    },
+    {
+      "Name": "unmodified",
+      "ExitCode": 0,
+      "EngineWarnings": []
+    }
+  ],
+  "Limitations": [
+    "Server-side evidence only; physical-client appearance and pixel calibration remain unverified.",
+    "Text-only selection omits widget-actor checks; failures in the full matrix are tracked by Bedform-08p."
+  ]
+}
