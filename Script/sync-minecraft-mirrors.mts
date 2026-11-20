@@ -386,6 +386,12 @@ const stale: Array<string> = [];
 const mirrors = await resolveMirrors(channel);
 for (const mirror of mirrors)
 {
+    // Native forks must never be scaffolded or overwritten if the organization gains this name.
+    if (mirror.Directory === "Cinnabar")
+    {
+        fail("Package/Cinnabar is a native fork, not an @minecraft mirror.");
+    }
+
     const directory = path.join(Repository, "Package", mirror.Directory);
     const manifestFile = path.join(directory, "package.json");
     if (existsSync(manifestFile))
@@ -438,7 +444,8 @@ for (const parent of Workspaces)
     for (const entry of existsSync(root) ? readdirSync(root, { withFileTypes: true }) : [])
     {
         const manifestFile = path.join(root, entry.name, "package.json");
-        if (!entry.isDirectory() || !existsSync(manifestFile))
+        if (!entry.isDirectory() || (parent === "Package" && entry.name === "Cinnabar") ||
+            !existsSync(manifestFile))
         {
             continue;
         }

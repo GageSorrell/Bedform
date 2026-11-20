@@ -1,0 +1,365 @@
+//! Shared launcher popup wording and actions, independent of the renderer.
+
+use super::{
+    MenuAction, MenuDialog, MenuView,
+    settings_options::SettingsGroup,
+    settings_storage::StorageAction,
+    settings_support::{SupportAction, SupportDialog, SupportLink},
+};
+use std::sync::Arc;
+
+/// A two-button question and the actions each answer takes.
+pub struct Popup {
+    pub title: String,
+    pub body: String,
+    pub button1: String,
+    pub button2: String,
+    pub confirm: MenuAction,
+    pub dismiss: MenuAction,
+}
+
+/// The active language lookup supplied by presentation.
+type Translate<'a> = &'a dyn Fn(&str) -> Option<Arc<str>>;
+
+/// Looks up a label and uses its readable fallback when the language lacks it.
+fn translated(translate: Translate<'_>, key: &str, fallback: &str) -> String {
+    translate(key).map_or_else(|| fallback.to_owned(), |text| text.to_string())
+}
+
+/// Builds a launcher's question with its existing answer actions.
+pub fn dialog(view: &MenuView, dialog: MenuDialog, translate: Translate<'_>) -> Popup {
+    let (title, body, button1, button2, confirm) = match dialog {
+        MenuDialog::MinecraftImport => {
+            let snapshot = &view.minecraft_import;
+            let confirm = snapshot
+                .actions()
+                .first()
+                .copied()
+                .unwrap_or(crate::minecraft_import::Action::Close);
+            (
+                snapshot.title().into(),
+                snapshot.body().to_owned(),
+                snapshot.label(confirm).into(),
+                "Close".into(),
+                MenuAction::MinecraftImport(confirm),
+            )
+        }
+        MenuDialog::Accounts => (
+            "Accounts".into(),
+            String::new(),
+            "Close".into(),
+            "Close".into(),
+            MenuAction::DismissDialog,
+        ),
+        MenuDialog::Notice => (
+            crate::PRODUCT_NAME.into(),
+            view.message.clone().unwrap_or_default(),
+            translated(translate, "gui.ok", "OK"),
+            String::new(),
+            MenuAction::DismissDialog,
+        ),
+        MenuDialog::SettingsResetGroup(group) => {
+            return reset_group(group, translate);
+        }
+        MenuDialog::SettingsResetBindings(gamepad) => (
+            translated(
+                translate,
+                "controllerLayoutScreen.resetAllBindings",
+                "Reset to Default",
+            ),
+            translated(
+                translate,
+                "controllerLayoutScreen.confirmation.reset",
+                "Reset all bindings to their defaults?",
+            ),
+            translated(translate, "options.continue", "Continue"),
+            translated(translate, "controllerLayoutScreen.cancel", "Cancel"),
+            MenuAction::SettingsConfirmResetBindings(gamepad),
+        ),
+        MenuDialog::SettingsSupport(dialog) => {
+            return support(dialog, translate);
+        }
+        MenuDialog::StorageDelete | MenuDialog::StorageError => {
+            return storage(view, dialog, translate);
+        }
+        MenuDialog::Exit => (
+            translated(
+                translate,
+                "gui.warning.exitGameWarning",
+                "Do you want to exit Minecraft?",
+            ),
+            String::new(),
+            translated(translate, "gui.yes", "Yes"),
+            translated(translate, "gui.no", "No"),
+            MenuAction::ConfirmExit,
+        ),
+        MenuDialog::DeathQuit => (
+            translated(
+                translate,
+                "deathScreen.quit.confirmToMainMenuTitleWarning",
+                "Quit to Main Menu?",
+            ),
+            translated(
+                translate,
+                "deathScreen.quit.confirmToMainMenuWarning",
+                "Are you sure you want to exit the game to the main menu?",
+            ),
+            translated(translate, "globalPauseScreen.quit", "Quit"),
+            translated(translate, "gui.cancel", "Cancel"),
+            MenuAction::ConfirmDeathQuit,
+        ),
+        MenuDialog::RemoveShaderPack(index, revision) => (
+            "Remove shader pack?".into(),
+            format!(
+                "Remove {} from your shader packs? The imported copy and its saved shader settings will be deleted. The original file you imported is kept.",
+                view.shader_packs
+                    .get(usize::from(index))
+                    .filter(|_| revision == view.shader_packs_revision)
+                    .map_or("this pack", String::as_str)
+            ),
+            "Remove".into(),
+            translated(translate, "gui.cancel", "Cancel"),
+            MenuAction::ConfirmRemoveShaderPack(index, revision),
+        ),
+        MenuDialog::RemoveLicenseAccount => (
+            "Remove ownership account?".into(),
+            // Only builds with an account source show this, so the platform's store is the one to name.
+            match crate::ownership::LOCAL_STORE {
+                Some(crate::ownership::Store::Microsoft) => "Cinnabar uses this Microsoft account only to confirm that you own Minecraft. Without it, Cinnabar needs Minecraft installed from the Microsoft Store or the Xbox app, or a new sign-in, the next time it starts.",
+                Some(crate::ownership::Store::Android) => "Cinnabar uses this Microsoft account only to confirm that you own Minecraft. Without it, Cinnabar needs Minecraft installed from Google Play, or a new sign-in, the next time it starts.",
+                None => "Cinnabar uses this Microsoft account only to confirm that you own Minecraft. Without it, Cinnabar asks you to sign in again the next time it starts.",
+            }
+            .into(),
+            "Remove".into(),
+            translated(translate, "gui.cancel", "Cancel"),
+            MenuAction::ConfirmRemoveLicenseAccount,
+        ),
+        MenuDialog::LeaveRealm(id) => (
+            translated(translate, "playscreen.confirmLeaveTitle", "Confirm Leave"),
+            translated(
+                translate,
+                "playscreen.confirmLeaveMessage",
+                "Are you sure you want to leave Realm %1$s?",
+            )
+            .replace(
+                "%1$s",
+                super::joined_realm(&view.realms, id).map_or("", |realm| realm.name.as_str()),
+            ),
+            translated(translate, "accessibility.play.leaveRealm", "Leave Realm"),
+            translated(translate, "gui.cancel", "Cancel"),
+            MenuAction::ConfirmLeaveRealm(id),
+        ),
+        // The popup's title is one line, so the server names it and the body asks.
+        MenuDialog::RemoveSaved(index) => (
+            view.servers
+                .get(index)
+                .map(|server| server.name.clone())
+                .unwrap_or_default(),
+            translated(
+                translate,
+                "addExternalServerScreen.removeConfirmation",
+                "Are you sure you want to remove this server?",
+            ),
+            translated(
+                translate,
+                "addExternalServerScreen.removeButtonLabel",
+                "Remove",
+            ),
+            translated(translate, "gui.cancel", "Cancel"),
+            MenuAction::ConfirmRemoveSaved(index),
+        ),
+    };
+    Popup {
+        title,
+        body,
+        button1,
+        button2,
+        confirm,
+        dismiss: MenuAction::DismissDialog,
+    }
+}
+
+/// Builds the trust question in the active language.
+pub fn server_trust(url: &str, translate: Translate<'_>) -> Popup {
+    let message = translated(
+        translate,
+        "permissions.servertrust.message",
+        "You are connecting to %1$s for the first time. Only trust servers you recognize.",
+    );
+    Popup {
+        title: translated(
+            translate,
+            "permissions.servertrust.title",
+            "Trust this server?",
+        ),
+        body: message.replace("%1$s", url),
+        button1: translated(
+            translate,
+            "permissions.servertrust.button.trust",
+            "Trust and Join",
+        ),
+        button2: translated(
+            translate,
+            "permissions.servertrust.button.doNotTrust",
+            "Don't Trust",
+        ),
+        confirm: MenuAction::ServerTrust(true),
+        dismiss: MenuAction::ServerTrust(false),
+    }
+}
+
+/// Builds the host's answer to a friend's join request.
+pub fn join_request(name: &str, translate: Translate<'_>) -> Popup {
+    Popup {
+        title: crate::menu::join_requests::title(name),
+        body: String::new(),
+        button1: translated(translate, "gui.accept", "Accept"),
+        button2: translated(translate, "gui.decline", "Decline"),
+        confirm: MenuAction::JoinRequest(true),
+        dismiss: MenuAction::JoinRequest(false),
+    }
+}
+
+/// The native confirmation asks before applying any defaults.
+fn reset_group(group: SettingsGroup, translate: Translate<'_>) -> Popup {
+    let words = |key| translated(translate, key, key);
+    Popup {
+        title: words("options.resetSettings"),
+        body: words("options.resetSettings.popUp"),
+        button1: words("options.continue"),
+        button2: words("gui.cancel"),
+        confirm: MenuAction::SettingsConfirmResetGroup(group),
+        dismiss: MenuAction::DismissDialog,
+    }
+}
+
+/// Builds the bundled-font notice or the help-center question.
+fn support(dialog: SupportDialog, translate: Translate<'_>) -> Popup {
+    let words = |key| translated(translate, key, key);
+    let (title, body, button1, button2, confirm) = match dialog {
+        SupportDialog::Help => (
+            words("feedbackPopup.title"),
+            String::new(),
+            words("gui.feedbackYes"),
+            words("gui.no"),
+            MenuAction::SettingsSupport(SupportAction::Open(SupportLink::Help)),
+        ),
+        SupportDialog::FontLicense => (
+            words("options.font_license.name"),
+            crate::menu::settings_support::font_licenses(),
+            words("gui.close"),
+            words("gui.close"),
+            MenuAction::DismissDialog,
+        ),
+    };
+    Popup {
+        title,
+        body,
+        button1,
+        button2,
+        confirm,
+        dismiss: MenuAction::DismissDialog,
+    }
+}
+
+/// Uses the pinned delete prompt, or shows a concrete disk error without hiding failure.
+fn storage(view: &MenuView, dialog: crate::menu::MenuDialog, translate: Translate<'_>) -> Popup {
+    let words = |key, fallback| translated(translate, key, fallback);
+    let (title, body, button1, confirm) = if dialog == crate::menu::MenuDialog::StorageError {
+        (
+            words("menu.storageManagement", "Storage"),
+            view.storage.error.clone().unwrap_or_default(),
+            words("gui.ok", "OK"),
+            MenuAction::DismissDialog,
+        )
+    } else if view.storage.deleting_screenshots {
+        (
+            words(
+                "options.dev_deleteLocalScreenshots",
+                "Delete Local Screenshots",
+            ),
+            words(
+                "storageManager.delete.content.screenshots",
+                "Delete all local screenshots?",
+            ),
+            words("storageManager.delete.confirm", "Delete"),
+            MenuAction::SettingsStorage(StorageAction::ConfirmDelete),
+        )
+    } else {
+        (
+            "Delete downloaded server packs?".to_owned(),
+            format!(
+                "{}\n\nOnly these downloaded copies will be removed. Packs download again when a server needs them. Imported resource packs stay installed.",
+                view.storage.delete_summary
+            ),
+            words("storageManager.delete.confirm", "Delete"),
+            MenuAction::SettingsStorage(StorageAction::ConfirmDelete),
+        )
+    };
+    Popup {
+        title,
+        body,
+        button1,
+        button2: words("storageManager.delete.cancel", "Cancel"),
+        confirm,
+        dismiss: MenuAction::DismissDialog,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::menu::{MenuRealmCard, REALM_ADDRESS_PREFIX};
+
+    /// The join target of the Realm with this service id.
+    fn target(id: &str) -> String {
+        format!("{REALM_ADDRESS_PREFIX}{id}")
+    }
+
+    /// A Realm card with the given join target and membership.
+    fn realm(name: &str, target: &str, member: bool) -> MenuRealmCard {
+        serde_json::from_value(serde_json::json!({
+            "name": name, "state": "OPEN", "target": target, "member": member
+        }))
+        .unwrap()
+    }
+
+    #[test]
+    fn only_joined_realms_with_a_service_id_can_be_left() {
+        assert_eq!(realm("R", &target("7"), true).leave_id(), Some(7));
+        assert_eq!(realm("R", &target("7"), false).leave_id(), None);
+        for target in [
+            target("0"),
+            target("-1"),
+            target("x"),
+            "realm/7".into(),
+            String::new(),
+        ] {
+            assert_eq!(realm("R", &target, true).leave_id(), None, "{target}");
+        }
+    }
+
+    #[test]
+    fn removing_the_ownership_account_asks_first() {
+        let view = MenuView::new(true, "Steve".to_owned());
+        let popup = dialog(&view, MenuDialog::RemoveLicenseAccount, &|_| None);
+        assert_eq!(popup.confirm, MenuAction::ConfirmRemoveLicenseAccount);
+        assert_eq!(popup.dismiss, MenuAction::DismissDialog);
+    }
+
+    #[test]
+    fn leave_dialog_names_the_realm_by_id_and_confirms_that_id() {
+        let mut view = MenuView::new(true, "Steve".to_owned());
+        view.realms = vec![
+            realm("First", &target("3"), true),
+            realm("Second", &target("7"), true),
+        ]
+        .into();
+        let popup = dialog(&view, MenuDialog::LeaveRealm(7), &|_| None);
+        assert_eq!(popup.title, "Confirm Leave");
+        assert_eq!(popup.body, "Are you sure you want to leave Realm Second?");
+        assert_eq!(popup.button1, "Leave Realm");
+        assert_eq!(popup.confirm, MenuAction::ConfirmLeaveRealm(7));
+        assert_eq!(popup.dismiss, MenuAction::DismissDialog);
+    }
+}

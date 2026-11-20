@@ -1,0 +1,296 @@
+//! Installs session artwork and batches geometry shared by body and hand publication.
+use super::*;
+use crate::presentation::equipment::StagedSessionIcons;
+
+/// Rebuilds session artwork and item routes, or restores startup artwork after disconnect.
+pub(super) fn apply_session_pack(
+    scene: &mut ActorRenderScene,
+    resources: &crate::prepared_actor_artwork::PreparedSessionResources,
+    pack: Option<&assets::SessionEntityPack>,
+    session_icons: SessionIconInput<'_>,
+    geometry_ready: &mut SessionGeometryReady,
+    equipment: Option<&mut EquipmentRuntime>,
+    profiler: Option<&RuntimeStageProfiler>,
+) -> (
+    Option<render_model::ActorArtworkPages>,
+    Option<StagedSessionIcons>,
+    Vec<Option<render_model::ActorArtworkLocation>>,
+) {
+    let equipment_timer = profiler.map(|profiler| profiler.time(RuntimeStage::ActorEquipmentSetup));
+    let mut pages = resources.pages.clone();
+    // A pack without attachables still owns the bodies of the actors it rigs.
+    let layer = pack.map(|pack| {
+        (
+            Arc::clone(&pack.assets),
+            pack.equipment.clone(),
+            resources.locations.clone(),
+        )
+    });
+    if let Some(equipment) = equipment {
+        equipment.set_pack_layer(layer);
+        equipment.set_block_entity_artwork(resources.held_block_entities.as_ref());
+        equipment.set_block_items(resources.block_items.as_ref());
+    }
+    let mut icon_locations = Vec::new();
+    let session_icons = match session_icons {
+        SessionIconInput::Placed(placed) => {
+            pages = placed.pages.clone();
+            icon_locations = placed.locations.clone();
+            Some(placed.staged.clone())
+        }
+        SessionIconInput::Staged(staged) => {
+            if let Some(icons) = &staged {
+                let (extended, locations) = pages.with_equipment_rasters(icons.rasters());
+                pages = extended;
+                icon_locations = locations;
+            }
+            staged
+        }
+    };
+    drop(equipment_timer);
+    if !geometry_ready.entities || !geometry_ready.equipment {
+        apply_session_geometry(scene, resources, geometry_ready, profiler);
+    }
+    scene.configure_artwork(pages.clone());
+    scene.configure_authored_rasters(
+        pack.map_or_else(|| Arc::from([]), |pack| authored_rasters(&pack.assets)),
+    );
+    let effective = (pack.is_some()
+        || session_icons.is_some()
+        || resources.held_block_entities.is_some()
+        || resources.block_items.is_some())
+    .then_some(pages);
+    (effective, session_icons, icon_locations)
+}
+
+/// Session item icons a pack worker already placed, or icons the frame stages itself.
+pub(super) enum SessionIconInput<'a> {
+    Placed(&'a crate::prepared_actor_artwork::PlacedSessionIcons),
+    Staged(Option<StagedSessionIcons>),
+}
+
+/// Each accepted namespace can survive item/artwork refreshes independently.
+#[derive(Default)]
+pub(super) struct SessionGeometryReady {
+    pub(super) entities: bool,
+    pub(super) equipment: bool,
+}
+
+/// Retries rejected namespaces while retaining geometry that already published successfully.
+fn apply_session_geometry(
+    scene: &mut ActorRenderScene,
+    resources: &crate::prepared_actor_artwork::PreparedSessionResources,
+    ready: &mut SessionGeometryReady,
+    profiler: Option<&RuntimeStageProfiler>,
+) {
+    let geometry_timer = profiler.map(|profiler| profiler.time(RuntimeStage::ActorGeometrySetup));
+    let _span = bevy::log::info_span!(
+        "actor.session_geometry_commit",
+        entities = resources.entities.len(),
+        equipment = resources.equipment.len()
+    )
+    .entered();
+    let (entities, equipment) = match (ready.entities, ready.equipment) {
+        (false, false) => scene.replace_prepared_session_geometries(
+            resources.entities.clone(),
+            resources.equipment.clone(),
+        ),
+        (false, true) => (
+            scene.replace_pack_entity_geometries(resources.entities.clone()),
+            Ok(()),
+        ),
+        (true, false) => (
+            Ok(()),
+            scene.replace_pack_equipment(resources.equipment.clone()),
+        ),
+        (true, true) => return,
+    };
+    ready.entities = entities.is_ok();
+    ready.equipment = equipment.is_ok();
+    if let Err(error) = entities {
+        bevy::log::warn!(?error, "server pack entity geometry was not applied");
+    }
+    if let Err(error) = equipment {
+        bevy::log::warn!(?error, "server pack equipment geometry was not applied");
+    }
+    drop(geometry_timer);
+}
+
+/// Registers new skin models and item meshes in both rig catalogs with one rebuild each; if a
+/// batch is refused, each is tried alone so a rejected mesh only leaves that model undrawn.
+pub(super) fn register_geometries(
+    hand: &mut ActorRigFrameBuilder,
+    scene: &mut ActorRenderScene,
+    geometries: Vec<render_model::ActorRigGeometry>,
+    profiler: Option<&RuntimeStageProfiler>,
+) {
+    let _rig_build = profiler.map(|profiler| profiler.time(RuntimeStage::ActorRigBuild));
+    if geometries.is_empty() {
+        return;
+    }
+    if hand.insert_geometries(geometries.clone()).is_err() {
+        for geometry in geometries.iter().cloned() {
+            let _ = hand.insert_geometry(geometry);
+        }
+    }
+    if scene.insert_geometries(geometries.clone()).is_err() {
+        for geometry in geometries {
+            let _ = scene.insert_geometry(geometry);
+        }
+    }
+}
+
+impl HandRigBuilder {
+    /// Builds the first-person rig catalog from validated startup geometry.
+    pub fn from_runtime_assets(assets: &assets::RuntimeEntityAssets) -> anyhow::Result<Self> {
+        ActorRigFrameBuilder::from_runtime_assets(assets)
+            .map(Self)
+            .map_err(|error| {
+                anyhow::anyhow!("prepare validated first-person hand rig geometry: {error:?}")
+            })
+    }
+}
+
+/// The (instance word, raster state) pairs a pack's resolved entity materials draw with under
+/// every presentation variant, for the renderer to compile when the pack loads.
+fn authored_rasters(
+    assets: &assets::RuntimeEntityAssets,
+) -> Arc<[(u32, render_api::render_state::RenderState)]> {
+    render_rasters(assets.render_data())
+}
+
+/// Every raster a layer can draw with: its direct material and each resolved leaf of the
+/// Molang material selections, so a later choice never waits for its pipeline.
+fn render_rasters(
+    render: &assets::EntityRenderData,
+) -> Arc<[(u32, render_api::render_state::RenderState)]> {
+    let direct = render.layers.iter().map(|layer| {
+        (
+            layer.material,
+            layer.material_state,
+            layer.material_definition,
+        )
+    });
+    let selected = render
+        .material_selections
+        .iter()
+        .filter_map(|node| match node {
+            assets::EntityRenderMaterialSelection::Raster {
+                material,
+                state,
+                definition,
+                ..
+            } => Some((*material, *state, *definition)),
+            _ => None,
+        });
+    direct
+        .chain(selected)
+        .filter_map(|(kind, state, definition)| {
+            let raster = render.materials.get(definition? as usize)?.render_state();
+            Some((kind, state, raster))
+        })
+        .flat_map(|(kind, state, raster)| {
+            render_model::ActorMaterial {
+                kind,
+                state,
+                render_state: Some(raster),
+                ..Default::default()
+            }
+            .presentation_rasters()
+        })
+        .collect::<std::collections::BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+#[cfg(test)]
+mod authored_raster_tests {
+    #[test]
+    fn every_resolved_layer_material_is_published_for_both_combat_profiles() {
+        let Some(assets) =
+            actor_animation::test_support::installed_entity_assets("authored rasters")
+        else {
+            return;
+        };
+        let rasters = super::authored_rasters(&assets);
+        let render = assets.render_data();
+        for layer in render.layers.iter() {
+            let Some(index) = layer.material_definition else {
+                continue;
+            };
+            let raster = render.materials[index as usize].render_state();
+            let words = rasters
+                .iter()
+                .filter(|(_, published)| *published == raster)
+                .count();
+            assert!(words >= 2, "{layer:?}");
+        }
+        assert!(!rasters.is_empty());
+    }
+
+    #[test]
+    fn material_selection_leaves_are_published_without_a_direct_layer_material() {
+        use assets::entity::material::{EntityMaterialDefinition, EntityMaterialState};
+        let culled = EntityMaterialDefinition {
+            states: Box::new([EntityMaterialState::DisableCulling]),
+            ..Default::default()
+        };
+        let raster = culled.render_state();
+        assert_ne!(raster, EntityMaterialDefinition::default().render_state());
+        let render = assets::EntityRenderData {
+            materials: Box::new([EntityMaterialDefinition::default(), culled]),
+            material_selections: Box::new([assets::EntityRenderMaterialSelection::Raster {
+                material: assets::EntityRenderMaterial::Default,
+                state: None,
+                definition: Some(1),
+                masks: None,
+                uv_anim: true,
+            }]),
+            ..Default::default()
+        };
+        let rasters = super::render_rasters(&render);
+        let selected = render_model::ActorMaterial {
+            render_state: Some(raster),
+            ..Default::default()
+        };
+        for pair in selected.presentation_rasters() {
+            assert!(rasters.contains(&pair), "{pair:?}");
+        }
+    }
+
+    #[test]
+    fn a_dyed_alpha_tested_authored_layer_publishes_its_legacy_dye_variant() {
+        use assets::entity::material::{EntityMaterialDefinition, EntityMaterialState};
+        let culled = EntityMaterialDefinition {
+            states: Box::new([EntityMaterialState::InvertCulling]),
+            ..Default::default()
+        };
+        let raster = culled.render_state();
+        let state = assets::EntityRenderMaterialState {
+            alpha_test: true,
+            ..Default::default()
+        };
+        let render = assets::EntityRenderData {
+            materials: Box::new([culled]),
+            material_selections: Box::new([assets::EntityRenderMaterialSelection::Raster {
+                material: assets::EntityRenderMaterial::Default,
+                state: Some(state),
+                definition: Some(0),
+                masks: None,
+                uv_anim: true,
+            }]),
+            ..Default::default()
+        };
+        let dyed = render_model::ActorMaterial {
+            state: Some(state),
+            render_state: Some(raster),
+            color_mask: true,
+            glint: render_model::ActorGlint {
+                profile: render_api::CombatVisuals::Legacy112,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(super::render_rasters(&render).contains(&(dyed.gpu_word(), raster)));
+    }
+}

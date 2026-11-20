@@ -1,0 +1,362 @@
+//! Content-pinned parity correction for an omission in the downloaded vanilla samples.
+use std::collections::BTreeMap;
+
+use assets::EntityGeometryScalar;
+use sha2::{Digest, Sha256};
+
+use super::PendingGeometry;
+
+#[cfg(test)]
+#[path = "native_bind_pose/feline_tests.rs"]
+mod feline_tests;
+#[cfg(test)]
+#[path = "native_bind_pose/fox_tests.rs"]
+mod fox_tests;
+#[cfg(test)]
+#[path = "native_bind_pose/snow_golem_tests.rs"]
+mod snow_golem_tests;
+#[cfg(test)]
+#[path = "native_bind_pose/villager_tests.rs"]
+mod villager_tests;
+
+const POLAR_BEAR_PATH: &str = "models/entity/polar_bear.geo.json";
+const POLAR_BEAR_GEOMETRY: &str = "geometry.polarbear";
+const LLAMA_PATH: &str = "models/entity/llama.geo.json";
+const LLAMA_GEOMETRY: &str = "geometry.llama.v1.8";
+const FOX_PATH: &str = "models/entity/fox.geo.json";
+const FOX_GEOMETRY: &str = "geometry.fox";
+const CAT_PATH: &str = "models/entity/cat.geo.json";
+const CAT_GEOMETRY: &str = "geometry.cat";
+const OCELOT_PATH: &str = "models/entity/ocelot.geo.json";
+const OCELOT_GEOMETRY: &str = "geometry.ocelot.v1.8";
+const SNOW_GOLEM_PATH: &str = "models/entity/snow_golem.geo.json";
+const SNOW_GOLEM_GEOMETRY: &str = "geometry.snowgolem.v1.8";
+const VILLAGER_PATH: &str = "models/entity/villager_v2.geo.json";
+const VILLAGER_GEOMETRY: &str = "geometry.villager_v2";
+// Canonical pinned sample source, not a blanket default for similarly named custom models.
+const SAMPLE_SHA256: [u8; 32] = [
+    0x54, 0x11, 0xea, 0x78, 0xae, 0x01, 0xce, 0x1f, 0xa1, 0xbe, 0x30, 0xa5, 0x18, 0x59, 0xe5, 0x1e,
+    0x3b, 0xab, 0x38, 0xc4, 0x3c, 0x72, 0x02, 0xd8, 0x7d, 0xca, 0x85, 0x95, 0xe5, 0x42, 0xf4, 0xb0,
+];
+const LLAMA_SAMPLE_SHA256: [u8; 32] = [
+    0x0e, 0x8b, 0xa9, 0x21, 0x7f, 0x87, 0x7f, 0x37, 0xbd, 0x65, 0x86, 0xca, 0xd1, 0x5b, 0x07, 0x5d,
+    0xe3, 0x9d, 0xc0, 0x6e, 0xad, 0x94, 0x29, 0x75, 0x5c, 0x18, 0xe9, 0x55, 0x7d, 0xf1, 0x6d, 0x6b,
+];
+const FOX_SAMPLE_SHA256: [u8; 32] = [
+    0x55, 0xfb, 0x6b, 0x80, 0xe3, 0x10, 0x64, 0xb2, 0x3c, 0x2a, 0xa6, 0x0e, 0xf2, 0x82, 0xb2, 0xa3,
+    0x30, 0x70, 0xdd, 0xd7, 0xc2, 0xf5, 0x8f, 0x2d, 0xff, 0x68, 0x0e, 0x7e, 0x92, 0xaa, 0xaf, 0x57,
+];
+const CAT_SAMPLE_SHA256: [u8; 32] = [
+    0x87, 0xf9, 0x24, 0xf9, 0x93, 0x8b, 0xd0, 0x56, 0xed, 0x04, 0x1f, 0x0f, 0x4c, 0x7d, 0x32, 0x6c,
+    0xd7, 0x55, 0xc2, 0x6c, 0x59, 0xa3, 0xc1, 0x9f, 0x9b, 0x9e, 0x8c, 0x33, 0x86, 0x35, 0xee, 0xd9,
+];
+const OCELOT_SAMPLE_SHA256: [u8; 32] = [
+    0x4d, 0xc6, 0x52, 0xc9, 0xed, 0x62, 0x11, 0xb3, 0x8e, 0xd1, 0x61, 0x76, 0x1f, 0xc3, 0x88, 0xc2,
+    0xec, 0xee, 0x74, 0x6c, 0xe0, 0x7d, 0xee, 0x33, 0x5a, 0x4e, 0x11, 0x4f, 0xe5, 0x9e, 0x52, 0xda,
+];
+const SNOW_GOLEM_SAMPLE_SHA256: [u8; 32] = [
+    0x0d, 0x01, 0x46, 0xdd, 0x81, 0xf5, 0x5e, 0xeb, 0xfc, 0x67, 0xdf, 0x09, 0xe6, 0x98, 0x24, 0xd3,
+    0x45, 0xe8, 0x2b, 0x95, 0xfe, 0x84, 0xbb, 0x41, 0x9f, 0xce, 0xca, 0x6c, 0x6a, 0x23, 0x05, 0x0c,
+];
+const VILLAGER_SAMPLE_SHA256: [u8; 32] = [
+    0x33, 0x27, 0x1d, 0xb5, 0xb8, 0x7d, 0x3b, 0xe5, 0x65, 0x6f, 0xad, 0x93, 0xd0, 0x8f, 0x41, 0x75,
+    0xbc, 0xa9, 0xaf, 0xc1, 0x69, 0x2e, 0x91, 0x88, 0x54, 0x45, 0xb0, 0xc8, 0x56, 0xb4, 0x6d, 0xcb,
+];
+/// Cube names and the X/Y/Z bind rotation each keeps.
+type CubeBinds = &'static [(&'static str, [f32; 3])];
+// Repaired body cubes retain a +90-degree X bind independently of bone rotation.
+const NATIVE_BODY_BIND_ROTATION: [f32; 3] = [90.0, 0.0, 0.0];
+// Adult fox cubes retain these binds; baby geometry has its own defaults.
+// See docs/reference/fox-rendering.md.
+const FOX_BINDS: CubeBinds = &[
+    ("body", NATIVE_BODY_BIND_ROTATION),
+    ("tail", [80.0, 0.0, 0.0]),
+];
+const BODY_BINDS: CubeBinds = &[("body", NATIVE_BODY_BIND_ROTATION)];
+// The matching zombie-villager brim serializes this bind. Its use for the pinned
+// villager omission is provisional until the native villager default is verified.
+const VILLAGER_BINDS: CubeBinds = &[("brim", [-90.0, 0.0, 0.0])];
+// Adult cat and ocelot body and tail cubes lie along Z; the baby model has its own defaults.
+const FELINE_BINDS: CubeBinds = &[
+    ("body", NATIVE_BODY_BIND_ROTATION),
+    ("tail1", NATIVE_BODY_BIND_ROTATION),
+    ("tail2", NATIVE_BODY_BIND_ROTATION),
+];
+// Shipped 1.26.60.4 cube binds omitted by the pinned modern snow-golem sample.
+const SNOW_GOLEM_BINDS: CubeBinds = &[("arm1", [0.0, 0.0, 57.3]), ("arm2", [0.0, 180.0, -57.3])];
+// Sample path, geometry, source digest and the retained cube binds.
+const REPAIRS: &[(&str, &str, [u8; 32], CubeBinds)] = &[
+    (
+        POLAR_BEAR_PATH,
+        POLAR_BEAR_GEOMETRY,
+        SAMPLE_SHA256,
+        BODY_BINDS,
+    ),
+    (LLAMA_PATH, LLAMA_GEOMETRY, LLAMA_SAMPLE_SHA256, BODY_BINDS),
+    (FOX_PATH, FOX_GEOMETRY, FOX_SAMPLE_SHA256, FOX_BINDS),
+    (CAT_PATH, CAT_GEOMETRY, CAT_SAMPLE_SHA256, FELINE_BINDS),
+    (
+        OCELOT_PATH,
+        OCELOT_GEOMETRY,
+        OCELOT_SAMPLE_SHA256,
+        FELINE_BINDS,
+    ),
+    (
+        SNOW_GOLEM_PATH,
+        SNOW_GOLEM_GEOMETRY,
+        SNOW_GOLEM_SAMPLE_SHA256,
+        SNOW_GOLEM_BINDS,
+    ),
+    (
+        VILLAGER_PATH,
+        VILLAGER_GEOMETRY,
+        VILLAGER_SAMPLE_SHA256,
+        VILLAGER_BINDS,
+    ),
+];
+
+pub(super) fn restore_sample_defaults(
+    path: &str,
+    bytes: &[u8],
+    geometries: &mut BTreeMap<(Box<str>, Box<str>), PendingGeometry>,
+) {
+    let Some(&(_, geometry, expected, _)) = REPAIRS.iter().find(|(source, ..)| *source == path)
+    else {
+        return;
+    };
+    if <[u8; 32]>::from(Sha256::digest(bytes)) != expected {
+        return;
+    }
+    restore_verified_geometry(geometries, path, geometry);
+}
+
+fn restore_verified_geometry(
+    geometries: &mut BTreeMap<(Box<str>, Box<str>), PendingGeometry>,
+    path: &str,
+    identifier: &str,
+) {
+    let Some(&(.., binds)) = REPAIRS
+        .iter()
+        .find(|(source, geometry, ..)| *source == path && *geometry == identifier)
+    else {
+        return;
+    };
+    let Some(geometry) = geometries.get_mut(&(identifier.into(), path.into())) else {
+        return;
+    };
+    for (name, rotation) in binds {
+        if let Some(bone) = geometry
+            .bones
+            .iter_mut()
+            .find(|bone| bone.name.as_ref() == *name)
+            && bone.bind_pose_rotation.is_none()
+        {
+            bone.bind_pose_rotation = Some(rotation.map(|value| {
+                EntityGeometryScalar::new(value).expect("native bind-pose constants are finite")
+            }));
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assets::EntityGeometryBone;
+
+    fn fixture() -> BTreeMap<(Box<str>, Box<str>), PendingGeometry> {
+        let geometry = PendingGeometry {
+            visible_bounds: None,
+            animation_no_head_bob: None,
+            identifier: POLAR_BEAR_GEOMETRY.into(),
+            inherits: None,
+            source_path: POLAR_BEAR_PATH.into(),
+            texture_width: None,
+            texture_height: None,
+            bones: vec![EntityGeometryBone {
+                locators: Box::default(),
+                name: "body".into(),
+                parent: None,
+                pivot: None,
+                rotation: None,
+                bind_pose_rotation: None,
+                mirror: None,
+                inflate: None,
+                never_render: None,
+                reset: None,
+                binding: None,
+                texture_meshes: Box::new([]),
+                poly_mesh: None,
+                cubes: Box::new([]),
+            }]
+            .into(),
+        };
+        [(
+            (POLAR_BEAR_GEOMETRY.into(), POLAR_BEAR_PATH.into()),
+            geometry,
+        )]
+        .into()
+    }
+
+    #[test]
+    fn native_bind_pose_does_not_rewrite_a_similarly_named_custom_source() {
+        let mut geometries = fixture();
+        restore_sample_defaults(
+            POLAR_BEAR_PATH,
+            b"synthetic custom geometry",
+            &mut geometries,
+        );
+        assert!(
+            geometries.values().next().unwrap().bones[0]
+                .bind_pose_rotation
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn native_bind_pose_preserves_an_explicit_override_and_does_not_rotate_bones() {
+        let mut geometries = fixture();
+        restore_verified_geometry(&mut geometries, POLAR_BEAR_PATH, POLAR_BEAR_GEOMETRY);
+        let body = &mut geometries.values_mut().next().unwrap().bones[0];
+        assert_eq!(
+            body.bind_pose_rotation.unwrap().map(|v| v.get()),
+            NATIVE_BODY_BIND_ROTATION
+        );
+        assert!(body.rotation.is_none());
+        body.bind_pose_rotation = Some([EntityGeometryScalar::ZERO; 3]);
+        restore_verified_geometry(&mut geometries, POLAR_BEAR_PATH, POLAR_BEAR_GEOMETRY);
+        assert_eq!(
+            geometries.values().next().unwrap().bones[0].bind_pose_rotation,
+            Some([EntityGeometryScalar::ZERO; 3])
+        );
+    }
+
+    #[test]
+    fn downloaded_native_bind_pose_repair_is_content_pinned() {
+        let Some(path) =
+            std::env::var_os("CINNABAR_VANILLA_POLAR_BEAR_SOURCE").map(std::path::PathBuf::from)
+        else {
+            eprintln!("skipping missing fixture: CINNABAR_VANILLA_POLAR_BEAR_SOURCE is not set");
+            return;
+        };
+        if !path.exists() {
+            eprintln!(
+                "skipping missing fixture: CINNABAR_VANILLA_POLAR_BEAR_SOURCE at {}",
+                path.display()
+            );
+            return;
+        }
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(<[u8; 32]>::from(Sha256::digest(&bytes)), SAMPLE_SHA256);
+        let mut geometries = BTreeMap::new();
+        super::super::geometry::parse_geometry(
+            POLAR_BEAR_PATH,
+            &path,
+            &serde_json::from_slice(&bytes).unwrap(),
+            &mut BTreeMap::new(),
+            &mut geometries,
+        )
+        .unwrap();
+        assert!(
+            geometries
+                .values()
+                .next()
+                .unwrap()
+                .bones
+                .iter()
+                .find(|bone| bone.name.as_ref() == "body")
+                .unwrap()
+                .bind_pose_rotation
+                .is_none()
+        );
+        let mut changed = bytes.clone();
+        changed.push(b'\n');
+        restore_sample_defaults(POLAR_BEAR_PATH, &changed, &mut geometries);
+        assert!(
+            geometries
+                .values()
+                .next()
+                .unwrap()
+                .bones
+                .iter()
+                .find(|bone| bone.name.as_ref() == "body")
+                .unwrap()
+                .bind_pose_rotation
+                .is_none()
+        );
+        restore_sample_defaults(POLAR_BEAR_PATH, &bytes, &mut geometries);
+        let body = geometries
+            .values()
+            .next()
+            .unwrap()
+            .bones
+            .iter()
+            .find(|bone| bone.name.as_ref() == "body")
+            .unwrap();
+        assert_eq!(
+            body.bind_pose_rotation.unwrap().map(|v| v.get()),
+            NATIVE_BODY_BIND_ROTATION
+        );
+    }
+
+    #[test]
+    fn downloaded_llama_retains_the_inherited_native_body_bind_only_for_the_pinned_source() {
+        let Some(root) = std::env::var_os("CINNABAR_VANILLA_ROOT").map(std::path::PathBuf::from)
+        else {
+            eprintln!("skipping missing fixture: CINNABAR_VANILLA_ROOT is not set");
+            return;
+        };
+        if !root.exists() {
+            eprintln!(
+                "skipping missing fixture: CINNABAR_VANILLA_ROOT at {}",
+                root.display()
+            );
+            return;
+        }
+        let path = root.join(LLAMA_PATH);
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(
+            <[u8; 32]>::from(Sha256::digest(&bytes)),
+            LLAMA_SAMPLE_SHA256
+        );
+        let mut geometries = BTreeMap::new();
+        super::super::geometry::parse_geometry(
+            LLAMA_PATH,
+            &path,
+            &serde_json::from_slice(&bytes).unwrap(),
+            &mut BTreeMap::new(),
+            &mut geometries,
+        )
+        .unwrap();
+        let before = geometries.clone();
+        let mut custom = bytes.clone();
+        custom.push(b'\n');
+        restore_sample_defaults(LLAMA_PATH, &custom, &mut geometries);
+        assert!(
+            geometries
+                .values()
+                .next()
+                .unwrap()
+                .bones
+                .iter()
+                .all(|bone| bone.bind_pose_rotation.is_none())
+        );
+        restore_sample_defaults(LLAMA_PATH, &bytes, &mut geometries);
+        for (key, old) in before {
+            let repaired = &geometries[&key];
+            assert_eq!(old.bones.len(), repaired.bones.len());
+            for (old, new) in old.bones.iter().zip(repaired.bones.iter()) {
+                let mut expected = old.clone();
+                if old.name.as_ref() == "body" {
+                    expected.bind_pose_rotation = Some(
+                        NATIVE_BODY_BIND_ROTATION
+                            .map(|value| EntityGeometryScalar::new(value).unwrap()),
+                    );
+                }
+                assert_eq!(
+                    &expected, new,
+                    "all other defaults and child pivots stay authored"
+                );
+            }
+        }
+    }
+}

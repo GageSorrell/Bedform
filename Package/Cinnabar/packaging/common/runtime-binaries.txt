@@ -1,0 +1,5 @@
+cinnabar cinnabar CLIENT
+cinnabar-updater update-installer UPDATER
+bedrock-core - CORE
+cinnabar-cxb cinnabar-cxb CXB
+shaderpack-worker shaderpack-worker SHADERPACK_WORKER

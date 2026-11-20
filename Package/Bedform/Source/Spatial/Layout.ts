@@ -12,6 +12,7 @@
 import * as Measurement from "./Measurement.js";
 import type * as Types from "./ComponentTypes.js";
 import { CheckProps, CheckText, ChildContext, PoseOf, TextStyleOf } from "./Internal/ComponentRules.js";
+import { Depths, Defaults as SurfaceDefaults } from "../Canvas/Surface.js";
 import type { Context } from "./Internal/ComponentRules.js";
 import { Kind } from "./Internal/ComponentKind.js";
 import type { Node } from "./Internal/Surface.js";
@@ -95,6 +96,8 @@ export interface TextLayout {
 /**
  * One committed visual box, shared by surface rendering and analytic targeting.
  * Clip is absent outside ScrollView; an empty clip is explicitly zero-sized.
+ * Depth is its resolved world offset along the View's local positive Z axis. Backends use this
+ * offset with Project rather than multiplying Layer by LayerDepth, preserving HitTest paint order.
  *
  * @category Model
  * @since 1.0.0
@@ -108,6 +111,7 @@ export interface Item extends Policy {
     readonly Content: Box;
     readonly Clip?: Box;
     readonly Layer: number;
+    readonly Depth: number;
     readonly Order: number;
     readonly Hidden: boolean;
     readonly Props: Readonly<Record<string, unknown>>;
@@ -681,6 +685,7 @@ export function Compute(nodes: ReadonlyArray<Node>, revision: number = 0): Resul
             Bounds: bounds,
             Clip: clip,
             Content: content,
+            Depth: 0,
             Hidden: nodeHidden,
             Id: plan.Node.Id,
             Layer: nodeLayer,
@@ -811,13 +816,24 @@ export function Compute(nodes: ReadonlyArray<Node>, revision: number = 0): Resul
                     ...visible.map((box: Box) => box.Y + box.Height)
                 );
                 const dimension = node.Props.Dimension as string | Types.Dimension;
+                const layerDepth = (node.Props.LayerDepth as number) ?? SurfaceDefaults.LayerDepth;
+                const painted = items.slice(before).filter((item: Item) => !item.Hidden);
+                const depths = Depths(painted.map((item: Item) => ({
+                    Bounds: item.Clip ? Intersect(item.Bounds, item.Clip) : item.Bounds,
+                    Layer: item.Layer
+                })), layerDepth);
+                painted.forEach((item: Item, index: number): void =>
+                {
+                    items[item.Order] = Object.freeze({ ...item,
+                        Depth: depths[index]! });
+                });
                 views.push(
                     Object.freeze({
                         Bounds: bounds,
                         Dimension: typeof dimension === "string" ? dimension : dimension.id,
                         Extent: Rect(minX, minY, maxX - minX, maxY - minY),
                         Id: node.Id,
-                        LayerDepth: (node.Props.LayerDepth as number) ?? 0.002,
+                        LayerDepth: layerDepth,
                         PixelsPerBlock: (node.Props.PixelsPerBlock as number) ?? 16,
                         Transform: PoseOf(node.Props.Transform as Types.Pose | undefined)
                     })

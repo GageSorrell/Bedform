@@ -1,0 +1,64 @@
+# Monorepo setup
+
+Private `monorepo-setup@1.0.0` provides the Effect 4.0.5 CLI foundation for Windows 11 x64 setup of the local Cinnabar fork.
+
+Effect, the Node platform, and its shared adapter are pinned together at `4.0.5` so clean dependency resolution cannot introduce an incompatible newer Effect peer.
+
+From the repository root, use Node 24.19.0 and npm >=12.0.2:
+
+```powershell
+npm install
+npm run setup -- --help
+npm run setup -- --version
+npm run setup -- --directory "D:\Tools\Cinnabar"
+npm run setup -- --update
+```
+
+Root `npm install`/`npm ci` runs setup through `postinstall`, explicitly compiling the CLI first even on a clean checkout. This can enter the consented setup workflow; required consent without a terminal fails clearly. Workspace `prepare` only compiles. Importing modules and requesting help/version never run setup, elevate, build native binaries, or start capture. The root command retains npm's original `INIT_CWD` for invocation-relative paths, including `npm --prefix` calls from another directory. Direct Node invocations use their current working directory. After source edits, run `npm run build --workspace monorepo-setup`.
+
+Source is always `Package/Cinnabar` in the checkout owning the CLI. A missing local fork or missing configuration produces an actionable error before any installation. `--directory` selects the executable installation directory only; its default is `C:\Program Files\Bedform\Cinnabar`. Relative overrides resolve against the original invocation directory. Ordinary reruns first check whether setup is already complete and current, then request incremental work if necessary. `--update` bypasses that shortcut and requests forced rebuilding/reinstallation of the **current local source**, preserving developer edits; neither mode fetches, pulls, switches branches, updates submodules, resets, stashes, cleans, or clones a replacement.
+
+Verified already-current setup emits exactly `☑ Setup is already complete and current.` and exits before prompts or setup mutations. The symbol is green when color is supported and resets immediately before the single separating space. `NO_COLOR`, `NODE_DISABLE_COLORS`, `FORCE_COLOR=0`, and terminal capability control color without changing the character or spacing. No other setup-owned logs appear on this path. Missing/stale/corrupt/partial/unverified setup, a successful first installation/repair, and forced `--update` never emit that line.
+
+Core setup is selected by default. Independent selections are:
+
+| Flag | Selection |
+| --- | --- |
+| `--no-core` | Skip core build/install for independently selected provisioning/tool stages. |
+| `--bds-directory <path>` | Provision an explicitly selected stopped BDS. No server is selected implicitly. |
+| `--mcp-config <file>` | Register the installed MCP executable in an explicitly selected configuration. |
+| `--blender` | Offer optional Blender/Mcblend setup. |
+| `--blockbench` | Offer optional Blockbench setup. |
+
+Optional-stage decline/failure emits a diagnostic and preserves required setup success. Consent defaults to No; a required decision without an interactive terminal fails clearly. Setup does not change global PATH or enable look-back/capture.
+
+This foundation does **not yet perform a complete installation**. Machine-changing adapters fail explicitly until their owning Beads components are implemented: permissions/UAC (`xa5.2`), prerequisites (`xa5.3`), build/install (`xa5.4`), BDS/MCP (`xa5.7`), and creative tools (`xa5.8`/`xa5.9`). Consequently root postinstall currently fails with the missing-source or pending-component diagnostic. Help/version work now. No native installation or renderer acceptance is claimed.
+
+## Component contracts
+
+`Source/Contract.ts` is the shared boundary. Changes to these contracts and the root manifests/lockfile should have one integration owner. Implement lane-specific adapters in separate modules and wire their layers in `Source/index.ts` when ready.
+
+| Service/model | Responsibility |
+| --- | --- |
+| `Options`, `Paths`, `Account`, `Request` | Selected stages, forced rebuild flag, absolute checkout/source/install/CLI/Node/original-cwd locations, account and tool environment. Preserve the entire request through UAC. |
+| `Probes` | Read-only platform/source preflight before machine changes. The prerequisite lane extends detailed local manifest/toolchain validation. |
+| `Currency`, `Verification` | Read-only inspection supplying complete receipts and freshly measured SHA-256 evidence. Source/build inputs include developer edits; pins include dependency/toolchain/compatibility manifests; bundle checks include independent required-file enumeration, ownership, every owned file and provenance. Selected BDS/MCP targets and configuration must match. Recorded optional declines/unavailability remain nonblocking. The default inspector returns no evidence until the build/install and provisioning lanes implement inspection; it never trusts an unverified marker. |
+| `Reporting` | Sole already-current success line after proof validation. No banners or progress on this path. |
+| `Permissions` | Destination access, original-account checks and consented single elevation handoff. Return a refreshed environment or the waited child exit code. A relaunch result ends parent orchestration. |
+| `Prerequisites` | Usable-tool discovery, consented installers, rechecks and refreshed child environment. |
+| `Consent` | Effect `Prompt.Confirm`, default No, explicit noninteractive/cancellation diagnostics. |
+| `Processes` | Effect `ChildProcess`/spawner, executable plus argument array, explicit cwd/environment, live streams, no shell, exit code. Component owners interpret installer/reboot/build statuses. |
+| `BuildInstall` | Incremental/forced local builds and verified transactional bundle installation. |
+| `Provisioning` | Independent BDS and MCP operations with explicit absolute destinations. |
+| `CreativeTools` | Independent Blender/Mcblend and Blockbench operations. |
+
+Adapters capture their Effect dependencies when constructing layers, keeping service methods' error channel as `Error`. Original account identity/home remain unchanged when child environments refresh. `Request.elevated` is reserved for the permissions lane's validated internal handoff; it is never accepted as a public approval flag. That lane owns serialized payload validation, loop prevention and result propagation. No elevation implementation ships in this foundation.
+
+`Test/Fixture.mts` supplies reusable in-memory services, currency evidence/checks, recorded requests/events/commands/prompts/logs, queued consent answers (default No), and queued process exit codes. Override individual services with `Effect.provideService` to exercise a component without changing the machine.
+
+```powershell
+npm run verify --workspace monorepo-setup
+npm run typecheck:tools
+```
+
+The host tests establish component orchestration, parsing, path resolution and import/help/version safety. Actual UAC, prerequisite installation, native builds and installed-bundle acceptance remain separate isolated Windows gates.

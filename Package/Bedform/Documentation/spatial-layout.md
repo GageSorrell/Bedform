@@ -34,9 +34,14 @@ provides the future leaf contract.
 
 Each `View` defines a dimension and rigid quaternion transform. Local X points
 right and Y points down. `PixelsPerBlock` defaults to 16 and `LayerDepth` to
-0.002 world blocks. Finite nonzero quaternions are normalized; no yaw-only
+0.01 world blocks. Finite nonzero quaternions are normalized; no yaw-only
 restriction applies. `Project` and `Unproject` use the committed pose. Callers
-can use an item's `Layer * view.LayerDepth` as its projection depth.
+must use an item's resolved `Depth` as its projection depth. The shared Canvas
+depth policy orders boxes by `Layer` then tree paint order and separates overlapping
+boxes by at least `LayerDepth` along local positive Z. Disjoint boxes retain their
+layer plane; hidden and clipped-away boxes do not push visible boxes forward.
+`LayerDepth` must be positive and finite. `Unproject` preserves the same local
+hit coordinates after the normal offset, and `HitTest` keeps the same paint order.
 
 `Width`/`Height` accept nonnegative pixels or `"auto"` (also the omitted default).
 Content sizes include padding; minima constrain both explicit and natural sizes.

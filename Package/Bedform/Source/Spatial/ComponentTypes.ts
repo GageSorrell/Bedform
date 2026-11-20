@@ -134,6 +134,7 @@ export interface Activation {
 
 /**
  * Reactive box layout and ancestor policy inputs. Auto sizes use content; flex growth never shrinks.
+ * Higher Layer values paint in front; overlapping equal-layer boxes paint in tree order.
  *
  * @category Model
  * @since 1.0.0
@@ -173,6 +174,7 @@ export interface ContainerProps extends BoxProps {
 
 /**
  * One world-space widget: dimension, rigid pose and local X-right/Y-down pixels.
+ * LayerDepth is a positive minimum separation in blocks for overlapping paint entries, default 0.01.
  *
  * @category Model
  * @since 1.0.0

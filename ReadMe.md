@@ -20,6 +20,8 @@ Each `@bedform/<name>` mirror's version is the version of `@minecraft/<name>` th
 
 Use Node 24.19.0, then run `npm install` at the repository root. See [`CLAUDE.md`](CLAUDE.md) for the conventions, build and test commands, and the release process.
 
+Root installation runs the local Cinnabar setup CLI through `postinstall`. Use `npm run setup -- --help` for options; see [setup commands and component status](Script/Setup/README.md).
+
 ## License
 
 See [`License.md`](License.md). Packages are MIT-licensed unless their own license file says otherwise.

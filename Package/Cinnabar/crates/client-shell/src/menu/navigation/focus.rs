@@ -1,0 +1,207 @@
+//! Focus retained by the screen history and restored only on a return request.
+
+use client_ui::ui_runtime::presentation::UiPresentationRuntime;
+use {
+    super::{
+        super::{
+            MenuRuntime,
+            focus::{play_tab, same_control},
+        },
+        regions::FocusRegions,
+    },
+    launcher::menu::{MenuAction, MenuScreen},
+};
+
+#[derive(Debug, Default)]
+pub(in crate::menu) struct NavigationFocus {
+    retained: Vec<(MenuScreen, MenuAction)>,
+    pending: bool,
+    requested_action: Option<MenuAction>,
+    /// The last painted focus order of each screen that follows one.
+    painted: Vec<(MenuScreen, Vec<MenuAction>)>,
+    pub(in crate::menu) regions: FocusRegions,
+}
+
+impl NavigationFocus {
+    /// The painted focus order of `screen` once that screen has been drawn,
+    /// including an empty one; `None` until then or for another screen.
+    pub(in crate::menu) fn painted_actions(&self, screen: MenuScreen) -> Option<&[MenuAction]> {
+        self.painted
+            .iter()
+            .find_map(|(painted, actions)| (*painted == screen).then_some(actions.as_slice()))
+    }
+
+    /// Newer explicit input updates the outstanding request before its validation.
+    pub(in crate::menu) fn record_input(&mut self, action: Option<MenuAction>) {
+        if self.pending {
+            self.requested_action = action;
+        }
+    }
+
+    /// A fresh screen keeps its normal entry policy until explicitly returned to.
+    pub(super) fn enter(&mut self) {
+        self.pending = false;
+        self.requested_action = None;
+    }
+}
+
+impl MenuRuntime {
+    /// Reads popup ownership from borrowed runtime state without copying catalogs or feeds.
+    pub(in crate::menu) fn navigation_popup_open(&self) -> bool {
+        #[cfg(feature = "developer-control")]
+        if self.sign_in_fixture.is_some() {
+            return self.dialog.is_some();
+        }
+        if self.dialog.is_some()
+            || self.dressing_room.editor.is_some()
+            || (self.is_connecting() && self.feeds.server_trust.is_some())
+            || self.join_request_pending()
+        {
+            return true;
+        }
+        if self.presentation_accounts || !self.sign_in_prompt_layer_available() {
+            return false;
+        }
+        let auth = self.current_auth();
+        auth.as_ref().awaiting_browser()
+            || (self.sign_in_requested
+                && matches!(
+                    auth.as_ref(),
+                    super::super::AuthState::Checking | super::super::AuthState::Failed(_)
+                ))
+    }
+
+    /// Retains base-screen focus without treating modal controls as screen controls.
+    pub(super) fn remember_navigation_focus(&mut self) {
+        if self.navigation_popup_open() {
+            return;
+        }
+        if let Some(action) = self.focus_actions().get(self.focused).copied() {
+            self.navigation_focus
+                .retained
+                .retain(|(screen, _)| *screen != self.screen);
+            self.navigation_focus.retained.push((self.screen, action));
+        }
+    }
+
+    /// Requests restoration after a history return; pointer outline admission stays untouched.
+    pub(super) fn restore_navigation_focus(&mut self) {
+        self.navigation_focus
+            .retained
+            .retain(|(screen, _)| self.history.screens().contains(screen));
+        self.navigation_focus.pending = true;
+        self.navigation_focus.requested_action = self.retained_navigation_action();
+        if let Some(action) = self.retained_navigation_action() {
+            self.focus_pointer(action);
+        }
+    }
+
+    /// Finds the retained action for the current screen, never one from a popped screen.
+    fn retained_navigation_action(&self) -> Option<MenuAction> {
+        self.navigation_focus
+            .retained
+            .iter()
+            .find_map(|(screen, action)| (*screen == self.screen).then_some(*action))
+    }
+
+    /// Consumes focus data only after the matching screen and popup context have been painted.
+    pub(in crate::menu) fn refresh_presented_focus(
+        &mut self,
+        presentation: &UiPresentationRuntime,
+    ) {
+        let Some((screen, drawn_popup)) = presentation.drawn_menu_context() else {
+            return;
+        };
+        if screen != self.screen {
+            return;
+        }
+        let popup = self.navigation_popup_open();
+        if popup {
+            self.navigation_focus.pending = false;
+        }
+        if drawn_popup != popup {
+            return;
+        }
+        self.refresh_settings_focus(presentation.visible_menu_actions());
+        let (targets, landmarks) = presentation.settings_focus_geometry();
+        self.refresh_settings_focus_geometry(targets, landmarks);
+        let painted_order = self.uses_painted_focus() && !popup;
+        if !painted_order && !popup {
+            self.navigation_focus.regions.clear();
+        }
+        if !self.navigation_focus.pending && !painted_order {
+            return;
+        }
+        let visible: Vec<_> = presentation.visible_menu_actions().collect();
+        if painted_order {
+            let screen = self.screen;
+            let previous = self.focus_actions().get(self.focused).copied();
+            // Reuse the screen's last order to avoid a fresh allocation every frame.
+            let mut painted = self
+                .navigation_focus
+                .painted
+                .iter()
+                .position(|(painted, _)| *painted == screen)
+                .map(|index| self.navigation_focus.painted.swap_remove(index).1)
+                .unwrap_or_default();
+            painted.clear();
+            for action in visible.iter().copied() {
+                if !painted
+                    .iter()
+                    .any(|candidate| same_control(*candidate, action))
+                {
+                    painted.push(action);
+                }
+            }
+            self.focused = previous
+                .and_then(|action| {
+                    painted
+                        .iter()
+                        .position(|candidate| same_control(*candidate, action))
+                })
+                .unwrap_or(0);
+            self.navigation_focus.painted.push((screen, painted));
+            if play_tab(screen) {
+                self.navigation_focus
+                    .regions
+                    .update(screen, targets, landmarks, |point| {
+                        presentation.menu_scroll_extent(point)
+                    });
+            } else {
+                self.navigation_focus.regions.clear();
+            }
+        }
+        if !self.navigation_focus.pending {
+            return;
+        }
+        self.navigation_focus.pending = false;
+        let actions = self.focus_actions();
+        let available = |action: MenuAction| {
+            visible
+                .iter()
+                .any(|candidate| same_control(*candidate, action))
+        };
+        let restored = self
+            .navigation_focus
+            .requested_action
+            .take()
+            .filter(|action| available(*action));
+        let fallback = actions.iter().copied().find(|action| available(*action));
+        if let Some(action) = restored.or(fallback) {
+            self.focus_pointer(action);
+        } else {
+            // No enabled control can take focus until a later presentation publishes one.
+            self.focused = actions.len();
+        }
+    }
+
+    /// Whether keyboard focus uses the controls and order published by the screen.
+    /// The local-world forms opened from the Worlds tab keep their own order.
+    pub(in crate::menu) fn uses_painted_focus(&self) -> bool {
+        match self.screen {
+            MenuScreen::Home => true,
+            MenuScreen::Play => self.local_focus_actions().is_none(),
+            screen => play_tab(screen),
+        }
+    }
+}

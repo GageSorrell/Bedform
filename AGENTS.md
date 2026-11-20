@@ -243,7 +243,8 @@ Before writing code that places, measures or styles `TextPrimitive` text (Bedfor
 ## Repository layout
 
 - `Package/Bedform` is `bedform`, the framework and CLI. `Package/Effect` is `@bedform/effect`, the self-contained Effect port that every Bedform package builds on.
-- Every other directory directly under `Package/` is a `@bedform/<name>` mirror of an `@minecraft/<name>` npm package. A mirror re-exports its first-party counterpart, and Bedform's extensions to that module live in the mirror. For example, `@bedform/server` exports everything from `@minecraft/server`, with Bedform's extended `world` and `InputButton` shadowing the native ones.
+- `Package/Cinnabar` is the vendored Cinnabar Rust/Go native client fork, not an npm mirror. Its source, licenses, build conventions and checked compatibility manifest live together there. Native outputs, downloaded game assets, authentication data and captures stay untracked; native support requires the exact loader/SDK compatibility gate to pass.
+- Every other directory directly under `Package/` (except `Deprecated/`) is a `@bedform/<name>` mirror of an `@minecraft/<name>` npm package. A mirror re-exports its first-party counterpart, and Bedform's extensions to that module live in the mirror. For example, `@bedform/server` exports everything from `@minecraft/server`, with Bedform's extended `world` and `InputButton` shadowing the native ones.
 - `Addon/BedformCommon` and `Addon/BedformCanvas` are the packs that `bedform` ships as `Asset/*.mcaddon`. Their builders and `Package/Bedform` import each other through relative paths, so keep `Package/Bedform` and `Addon/Bedform*` side by side. The other add-ons are demonstrations and probes of Bedform features.
 - `Package/Deprecated/*` and `Script/Deprecated/*` are kept for reference and for existing consumers, such as the MineCraft monorepo's install pipeline, which uses the published `bedrock-server-manager`. Do not build new features on them.
 

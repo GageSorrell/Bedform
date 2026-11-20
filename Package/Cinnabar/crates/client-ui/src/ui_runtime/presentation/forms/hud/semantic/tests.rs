@@ -1,0 +1,1062 @@
+//! Semantic equivalence and construction bounds without installed game assets.
+
+use super::*;
+use crate::ui_runtime::presentation::retained_hud::{
+    PresentedScoreboardCache, ScoreboardOwnerNameAuthority,
+};
+use json_ui::{HudBindings, hud_data_source};
+use ui::{BoundedStat, ChatMessage, ChatMessageKind};
+
+struct Fixture {
+    player: player_state::PlayerState,
+    runtime: UiRuntime,
+    frame: HudFrame,
+    settings: SettingsOptions,
+    catalog: Arc<Catalog>,
+    scoreboard: PresentedScoreboardCache,
+    names: ScoreboardOwnerNameAuthority,
+    hide_sidebar: bool,
+    hide_effects: bool,
+    hide_position: bool,
+    bindings: HudBindings,
+}
+
+impl Default for Fixture {
+    /// Makes a survival HUD with no local carrier or external resources.
+    fn default() -> Self {
+        let mut player = player_state::PlayerState::new(1);
+        player
+            .facts
+            .publish_player_game_mode(protocol::PlayerGameMode::Survival);
+        player.inventory.set_local_selected_slot(0);
+        Self {
+            player,
+            runtime: UiRuntime::new(1),
+            frame: HudFrame::default(),
+            settings: SettingsOptions::default(),
+            catalog: Arc::new(Catalog::default()),
+            scoreboard: Default::default(),
+            names: Default::default(),
+            hide_sidebar: false,
+            hide_effects: false,
+            hide_position: false,
+            bindings: Default::default(),
+        }
+    }
+}
+
+impl Fixture {
+    /// Checks the retained model, icon references and bindings against the uncached projection.
+    fn check(&mut self, cache: &mut SemanticHud) -> HudChanges {
+        let key = (
+            self.runtime.scoreboards().revision(),
+            self.names.revision(),
+            self.hide_sidebar,
+        );
+        let sidebar = self
+            .scoreboard
+            .refresh(self.runtime.scoreboards(), &self.names)
+            .filter(|_| !self.hide_sidebar);
+        let changes = cache.refresh(
+            &self.player,
+            &self.runtime,
+            &self.frame,
+            sidebar,
+            key,
+            &self.settings,
+            self.hide_effects,
+            self.hide_position,
+            &self.catalog,
+        );
+        let mut icons = Vec::new();
+        let mut expected = super::super::reference::hud_model(
+            &self.player,
+            &self.runtime,
+            &self.frame,
+            sidebar.map(super::super::reference::sidebar_model),
+            &mut icons,
+            &self.settings,
+        );
+        if self.hide_effects {
+            expected.effects_visible = false;
+        }
+        if self.hide_position {
+            expected.player_position = None;
+        }
+        ui_screens::settings_chat::apply_hud(&self.settings, &mut expected);
+        assert_eq!(cache.model, expected);
+        assert_eq!(cache.icons, icons);
+        assert_eq!(
+            *self.bindings.update(&cache.model, changes),
+            hud_data_source(&expected)
+        );
+        changes
+    }
+
+    /// Appends an independently identified local chat row, including future timestamps.
+    fn chat(&mut self, text: &str, received_millis: u64) {
+        self.runtime.session.chat.push_local(ChatMessage {
+            fifo_sequence: 0,
+            received_millis,
+            kind: ChatMessageKind::System,
+            source: None,
+            message: Arc::from(text),
+            parameters: Arc::from([]),
+        });
+    }
+}
+
+/// A captured stack whose count, icon and durability can change independently.
+fn stack(count: u16) -> protocol::NetworkItemStack {
+    protocol::NetworkItemStack {
+        network_id: 1,
+        metadata: 0,
+        stack_network_id: 1,
+        count,
+        nbt_digest: [0; 32],
+        block_runtime_id: 0,
+        extra_data: Arc::from([]),
+    }
+}
+
+#[test]
+fn idle_and_live_paint_inputs_do_not_reconstruct_semantic_components() {
+    let mut fixture = Fixture::default();
+    fixture.chat("§kMoving glyphs", 0);
+    fixture.frame.hotbar_stacks[0] = Some(stack(4));
+    fixture.frame.hotbar_icons[0] = Some(IconRef {
+        color_mask: None,
+        page: 2,
+        uv: [0, 0, 16, 16],
+        glint: false,
+    });
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_title(Arc::from("Title"), 1, 0);
+    let mut cache = SemanticHud::default();
+    assert_eq!(fixture.check(&mut cache), HudChanges::ALL);
+    let before = cache.constructions;
+    let initial_paint = crate::ui_runtime::presentation::hud_layout::capture_hud_paint(
+        &fixture.player,
+        &fixture.runtime,
+        &fixture.frame,
+        None,
+        &fixture.settings,
+    );
+    let text = cache.model.chat[0].text.as_ptr();
+    let hotbar = cache.model.hotbar.as_ptr();
+    let icons = cache.icons.as_ptr();
+    for now in [1, 100, 300] {
+        fixture.frame.now_millis = now;
+        fixture.frame.hotbar_cooldowns[0] = now as f32 / 500.0;
+        fixture.frame.attack_indicator_charge = Some(0.5);
+        fixture.frame.mount_jump = Some(0.4);
+        fixture.runtime.session.hud.set_stats(
+            BoundedStat::new(3, 20),
+            BoundedStat::new(2, 20),
+            None,
+            None,
+        );
+        assert_eq!(fixture.check(&mut cache), HudChanges::default());
+        assert_eq!(cache.constructions, before);
+        assert_eq!(cache.model.chat[0].text.as_ptr(), text);
+        assert_eq!(cache.model.hotbar.as_ptr(), hotbar);
+        assert_eq!(cache.icons.as_ptr(), icons);
+        assert_eq!(cache.model.title.as_ref().unwrap().born, 0.0);
+        let paint = crate::ui_runtime::presentation::hud_layout::capture_hud_paint(
+            &fixture.player,
+            &fixture.runtime,
+            &fixture.frame,
+            None,
+            &fixture.settings,
+        );
+        assert_ne!(paint, initial_paint);
+        assert_eq!(paint.hearts.current, 3);
+        assert_eq!(paint.hotbar_cooldowns, fixture.frame.hotbar_cooldowns);
+    }
+}
+
+#[test]
+fn hotbar_corrections_and_artwork_keep_icons_and_other_components_independent() {
+    let mut fixture = Fixture::default();
+    fixture.chat("Retained", 0);
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    let chat = cache.model.chat[0].text.as_ptr();
+    for (slot, count, page, durability) in [
+        (0, 64, 2, Some(0.8)),
+        (1, 2, 3, None),
+        (0, 1, 4, Some(0.2)),
+        (1, 0, 5, None),
+    ] {
+        fixture.frame.hotbar_stacks[slot] = (count != 0).then(|| stack(count));
+        fixture.frame.hotbar_icons[slot] = Some(IconRef {
+            color_mask: None,
+            page,
+            uv: [0, 0, 16, 16],
+            glint: false,
+        });
+        fixture.frame.hotbar_durability[slot] = durability;
+        fixture.player.inventory.set_local_selected_slot(slot as u8);
+        let changes = fixture.check(&mut cache);
+        assert!(changes.hotbar);
+        assert!(!changes.chat && !changes.sidebar && !changes.boss_bars);
+        assert_eq!(cache.model.chat[0].text.as_ptr(), chat);
+    }
+    fixture.frame.hotbar_cooldowns[0] = 0.1;
+    assert_eq!(fixture.check(&mut cache), HudChanges::default());
+}
+
+#[test]
+fn popups_use_item_text_without_replacing_actionbar_or_reviving_old_names() {
+    let mut fixture = Fixture::default();
+    fixture
+        .runtime
+        .observe_selected_item_identity_value(Some((0, 1, 0)), 50);
+    fixture.frame.selected_item_name = Some(Arc::from("Item"));
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_actionbar(Arc::from("Action"), 1, 100);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_popup(Arc::from("Popup"), 2, 100);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_jukebox_popup(Arc::from("Jukebox"), 3, 100);
+    fixture.frame.now_millis = 125;
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.actionbar.as_ref().unwrap().text, "Action");
+    assert_eq!(cache.model.popup.as_ref().unwrap().text, "\nPopup");
+    assert!(cache.model.item_name.is_none(), "the popup takes the field");
+    assert_eq!(
+        cache.model.jukebox_popup.as_ref().unwrap().text,
+        "Jukebox\n"
+    );
+
+    fixture
+        .runtime
+        .observe_selected_item_identity_value(Some((1, 2, 0)), 150);
+    fixture.frame.selected_item_name = Some(Arc::from("New item"));
+    fixture.frame.now_millis = 150;
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.item_name.as_ref().unwrap().text, "New item");
+    assert!(cache.model.popup.is_none());
+    fixture.frame.now_millis = 2_500;
+    fixture.check(&mut cache);
+    assert!(
+        cache.model.item_name.is_none() && cache.model.popup.is_none(),
+        "the superseded popup cannot return"
+    );
+    assert_eq!(cache.model.actionbar.as_ref().unwrap().text, "Action");
+}
+
+#[test]
+fn superseded_popups_stay_dismissed_after_selecting_an_empty_slot() {
+    let mut fixture = Fixture::default();
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_popup(Arc::from("Old popup"), 1, 100);
+    fixture.frame.now_millis = 100;
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    assert!(cache.model.popup.is_some());
+
+    fixture
+        .runtime
+        .observe_selected_item_identity_value(Some((0, 1, 0)), 150);
+    fixture.frame.selected_item_name = Some(Arc::from("Item"));
+    fixture.frame.now_millis = 150;
+    fixture.check(&mut cache);
+    assert!(cache.model.popup.is_none());
+    assert_eq!(cache.model.item_name.as_ref().unwrap().text, "Item");
+
+    fixture
+        .runtime
+        .observe_selected_item_identity_value(None, 200);
+    fixture.frame.selected_item_name = None;
+    for now in [200, 250] {
+        fixture.frame.now_millis = now;
+        fixture.check(&mut cache);
+        assert!(cache.model.popup.is_none());
+        assert!(cache.model.item_name.is_none());
+    }
+
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_popup(Arc::from("New popup"), 2, 300);
+    fixture.frame.now_millis = 300;
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.popup.as_ref().unwrap().text, "\nNew popup");
+}
+
+#[test]
+fn popups_preserve_formatted_text_up_to_the_hud_text_budget() {
+    let mut fixture = Fixture::default();
+    let line = "§aStatus 世界\n";
+    let payload_bytes = protocol::MAX_UI_TEXT_BYTES - "\n".len();
+    let mut text = line.repeat(payload_bytes / line.len());
+    text.push_str(&"x".repeat(payload_bytes - text.len()));
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_popup(Arc::from(text.as_str()), 1, 100);
+    fixture.frame.now_millis = 100;
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    let popup = cache.model.popup.as_ref().unwrap();
+    assert_eq!(popup.text, format!("\n{text}"));
+    assert_eq!(popup.text.len(), protocol::MAX_UI_TEXT_BYTES);
+}
+
+#[test]
+fn spectators_receive_the_action_bar_but_no_popups() {
+    let mut fixture = Fixture::default();
+    fixture
+        .player
+        .facts
+        .publish_player_game_mode(protocol::PlayerGameMode::Spectator);
+    let hud = &mut fixture.runtime.session.hud;
+    hud.set_actionbar(Arc::from("Action"), 1, 100);
+    hud.set_popup(Arc::from("Popup"), 2, 100);
+    hud.set_jukebox_popup(Arc::from("Jukebox"), 3, 100);
+    fixture.frame.now_millis = 125;
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.actionbar.as_ref().unwrap().text, "Action");
+    assert!(cache.model.popup.is_none());
+    assert!(cache.model.jukebox_popup.is_none());
+}
+
+#[test]
+fn actionbar_controller_input_outlives_default_animation_until_explicit_clear() {
+    let mut fixture = Fixture::default();
+    let mut cache = SemanticHud::default();
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_actionbar(Arc::from("Persistent status"), 1, 100);
+    fixture.frame.now_millis = 100;
+    fixture.check(&mut cache);
+    fixture.runtime.session.hud.expire(30_000);
+    fixture.frame.now_millis = 30_000;
+    fixture.check(&mut cache);
+    assert!(
+        fixture.runtime.hud().actionbar().is_none(),
+        "the default timed view expired"
+    );
+    assert_eq!(
+        cache.model.actionbar.as_ref().unwrap().text,
+        "Persistent status",
+        "an unanimated server control retains the request"
+    );
+    fixture.runtime.session.hud.clear_titles();
+    fixture.check(&mut cache);
+    assert!(cache.model.actionbar.is_none());
+}
+
+#[test]
+fn actionbar_requests_reset_stateful_server_labels_after_default_expiry() {
+    let mut fixture = Fixture::default();
+    Arc::make_mut(&mut fixture.catalog).overlay_text(
+        "ui/server_hud.json",
+        r##"{"namespace":"hud",
+        "hud_screen":{"type":"panel","size":["100%","100%"],"factory":{
+            "name":"hud_actionbar_text_factory","control_ids":{"hud_actionbar_text":"hud.message"}
+        }},
+        "message":{"type":"label","size":[180,12],"text":"#text",
+            "property_bag":{"#text":"$actionbar_text"},"bindings":[
+                {"binding_name":"#text","binding_condition":"once"}
+            ]}
+        }"##,
+    );
+    let catalog = Arc::clone(&fixture.catalog);
+    let context = json_ui::Context::desktop();
+    let root = Arc::new(
+        json_ui::resolve(&catalog, "hud.hud_screen", &context)
+            .control
+            .unwrap(),
+    );
+    let mut cache = SemanticHud::default();
+    let mut state = json_ui::BindState::new();
+    let mut resolve_cache = json_ui::ResolveCache::default();
+    let mut render = |fixture: &mut Fixture, state: &mut json_ui::BindState| {
+        fixture.check(&mut cache);
+        let bound = json_ui::bind_incremental(
+            &root,
+            &fixture.bindings.update(&cache.model, HudChanges::default()),
+            &json_ui::CachedLibrary {
+                library: json_ui::CatalogLibrary {
+                    catalog: &catalog,
+                    context: &context,
+                },
+                cache: &mut resolve_cache,
+            },
+            state,
+        );
+        let frame = json_ui::render_bound(
+            bound,
+            [480.0, 270.0],
+            &json_ui::LayoutEnv {
+                text: &ui_screens::test_support::FixedText,
+                textures: &ui_screens::test_support::NoTextures,
+            },
+            &json_ui::ViewState::default(),
+        );
+        frame
+            .nodes
+            .iter()
+            .filter_map(|node| match &node.draw {
+                json_ui::Draw::Text { text, .. } => Some((node.key.clone(), text.clone())),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+    };
+    for (request, now, expected) in [
+        (Some((1, "First", 100)), 100, "First"),
+        (None, 30_000, "First"),
+        (Some((2, "Second", 30_000)), 30_000, "Second"),
+        (Some((3, "Third", 30_000)), 30_000, "Third"),
+    ] {
+        if let Some((sequence, text, started)) = request {
+            fixture
+                .runtime
+                .session
+                .hud
+                .set_actionbar(Arc::from(text), sequence, started);
+        }
+        fixture.frame.now_millis = now;
+        fixture.runtime.session.hud.expire(now);
+        if request.is_none() {
+            assert!(fixture.runtime.hud().actionbar().is_none());
+        }
+        let labels = render(&mut fixture, &mut state);
+        assert_eq!(labels.len(), 1);
+        assert_eq!(labels[0].1, expected);
+    }
+    let key = render(&mut fixture, &mut state)[0].0.clone();
+    state.publish(&key, "#text", json_ui::Scalar::Text("Retained".into()));
+    assert_eq!(render(&mut fixture, &mut state)[0].1, "Retained");
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_actionbar(Arc::from("Third"), 4, 30_000);
+    assert_eq!(render(&mut fixture, &mut state)[0].1, "Third");
+}
+
+#[test]
+fn creative_hides_hud_durability_bars_until_the_mode_changes_back() {
+    let mut fixture = Fixture::default();
+    fixture.frame.hotbar_stacks[0] = Some(stack(1));
+    fixture.frame.hotbar_durability[0] = Some(0.6);
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.hotbar[0].durability, Some(f64::from(0.6f32)));
+    fixture
+        .player
+        .facts
+        .publish_player_game_mode(protocol::PlayerGameMode::Creative);
+    assert!(fixture.check(&mut cache).hotbar);
+    assert_eq!(cache.model.hotbar[0].durability, None);
+    assert_eq!(cache.model.hotbar[0].count, 1);
+    fixture
+        .player
+        .facts
+        .publish_player_game_mode(protocol::PlayerGameMode::Survival);
+    assert!(fixture.check(&mut cache).hotbar);
+    assert_eq!(cache.model.hotbar[0].durability, Some(f64::from(0.6f32)));
+}
+
+#[test]
+fn timed_text_preserves_requests_and_reacts_to_expiry_and_time_jumps() {
+    let mut fixture = Fixture::default();
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_durations(ui::TitleDurations {
+            fade_in_ticks: 2,
+            stay_ticks: 2,
+            fade_out_ticks: 2,
+        });
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_title(Arc::from("Same"), 1, 100);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_subtitle(Arc::from("Sub"), 2, 50);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_actionbar(Arc::from("Action"), 3, 100);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_tip(Arc::from("Tip"), 4, 100);
+    fixture
+        .runtime
+        .observe_selected_item_identity_value(Some((0, 1, 0)), 100);
+    fixture.frame.selected_item_name = Some(Arc::from("Item"));
+    let mut cache = SemanticHud::default();
+    for now in [100, 200, 349, 350, 400, 2_100, 150] {
+        fixture.frame.now_millis = now;
+        fixture.check(&mut cache);
+    }
+    assert_eq!(cache.model.title.as_ref().unwrap().creation_id, 1);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_durations(ui::TitleDurations {
+            fade_in_ticks: 1,
+            stay_ticks: 8,
+            fade_out_ticks: 1,
+        });
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_title(Arc::from("Same"), 5, 150);
+    assert!(fixture.check(&mut cache).text);
+    let title = cache.model.title.as_ref().unwrap();
+    assert_eq!((title.creation_id, title.born, title.stay), (5, 0.15, 0.4));
+    fixture.frame.now_millis = 650;
+    fixture.check(&mut cache);
+    assert!(cache.model.title.is_none());
+}
+
+#[test]
+fn chat_membership_tracks_future_timestamps_settings_and_both_clock_directions() {
+    let mut fixture = Fixture::default();
+    fixture.chat("Past", 0);
+    fixture.chat("Future", 1_000);
+    let mut cache = SemanticHud::default();
+    fixture.frame.now_millis = 100;
+    fixture.check(&mut cache);
+    let text = cache.model.chat[1].text.as_ptr();
+    for now in [101, 1_000, 1_001] {
+        fixture.frame.now_millis = now;
+        fixture.check(&mut cache);
+        assert_eq!(cache.model.chat[1].text.as_ptr(), text);
+    }
+    for now in [100_000, 100] {
+        fixture.frame.now_millis = now;
+        fixture.check(&mut cache);
+    }
+    assert_eq!(cache.model.chat[1].born, 0.1);
+    fixture.settings.set(SettingId::HideChat.index(), 1);
+    assert!(fixture.check(&mut cache).chat);
+    assert!(cache.model.chat.is_empty());
+    fixture.settings.set(SettingId::HideChat.index(), 0);
+    fixture.settings.set(SettingId::ChatColor.index(), 2);
+    assert!(fixture.check(&mut cache).chat);
+    fixture.settings.set(SettingId::ChatFontSize.index(), 15);
+    fixture.settings.set(SettingId::ChatLineSpacing.index(), 2);
+    assert!(fixture.check(&mut cache).chat);
+    assert_eq!(
+        cache.model.chat_text,
+        ui_screens::settings_chat::chat_text(&fixture.settings)
+    );
+    assert_ne!(cache.model.chat_text, json_ui::ChatText::default());
+    fixture.runtime.session.chat_focused = true;
+    fixture.check(&mut cache);
+    assert!(!cache.model.chat_visible);
+    fixture.runtime.session.chat_focused = false;
+    fixture.runtime.session.inventory_open = true;
+    fixture.check(&mut cache);
+    assert!(!cache.model.chat_visible);
+    fixture.runtime.session.inventory_open = false;
+    fixture.check(&mut cache);
+    assert!(cache.model.chat_visible);
+    fixture.runtime.session.chat.clear();
+    fixture.chat("Replacement", 0);
+    fixture.check(&mut cache);
+    assert!(cache.model.chat[0].text.ends_with("Replacement"));
+}
+
+#[test]
+fn world_text_language_and_visibility_invalidate_without_touching_hotbar() {
+    let mut fixture = Fixture::default();
+    fixture.runtime.apply_hud_rules(protocol::HudRules {
+        show_coordinates: Some(true),
+        show_days_played: Some(true),
+    });
+    fixture.frame.player_block = Some([1, 64, -3]);
+    fixture.frame.world_time = Some(f64::from(world::TICKS_PER_DAY) * 2.0);
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    fixture.frame.world_time = Some(f64::from(world::TICKS_PER_DAY) * 2.5);
+    assert_eq!(fixture.check(&mut cache), HudChanges::default());
+    fixture.frame.player_block = Some([2, 64, -3]);
+    let changes = fixture.check(&mut cache);
+    assert!(changes.world_text && !changes.hotbar);
+    let bytes = assets::encode_lang_catalog(
+        [1; 32],
+        [2; 32],
+        &[assets::LangEntry {
+            key: "map.position".into(),
+            value: "At %s / %s / %s".into(),
+        }],
+    )
+    .unwrap();
+    fixture.runtime.set_lang_catalog(Arc::new(
+        assets::RuntimeLangCatalog::decode(&bytes).unwrap(),
+    ));
+    assert!(fixture.check(&mut cache).world_text);
+    assert_eq!(
+        cache.model.player_position.as_deref(),
+        Some("At 2 / 64 / -3")
+    );
+    assert!(cache.position_shown());
+    fixture.hide_position = true;
+    let changes = fixture.check(&mut cache);
+    assert!(changes.world_text && !changes.hotbar);
+    assert!(cache.model.player_position.is_none());
+    assert!(
+        cache.position_shown(),
+        "hiding keeps vanilla's own visibility"
+    );
+    assert!(cache.model.days_played.is_some());
+    fixture.hide_position = false;
+    assert!(fixture.check(&mut cache).world_text);
+    assert!(cache.model.player_position.is_some());
+    fixture.runtime.session.last_known_local_player_alive = Some(false);
+    fixture.check(&mut cache);
+    assert!(cache.model.player_position.is_none());
+    assert!(!cache.position_shown());
+    fixture
+        .player
+        .facts
+        .publish_player_game_mode(protocol::PlayerGameMode::Spectator);
+    fixture.check(&mut cache);
+    assert!(cache.model.spectator && !cache.model.hotbar_visible);
+    fixture.catalog = Arc::new(Catalog::default());
+    assert_eq!(fixture.check(&mut cache), HudChanges::ALL);
+    fixture.runtime.begin_session(2);
+    fixture.player.begin_session(2);
+    assert_eq!(fixture.check(&mut cache), HudChanges::ALL);
+}
+
+#[test]
+fn sidebar_owner_names_and_boss_changes_rebuild_only_their_components() {
+    let mut fixture = Fixture::default();
+    fixture
+        .runtime
+        .session
+        .scoreboards
+        .apply(
+            1,
+            ui::ScoreboardEvent::DisplayObjective {
+                display_slot: Arc::from("sidebar"),
+                objective_name: Arc::from("objective"),
+                display_name: Arc::from("Score"),
+                criteria_name: Arc::from("dummy"),
+                sort_order: 1,
+            },
+        )
+        .unwrap();
+    fixture
+        .runtime
+        .session
+        .scoreboards
+        .apply(
+            2,
+            ui::ScoreboardEvent::Scores {
+                entries: vec![ui::ScoreEntry {
+                    action: ui::ScoreAction::Change,
+                    scoreboard_id: 3,
+                    objective_name: Arc::from("objective"),
+                    score: 8,
+                    owner: ui::ScoreOwner::Player(17),
+                }]
+                .into(),
+            },
+        )
+        .unwrap();
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    fixture.names.replace([(17, Arc::from("Player"))]);
+    assert_eq!(
+        fixture.check(&mut cache),
+        HudChanges {
+            sidebar: true,
+            ..Default::default()
+        }
+    );
+    assert_eq!(
+        cache.model.sidebar.as_ref().unwrap().rows[0],
+        ("Player".into(), "8".into())
+    );
+    fixture.hide_sidebar = true;
+    assert_eq!(
+        fixture.check(&mut cache),
+        HudChanges {
+            sidebar: true,
+            ..Default::default()
+        }
+    );
+    assert!(cache.model.sidebar.is_none());
+    fixture.hide_sidebar = false;
+    fixture.check(&mut cache);
+    for (sequence, action, title, health) in [
+        (1, ui::BossAction::Show, "Boss", 0.8),
+        (2, ui::BossAction::SetProgress, "Boss", 0.2),
+        (3, ui::BossAction::SetTitle, "Renamed", 0.2),
+        (4, ui::BossAction::Hide, "Renamed", 0.2),
+    ] {
+        fixture
+            .runtime
+            .session
+            .boss_bars
+            .apply(
+                sequence,
+                ui::BossBarEvent {
+                    target_entity_id: 9,
+                    action,
+                    title: Arc::from(title),
+                    filtered_title: Arc::from(""),
+                    health,
+                    style: ui::BossStyle {
+                        color: ui::BossColor::Red,
+                        overlay: ui::BossOverlay::Notched6,
+                        darken_sky: None,
+                        create_world_fog: None,
+                    },
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            fixture.check(&mut cache),
+            HudChanges {
+                boss_bars: true,
+                ..Default::default()
+            }
+        );
+    }
+}
+
+#[test]
+fn offhand_preview_and_mod_visibility_remain_live() {
+    let mut fixture = Fixture::default();
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    let event = protocol::InventoryEvent::Content(protocol::InventoryContentEvent {
+        container: protocol::ContainerIdentity::window(protocol::OFFHAND_WINDOW_ID),
+        slots: vec![stack(2)].into(),
+        storage_item: protocol::NetworkItemStack::empty(),
+    });
+    fixture
+        .runtime
+        .enqueue_inventory_event(&mut fixture.player, 1, 1, event)
+        .unwrap();
+    fixture.runtime.drain_pending_inventory(&mut fixture.player);
+    fixture.frame.offhand_icon = Some(IconRef {
+        color_mask: None,
+        page: 5,
+        uv: [0, 0, 16, 16],
+        glint: false,
+    });
+    assert!(fixture.check(&mut cache).hotbar);
+    fixture.frame.paper_doll_visible = true;
+    assert!(fixture.check(&mut cache).status);
+    fixture.frame.player_preview = Some(IconRef {
+        color_mask: None,
+        page: 6,
+        uv: [0, 0, 16, 16],
+        glint: false,
+    });
+    assert_eq!(fixture.check(&mut cache), HudChanges::default());
+    fixture.settings.set(SettingId::HidePaperdoll.index(), 1);
+    assert!(fixture.check(&mut cache).status);
+    assert!(!cache.model.paper_doll);
+    fixture
+        .runtime
+        .session
+        .gameplay_hud
+        .apply_effect(protocol::ActorEffectEvent {
+            dimension: 0,
+            actor_runtime_id: 1,
+            action: protocol::ActorEffectAction::Add,
+            effect_id: 10,
+            amplifier: 0,
+            particles: true,
+            ambient: false,
+            duration_ticks: -1,
+            tick: 0,
+        });
+    assert!(fixture.check(&mut cache).status);
+    fixture.runtime.observe_presentation_tick(10, 0);
+    fixture
+        .runtime
+        .session
+        .gameplay_hud
+        .apply_effect(protocol::ActorEffectEvent {
+            dimension: 0,
+            actor_runtime_id: 1,
+            action: protocol::ActorEffectAction::Update,
+            effect_id: 10,
+            amplifier: 0,
+            particles: true,
+            ambient: false,
+            duration_ticks: 2,
+            tick: 10,
+        });
+    fixture.frame.now_millis = 100;
+    assert!(fixture.check(&mut cache).status);
+    assert!(!cache.model.effects_visible);
+    fixture.frame.now_millis = 0;
+    assert!(fixture.check(&mut cache).status);
+    fixture.hide_effects = true;
+    assert!(fixture.check(&mut cache).status);
+    assert!(!cache.model.effects_visible);
+}
+
+/// Vanilla ignores the local player's own offhand MobEquipment. An echo carrying an empty or
+/// older stack must not blank or replace the offhand frame while the inventory holds the item.
+#[test]
+fn stale_local_offhand_echo_keeps_the_inventory_offhand() {
+    let mut fixture = Fixture::default();
+    let mut cache = SemanticHud::default();
+    let event = protocol::InventoryEvent::Content(protocol::InventoryContentEvent {
+        container: protocol::ContainerIdentity::window(protocol::OFFHAND_WINDOW_ID),
+        slots: vec![stack(1)].into(),
+        storage_item: protocol::NetworkItemStack::empty(),
+    });
+    fixture
+        .runtime
+        .enqueue_inventory_event(&mut fixture.player, 1, 1, event)
+        .unwrap();
+    fixture.runtime.drain_pending_inventory(&mut fixture.player);
+    fixture.frame.offhand_icon = Some(IconRef {
+        color_mask: None,
+        page: 5,
+        uv: [0, 0, 16, 16],
+        glint: false,
+    });
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.offhand.as_ref().map(|slot| slot.count), Some(1));
+    for (sequence, echoed) in [(2, protocol::NetworkItemStack::empty()), (3, stack(3))] {
+        fixture.runtime.retain_local_selected_equipment(
+            &mut fixture.player,
+            sequence,
+            protocol::EquipmentEvent {
+                actor_runtime_id: 1,
+                stack: echoed,
+                inventory_slot: 0,
+                selected_slot: 0,
+                window_id: protocol::OFFHAND_WINDOW_ID as u8,
+                handedness: Some(protocol::ActorHandedness::Left),
+            },
+        );
+        fixture.check(&mut cache);
+        assert_eq!(cache.model.offhand.as_ref().map(|slot| slot.count), Some(1));
+    }
+}
+
+#[test]
+fn long_multiline_chat_hud_preserves_raw_and_translated_message_tails() {
+    let text = ui_screens::test_support::long_chat_message();
+    assert!(text.len() > ui_screens::text::MAX_PRESENTED_TEXT_BYTES);
+    for kind in [ChatMessageKind::System, ChatMessageKind::Translation] {
+        let mut fixture = Fixture::default();
+        fixture.runtime.session.chat.push_local(ChatMessage {
+            fifo_sequence: 0,
+            received_millis: 0,
+            kind,
+            source: None,
+            message: if kind == ChatMessageKind::Translation {
+                "test.guide".into()
+            } else {
+                text.as_str().into()
+            },
+            parameters: if kind == ChatMessageKind::Translation {
+                Arc::from([Arc::from(text.as_str())])
+            } else {
+                Arc::from([])
+            },
+        });
+        let bytes = assets::encode_lang_catalog(
+            [3; 32],
+            [4; 32],
+            &[assets::LangEntry {
+                key: "test.guide".into(),
+                value: "%s".into(),
+            }],
+        )
+        .unwrap();
+        fixture.runtime.set_active_language(Some(Arc::new(
+            assets::RuntimeLangCatalog::decode(&bytes).unwrap(),
+        )));
+        let mut cache = SemanticHud::default();
+        fixture.check(&mut cache);
+        assert_eq!(cache.model.chat[0].text, text, "{kind:?}");
+        let before = cache.constructions;
+        fixture.frame.now_millis = 100;
+        assert!(!fixture.check(&mut cache).chat);
+        assert_eq!(
+            cache.constructions, before,
+            "unchanged long rows stay retained"
+        );
+    }
+}
+
+#[test]
+fn chat_translation_and_duration_refresh_without_rebuilding_hotbar() {
+    let mut fixture = Fixture::default();
+    fixture.runtime.session.chat.push_local(ChatMessage {
+        fifo_sequence: 0,
+        received_millis: 0,
+        kind: ChatMessageKind::Translation,
+        source: None,
+        message: Arc::from("message.key"),
+        parameters: Arc::from([]),
+    });
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    let bytes = assets::encode_lang_catalog(
+        [3; 32],
+        [4; 32],
+        &[assets::LangEntry {
+            key: "message.key".into(),
+            value: "Translated".into(),
+        }],
+    )
+    .unwrap();
+    fixture.runtime.set_active_language(Some(Arc::new(
+        assets::RuntimeLangCatalog::decode(&bytes).unwrap(),
+    )));
+    let changes = fixture.check(&mut cache);
+    assert!(changes.chat && !changes.hotbar && !changes.sidebar);
+    assert_eq!(cache.model.chat[0].text, "Translated");
+    fixture
+        .settings
+        .set(SettingId::ChatMessageDuration.index(), 0);
+    assert!(fixture.check(&mut cache).chat);
+    for line in 0..=MAX_CHAT_LINES {
+        fixture.chat(&format!("Line {line}"), 0);
+    }
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.chat.len(), MAX_CHAT_LINES);
+}
+
+/// Server packs can consume title bindings beyond the native visible label and after its expiry.
+#[test]
+fn title_controller_inputs_survive_native_title_expiry_without_truncation() {
+    let mut fixture = Fixture::default();
+    let text = "x".repeat(ui_screens::text::MAX_PRESENTED_TEXT_BYTES + 1);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_title(Arc::from(text.as_str()), 1, 0);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_subtitle(Arc::from("retained subtitle"), 2, 0);
+    fixture
+        .runtime
+        .session
+        .hud
+        .set_actionbar(Arc::from(text.as_str()), 3, 0);
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.title.as_ref().unwrap().title, text);
+    assert_eq!(cache.model.actionbar.as_ref().unwrap().text, text);
+    fixture.frame.now_millis = 60_000;
+    fixture.check(&mut cache);
+    assert!(cache.model.title.is_none());
+    assert_eq!(cache.model.title_text.as_deref(), Some(text.as_str()));
+    assert_eq!(
+        cache.model.subtitle_text.as_deref(),
+        Some("retained subtitle")
+    );
+}
+
+#[test]
+fn chat_color_keeps_encoded_hud_message_inputs_unmodified() {
+    let mut fixture = Fixture::default();
+    fixture.frame.now_millis = 1000;
+    fixture.settings.set(SettingId::ChatColor.index(), 1);
+    let message = ui_screens::test_support::hover_chat::message_with_caption("Hello @Alex");
+    fixture.chat(&message, 1);
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    assert_eq!(cache.model.chat[0].text, message);
+    assert_eq!(
+        cache.model.chat_color,
+        Some(fixture.settings.chat_color_code())
+    );
+    let catalog = json_ui::Catalog::from_files(
+        ui_screens::test_support::hover_chat::files()
+            .iter()
+            .map(|(path, data)| (path.as_str(), data.as_slice())),
+    )
+    .unwrap();
+    let context = json_ui::Context::empty();
+    let root = json_ui::resolve(&catalog, "hud.chat_grid_item", &context)
+        .control
+        .unwrap();
+    let data = json_ui::hud_data_source(&cache.model);
+    let bound = json_ui::bind_screen(
+        &root,
+        &catalog,
+        &context,
+        &data,
+        &mut json_ui::BindState::new(),
+    );
+    let caption = bound
+        .find(&|control: &json_ui::ResolvedControl| control.name == "caption")
+        .unwrap();
+    assert_eq!(caption.properties["text"], "Hello @Alex");
+}
+
+#[test]
+fn chat_mentions_follow_display_name_changes_without_rewriting_messages() {
+    let mut fixture = Fixture::default();
+    fixture.chat("@Alex @Steve @here", 0);
+    fixture
+        .runtime
+        .set_chat_identity(Arc::from("LoginName"), Arc::from(""));
+    let mut cache = SemanticHud::default();
+    fixture.check(&mut cache);
+    for name in ["Alex", "Steve", ""] {
+        fixture
+            .runtime
+            .set_local_player_display_name(Arc::from(name));
+        assert!(fixture.check(&mut cache).chat);
+        assert_eq!(cache.model.chat_local_player.as_ref(), name);
+        assert_eq!(cache.model.chat[0].text, "@Alex @Steve @here");
+        assert!(!fixture.check(&mut cache).chat);
+    }
+    for only_self in [false, true] {
+        fixture
+            .settings
+            .set(SettingId::MentionsTarget.index(), i32::from(only_self));
+        assert!(fixture.check(&mut cache).chat);
+        assert_eq!(cache.model.chat_mentions_only_self, only_self);
+        assert_eq!(cache.model.chat[0].text, "@Alex @Steve @here");
+        assert!(!fixture.check(&mut cache).chat);
+    }
+}

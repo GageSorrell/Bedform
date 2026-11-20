@@ -88,7 +88,10 @@ export async function VerifyPackedComponents(directory: string): Promise<void>
             await scene.System.Until(() => root.Layout !== undefined);
             assert.equal(root.Layout!.Views.length, 2);
             assert.ok(root.Layout!.Items.some((item) => item.Text?.Value === "Action now"));
-            assert.ok(root.Layout!.Items.some((item) => item.Props.RequiredItem === "minecraft:stick"));
+            assert.ok(root.Layout!.Items.some((item) => item.RequiredItems.includes("minecraft:stick")));
+            assert.ok(root.Layout!.Views.every((view) => view.LayerDepth === 0.01));
+            assert.ok(root.Layout!.Items.some((item) => item.Depth > 0));
+            await scene.System.Until(() => scene.Sessions[0]?.Frames.at(-1)?.Layout === root.Layout);
             const frame = scene.Sessions[0]!.Frames.at(-1)!;
             assert.equal(frame.Layout, root.Layout);
             assert.equal(api.Spatial.Components.Text.name, "Text");

@@ -1,0 +1,677 @@
+//! Live terrain generations must replace held model geometry and pixels together.
+
+use super::*;
+use crate::prepared_actor_artwork::{PreparedActorArtwork, session_resources};
+
+/// Encodes an original cuboid carrier with independently variable height, color and alpha mode.
+pub(crate) fn terrain(height: i16, color: [u8; 4], flags: u32) -> Arc<RuntimeAssets> {
+    terrain_with_template_flags(height, color, flags, 0)
+}
+
+/// Encodes the same fixture with an admitted model class for held-pose selection.
+fn terrain_with_template_flags(
+    height: i16,
+    color: [u8; 4],
+    flags: u32,
+    template_flags: u32,
+) -> Arc<RuntimeAssets> {
+    terrain_with_properties(
+        height,
+        color,
+        flags,
+        template_flags,
+        [assets::LightProperties::OPAQUE_DARK; 8],
+    )
+}
+
+/// Encodes the fixture with independent model flags and per-visual light properties.
+fn terrain_with_properties(
+    height: i16,
+    color: [u8; 4],
+    flags: u32,
+    template_flags: u32,
+    light_properties: [assets::LightProperties; 8],
+) -> Arc<RuntimeAssets> {
+    let quads = assets::BlockFace::ALL.map(|face| {
+        let (corners, uvs) = assets::gui_item::cube_face(face);
+        let mut quad = assets::ModelQuad {
+            positions: corners.map(|point| {
+                [
+                    (point[0] * 256.0) as i16,
+                    (point[1] * f32::from(height)) as i16,
+                    (point[2] * 256.0) as i16,
+                ]
+            }),
+            uvs: uvs.map(|uv| uv.map(|value| (value * 4096.0) as u16)),
+            material: 1,
+            flags: face.model_quad_face_id(),
+        };
+        // Model cubes start each face at its smallest corner; thumbnail faces may rotate it.
+        let start = quad
+            .positions
+            .iter()
+            .enumerate()
+            .min_by_key(|(_, point)| *point)
+            .unwrap()
+            .0;
+        quad.positions.rotate_left(start);
+        quad.uvs.rotate_left(start);
+        quad
+    });
+    let visual = assets::BlockVisual {
+        native_material: assets::native_material::NativeMaterialFacts::Unresolved,
+        faces: [1; 6],
+        flags: if height == 256 {
+            assets::BlockFlags::OCCLUDES_FULL_FACE
+        } else {
+            assets::BlockFlags::empty()
+        },
+        kind: assets::VisualKind::Model,
+        support: assets::VisualSupport::Exact,
+        contributor_role: assets::ContributorRole::Primary,
+        model_template: 0,
+        animation: assets::NO_ANIMATION,
+        variant: 0,
+        destroy: assets::compiled::block_destroy::BlockDestroyFacts::Unresolved,
+    };
+    let template_count = if template_flags == assets::MODEL_TEMPLATE_FLAG_STAIR {
+        5
+    } else {
+        1
+    };
+    let compiled = assets::CompiledAssets {
+        visuals: vec![visual; 8].into(),
+        light_properties: light_properties.into(),
+        hashed: Box::new([]),
+        materials: vec![
+            assets::Material::unvaried(),
+            assets::Material {
+                texture: assets::TextureRef::new(0, 1).unwrap(),
+                flags,
+                ..assets::Material::unvaried()
+            },
+        ]
+        .into(),
+        model_templates: (0..template_count)
+            .map(|index| assets::ModelTemplate {
+                quad_start: index * quads.len() as u32,
+                quad_count: quads.len() as u32,
+                flags: template_flags,
+            })
+            .collect(),
+        model_quads: (0..template_count).flat_map(|_| quads).collect(),
+        animations: Box::new([]),
+        animation_frames: Box::new([]),
+        texture_pages: vec![assets::TexturePage::new(assets::TextureArray {
+            layers: 2,
+            mips: [16, 8, 4, 2, 1]
+                .into_iter()
+                .map(|size| assets::TextureMip {
+                    size,
+                    rgba8: color.repeat((size * size * 2) as usize).into(),
+                })
+                .collect(),
+        })]
+        .into(),
+        biomes: assets::CompiledBiomeAssets::diagnostic(),
+        provenance: assets::BlobProvenance {
+            source_manifest_sha256: [1; 32],
+            block_registry_sha256: [2; 32],
+            light_registry_sha256: [3; 32],
+            biome_registry_sha256: [4; 32],
+        },
+    };
+    Arc::new(RuntimeAssets::decode(&assets::encode_blob(&compiled).unwrap()).unwrap())
+}
+
+/// Binds the existing player's held fixture to a genuine inventory model route.
+fn fixture(
+    world: Arc<RuntimeAssets>,
+) -> (
+    EquipmentRuntime,
+    ActorArtworkPages,
+    ActorRigSubmission,
+    WornItem,
+) {
+    fixture_with_icons(world, None)
+}
+
+/// Builds the same item with an optional authored carried sheet distinct from its inventory icon.
+fn fixture_with_icons(
+    world: Arc<RuntimeAssets>,
+    carried: Option<([u8; 32], [u8; 4])>,
+) -> (
+    EquipmentRuntime,
+    ActorArtworkPages,
+    ActorRigSubmission,
+    WornItem,
+) {
+    let definition = assets::ItemVisualDefinition {
+        key: assets::ItemVisualKey {
+            identifier: "test:opaque_cube".into(),
+            metadata: 0,
+        },
+        source: 0,
+        route: assets::ItemVisualDefinitionRoute::BlockItem {
+            block_visual: assets::BlockVisualId(7),
+        },
+        grip: assets::item::grip::ItemGrip::Unresolved,
+        glint: assets::item::glint::ItemGlint::Unresolved,
+        fuel: assets::item::fuel::ItemFuel::Unresolved,
+        armour: assets::item::armour::ItemArmour::Unresolved,
+        durability: assets::item::durability::ItemDurability::Unresolved,
+        first_person: assets::ItemDisplayTransform::identity(),
+        third_person: assets::ItemDisplayTransform::identity(),
+        dropped: assets::ItemDisplayTransform::identity(),
+    };
+    let (base, body, item) = block_fixture_with_visuals(vec![definition]);
+    let icons = RuntimeIconCatalog::decode(
+        &assets::encode_icon_catalog_with_blocks(
+            carried.map_or([1; 32], |(manifest, _)| manifest),
+            &std::iter::once(IconSprite {
+                width: 1,
+                height: 1,
+                rgba8: vec![255; 4].into(),
+            })
+            .chain(carried.map(|(_, color)| {
+                let [width, height] = assets::BLOCK_ITEM_SHEET_SIZE;
+                IconSprite {
+                    width,
+                    height,
+                    rgba8: color
+                        .repeat(usize::from(width) * usize::from(height))
+                        .into(),
+                }
+            }))
+            .collect::<Vec<_>>(),
+            &[assets::IconEntry {
+                identifier: item.identifier.as_ref().into(),
+                metadata: 0,
+                sprite: 0,
+            }],
+            &carried
+                .into_iter()
+                .flat_map(|_| {
+                    (6..=7).map(|visual| assets::IconBlockSheet {
+                        sprite: 1,
+                        visual: assets::BlockVisualId(visual),
+                    })
+                })
+                .collect::<Vec<_>>(),
+            &[assets::IconBlockModel {
+                held_sprite: None,
+                sprite: 0,
+                visual: assets::BlockVisualId(7),
+            }],
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let (mut runtime, pages, _) = EquipmentRuntime::build(
+        Arc::clone(&base.assets),
+        None,
+        Arc::new(icons),
+        Some(world),
+        None,
+        ActorArtworkPages::default(),
+    );
+    runtime.register_skin_rig(body.input.rig, vec!["rightItem".into()]);
+    (runtime, pages, body, item)
+}
+
+/// Reads the complete held sheet through its published placement, excluding atlas padding.
+fn held_sheet(runtime: &EquipmentRuntime, pages: &ActorArtworkPages) -> Vec<u8> {
+    let (_, placement, location) = runtime.block_placement(7).expect("held sheet is admitted");
+    let page = &pages.pages()[usize::from(location.page()) - 1];
+    let (width, height) = page.dimensions();
+    (0..usize::from(placement.height))
+        .flat_map(|row| {
+            let start = ((location.layer() as usize * usize::from(height)
+                + usize::from(placement.y)
+                + row)
+                * usize::from(width)
+                + usize::from(placement.x))
+                * 4;
+            page.pixels()[start..start + usize::from(placement.width) * 4].to_vec()
+        })
+        .collect()
+}
+
+#[test]
+fn held_terrain_reload_matches_fresh_pack_sheets() {
+    for height in [128, 256] {
+        for (physical, grid, exposed) in [(32u32, 1, 16), (64, 2, 16), (64, 1, 32), (64, 0, 16)] {
+            let startup = terrain(height, [20, 80, 200, 255], 0);
+            let (mut runtime, pages, _, _) = fixture(Arc::clone(&startup));
+            let overlay = assets::BlockOverlay {
+                materials: vec![
+                    assets::Material::unvaried(),
+                    assets::Material {
+                        texture: assets::TextureRef::new(1, 0).unwrap(),
+                        ..assets::Material::unvaried()
+                    },
+                ],
+                textures: vec![assets::TextureArray {
+                    layers: 1,
+                    mips: (0..=physical.ilog2())
+                        .map(|level| {
+                            let side = physical >> level;
+                            assets::TextureMip {
+                                size: side,
+                                rgba8: (0..side * side)
+                                    .flat_map(|pixel| {
+                                        [
+                                            (pixel % side * 3) as u8,
+                                            (pixel / side * 3) as u8,
+                                            level as u8 * 30,
+                                            255,
+                                        ]
+                                    })
+                                    .collect(),
+                            }
+                        })
+                        .collect(),
+                }],
+                texture_source_sizes: vec![[exposed; 2]],
+                texture_source_grids: vec![grid],
+                material_overrides: vec![assets::MaterialOverride {
+                    material: 1,
+                    texture: assets::TextureRef::new(1, 0).unwrap(),
+                    animation: assets::NO_ANIMATION,
+                    variation: None,
+                }],
+                ..Default::default()
+            };
+            let expected =
+                render_model::equipment::blocks::overlay_face_sheet(&overlay, [1; 6], None)
+                    .expect("pack face preparation accepts the exposed source rectangle");
+            let replacement = Arc::new(
+                startup
+                    .with_block_overlay(startup.visual_count() as u32, &overlay)
+                    .unwrap(),
+            );
+            let (fresh, fresh_pages, _, _) = fixture(Arc::clone(&replacement));
+            let blocks = runtime
+                .block_item_preparer()
+                .unwrap()
+                .prepare(&replacement)
+                .unwrap();
+            let prepared =
+                PreparedActorArtwork::new_with_block_items(&pages, None, None, Some(blocks));
+            let resources = session_resources(&pages, None, Some(&prepared));
+            runtime.set_block_items(resources.block_items.as_ref());
+            let reloaded = held_sheet(&runtime, &resources.pages);
+            assert_eq!(
+                reloaded,
+                held_sheet(&fresh, &fresh_pages),
+                "reload must match a fresh build byte for byte"
+            );
+            assert!(
+                reloaded == expected.rgba8.as_ref(),
+                "held sheet must use the pack's exposed pixels: height={height}, physical={physical}, grid={grid}"
+            );
+        }
+    }
+}
+
+#[test]
+fn held_terrain_reload_preserves_authored_carried_sheet_routes() {
+    for flags in [0, assets::MATERIAL_FLAG_GRASS_TINT] {
+        let carried = [30, 180, 70, 255];
+        let startup = terrain(256, [90, 110, 50, 255], flags);
+        assert!(
+            assets::gui_item::full_cube_model_quads(&startup, assets::BlockVisualId(7)).is_some()
+        );
+        let (mut runtime, pages, body, item) =
+            fixture_with_icons(Arc::clone(&startup), Some(([1; 32], carried)));
+        let before = runtime
+            .first_person_item(&body, &item, ItemAnimationState::default())
+            .unwrap();
+        let original = runtime.take_pending_geometries().pop().unwrap();
+        assert_eq!(
+            drawn_pixel(&pages, &before.presentation, &original),
+            carried
+        );
+        assert_eq!(runtime.block_placement(6), runtime.block_placement(7));
+        let replacement = terrain(256, [90, 110, 50, 255], flags);
+        assert!(replacement.has_same_geometry(&startup));
+        let blocks = runtime
+            .block_item_preparer()
+            .unwrap()
+            .prepare(&replacement)
+            .unwrap();
+        let prepared = PreparedActorArtwork::new_with_block_items(&pages, None, None, Some(blocks));
+        let resources = session_resources(&pages, None, Some(&prepared));
+        runtime.set_block_items(resources.block_items.as_ref());
+        assert_eq!(
+            runtime.block_placement(6),
+            runtime.block_placement(7),
+            "shared carried sheets keep one atlas placement"
+        );
+        let main = runtime
+            .first_person_item(&body, &item, ItemAnimationState::default())
+            .expect("a carrier refresh retains the authored held cube");
+        let off = runtime.first_person_offhand(&body, &item).unwrap();
+        let third = third_person(&mut runtime, &body, &item);
+        let changed = runtime.take_pending_geometries().pop().unwrap();
+        for draw in [&main.presentation, &off.presentation, &third] {
+            assert_eq!(draw.submission.input.rig, changed.id);
+            assert_eq!(drawn_pixel(&resources.pages, draw, &changed), carried);
+        }
+        runtime.set_block_items(None);
+        let restored = runtime
+            .first_person_item(&body, &item, ItemAnimationState::default())
+            .unwrap();
+        let geometry = runtime.take_pending_geometries().pop().unwrap();
+        assert_eq!(
+            drawn_pixel(&pages, &restored.presentation, &geometry),
+            carried
+        );
+    }
+}
+
+#[test]
+fn held_terrain_reload_keeps_shaped_models_and_rejects_incompatible_carried_art() {
+    let blue = [20, 80, 200, 255];
+    let green = [40, 200, 80, 255];
+    let carried = [220, 50, 70, 255];
+    for (height, manifest) in [(128, [1; 32]), (256, [9; 32])] {
+        let startup = terrain(height, blue, 0);
+        let (mut runtime, pages, body, item) =
+            fixture_with_icons(startup, Some((manifest, carried)));
+        let before = runtime
+            .first_person_item(&body, &item, ItemAnimationState::default())
+            .unwrap();
+        let original = runtime.take_pending_geometries().pop().unwrap();
+        assert_eq!(drawn_pixel(&pages, &before.presentation, &original), blue);
+        let replacement = terrain(height, green, 0);
+        let blocks = runtime
+            .block_item_preparer()
+            .unwrap()
+            .prepare(&replacement)
+            .unwrap();
+        let prepared = PreparedActorArtwork::new_with_block_items(&pages, None, None, Some(blocks));
+        let resources = session_resources(&pages, None, Some(&prepared));
+        runtime.set_block_items(resources.block_items.as_ref());
+        let main = runtime
+            .first_person_item(&body, &item, ItemAnimationState::default())
+            .unwrap();
+        let changed = runtime.take_pending_geometries().pop().unwrap();
+        assert_eq!(
+            drawn_pixel(&resources.pages, &main.presentation, &changed),
+            green
+        );
+        assert_eq!(
+            changed
+                .vertices
+                .iter()
+                .map(|v| v.position)
+                .collect::<Vec<_>>(),
+            original
+                .vertices
+                .iter()
+                .map(|v| v.position)
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+/// Samples a texel inside the submitted model's first triangle on its actual artwork layer.
+fn drawn_pixel(
+    pages: &ActorArtworkPages,
+    draw: &EquipmentPresentation,
+    geometry: &ActorRigGeometry,
+) -> [u8; 4] {
+    let page = &pages.pages()[usize::from(draw.location.page()) - 1];
+    let (width, height) = page.dimensions();
+    let uv: [f32; 2] = std::array::from_fn(|axis| {
+        geometry.vertices[..3]
+            .iter()
+            .map(|v| v.uv[axis])
+            .sum::<f32>()
+            / 3.0
+    });
+    let x = (uv[0] * f32::from(width)) as usize;
+    let y = (uv[1] * f32::from(height)) as usize;
+    let offset =
+        ((draw.location.layer() as usize * usize::from(height) + y) * usize::from(width) + x) * 4;
+    page.pixels()[offset..offset + 4].try_into().unwrap()
+}
+
+#[test]
+fn held_terrain_reload_replaces_warmed_mesh_pixels_alpha_and_restores_startup() {
+    let blue = [20, 80, 200, 255];
+    let green = [40, 200, 80, 128];
+    let startup = terrain(128, blue, 0);
+    let (mut runtime, pages, body, item) = fixture(Arc::clone(&startup));
+    let before = runtime
+        .first_person_item(&body, &item, ItemAnimationState::default())
+        .unwrap();
+    let original = runtime.take_pending_geometries().pop().unwrap();
+    assert_eq!(drawn_pixel(&pages, &before.presentation, &original), blue);
+    let preparer = runtime.block_item_preparer().unwrap();
+    assert!(preparer.prepare(&startup).is_none());
+    let replacement = terrain(64, green, assets::MATERIAL_FLAG_ALPHA_BLEND);
+    let blocks = preparer.prepare(&replacement).unwrap();
+    let prepared =
+        PreparedActorArtwork::new_with_block_items(&pages, None, None, Some(Arc::clone(&blocks)));
+    assert!(prepared.block_items_for(&startup).is_none());
+    assert!(prepared.block_items_for(&replacement).is_some());
+    let resources = session_resources(&pages, None, Some(&prepared));
+    assert!(matches!(resources, std::borrow::Cow::Borrowed(_)));
+    runtime.set_block_items(resources.block_items.as_ref());
+    let main = runtime
+        .first_person_item(&body, &item, ItemAnimationState::default())
+        .unwrap();
+    let off = runtime.first_person_offhand(&body, &item).unwrap();
+    let third = third_person(&mut runtime, &body, &item);
+    let changed = runtime.take_pending_geometries().pop().unwrap();
+    assert_ne!(changed.vertices, original.vertices);
+    for draw in [&main.presentation, &off.presentation, &third] {
+        assert_eq!(draw.submission.input.rig, changed.id);
+        assert_eq!(drawn_pixel(&resources.pages, draw, &changed), green);
+    }
+    assert_eq!(main.alpha_mode, render_model::HandItemAlphaMode::Blend);
+    assert_eq!(off.alpha_mode, main.alpha_mode);
+    runtime.set_block_items(resources.block_items.as_ref());
+    runtime
+        .first_person_item(&body, &item, ItemAnimationState::default())
+        .unwrap();
+    assert!(runtime.take_pending_geometries().is_empty());
+
+    runtime.set_block_items(None);
+    let restored = runtime
+        .first_person_item(&body, &item, ItemAnimationState::default())
+        .unwrap();
+    let geometry = runtime.take_pending_geometries().pop().unwrap();
+    assert_eq!(geometry.vertices, original.vertices);
+    assert_eq!(drawn_pixel(&pages, &restored.presentation, &geometry), blue);
+    assert_eq!(restored.alpha_mode, render_model::HandItemAlphaMode::Opaque);
+    for _ in 0..8 {
+        for source in [resources.block_items.as_ref(), None] {
+            runtime.set_block_items(source);
+            runtime
+                .first_person_item(&body, &item, ItemAnimationState::default())
+                .unwrap();
+            runtime.take_pending_geometries();
+        }
+    }
+}
+
+#[test]
+fn first_person_stair_pose_follows_the_active_terrain_template() {
+    for profile in [
+        render_api::CombatVisuals::Legacy112,
+        render_api::CombatVisuals::Modern,
+    ] {
+        let startup = terrain(128, [30, 40, 50, 255], 0);
+        let (mut runtime, pages, body, item) = fixture(startup);
+        let replacement = terrain_with_template_flags(
+            128,
+            [30, 40, 50, 255],
+            0,
+            assets::MODEL_TEMPLATE_FLAG_STAIR,
+        );
+        let blocks = runtime
+            .block_item_preparer()
+            .unwrap()
+            .prepare(&replacement)
+            .unwrap();
+        let prepared = PreparedActorArtwork::new_with_block_items(&pages, None, None, Some(blocks));
+        let resources = session_resources(&pages, None, Some(&prepared));
+        for (selected, expected_z) in [
+            (None, -std::f32::consts::FRAC_1_SQRT_2),
+            (
+                resources.block_items.as_ref(),
+                std::f32::consts::FRAC_1_SQRT_2,
+            ),
+            (None, -std::f32::consts::FRAC_1_SQRT_2),
+        ] {
+            runtime.set_block_items(selected);
+            let first = runtime
+                .first_person_item_for_profile(
+                    &body,
+                    &item,
+                    ItemAnimationState::default().into(),
+                    profile,
+                )
+                .unwrap();
+            let pose = first.presentation.submission.input.current_bones[0];
+            let axis = bevy::math::Quat::from_array(pose.rotation) * bevy::math::Vec3::X;
+            assert!(
+                axis.abs_diff_eq(
+                    bevy::math::Vec3::new(std::f32::consts::FRAC_1_SQRT_2, 0.0, expected_z),
+                    1.0e-6,
+                ),
+                "profile={profile:?}, expected Z={expected_z}, got {axis:?}"
+            );
+            assert!(
+                bevy::math::Vec3::from_array(pose.translation_scale[..3].try_into().unwrap())
+                    .abs_diff_eq(bevy::math::Vec3::new(0.56, -0.52, -0.72), 1.0e-6)
+            );
+            assert!((pose.translation_scale[3] - 0.4).abs() < 1.0e-6);
+        }
+    }
+}
+
+#[test]
+fn retained_first_person_stair_turn_follows_the_prepared_visual() {
+    let world =
+        terrain_with_template_flags(128, [30, 40, 50, 255], 0, assets::MODEL_TEMPLATE_FLAG_STAIR);
+    let (runtime, _, _, mut item) = fixture(world);
+    let HeldKind::Block(visual) = item.kind else {
+        unreachable!()
+    };
+    for (state, fallback) in [
+        (Some(visual), None),
+        (Some(u32::MAX), Some(visual)),
+        (None, Some(visual)),
+    ] {
+        item.kind = HeldKind::RetainedBlock {
+            state,
+            item: fallback,
+        };
+        assert_eq!(runtime.held_block_visual(item.kind), Some(visual));
+        assert!(runtime.first_person_block_quarter_turn(&item));
+    }
+    item.kind = HeldKind::RetainedBlock {
+        state: Some(u32::MAX),
+        item: None,
+    };
+    assert!(!runtime.first_person_block_quarter_turn(&item));
+}
+
+#[test]
+fn retained_first_person_emission_follows_the_prepared_visual_for_both_hands() {
+    let light = assets::LightProperties::new(13, 15).unwrap();
+    let mut properties = [assets::LightProperties::OPAQUE_DARK; 8];
+    properties[7] = light;
+    let world = terrain_with_properties(128, [30, 40, 50, 255], 0, 0, properties);
+    let (mut runtime, _, body, mut item) =
+        fixture_with_icons(world, Some(([1; 32], [30, 40, 50, 255])));
+    for (state, fallback, expected) in [
+        (Some(7), Some(6), light.emission()),
+        (Some(6), Some(7), 0),
+        (Some(u32::MAX), Some(7), light.emission()),
+        (None, Some(7), light.emission()),
+    ] {
+        item.kind = HeldKind::RetainedBlock {
+            state,
+            item: fallback,
+        };
+        let main = runtime
+            .first_person_item(&body, &item, ItemAnimationState::default())
+            .unwrap();
+        let off = runtime.first_person_offhand(&body, &item).unwrap();
+        assert_eq!(main.emitted_light, expected, "{:?}", item.kind);
+        assert_eq!(off.emitted_light, expected, "{:?}", item.kind);
+        assert_eq!(runtime.first_person_emitted_light(&item, false), 0);
+    }
+    item.kind = HeldKind::RetainedBlock {
+        state: Some(u32::MAX),
+        item: None,
+    };
+    assert_eq!(runtime.first_person_emitted_light(&item, true), 0);
+}
+
+#[test]
+fn every_pinned_stair_family_selects_its_first_person_turn() {
+    let records = assets::registry::read_registry_for_protocol(
+        assets::pinned_block_registry_bytes(),
+        assets::active_content_registry_protocol(),
+    )
+    .unwrap();
+    let (runtime, _, mut item) = block_fixture();
+    let mut names = std::collections::BTreeSet::new();
+    let mut stairs = 0;
+    for record in records {
+        if !names.insert(record.name.clone()) {
+            continue;
+        }
+        item.identifier = record.name.clone().into();
+        item.kind = HeldKind::Block(record.sequential_id);
+        let expected = record.model_family == assets::ModelFamily::Stair
+            || assets::facts::pack::face_slots(&item.identifier)
+                == Some(assets::facts::pack::FaceSlots::Pumpkin);
+        assert_eq!(
+            runtime.first_person_block_quarter_turn(&item),
+            expected,
+            "{}",
+            record.name
+        );
+        if record.model_family == assets::ModelFamily::Stair {
+            stairs += 1;
+            item.identifier = Arc::from("custom:ordinary");
+            assert!(!runtime.first_person_block_quarter_turn(&item));
+        }
+    }
+    assert!(stairs > 0);
+}
+
+#[test]
+fn cutout_model_keeps_authored_backface_culling_after_atlas_placement() {
+    let (mut runtime, _, item) = block_fixture();
+    let HeldKind::Block(visual) = item.kind else {
+        unreachable!()
+    };
+    let mut vertices =
+        render_model::textured_cube_vertices(render_model::equipment::blocks::face_rects([
+            0.0, 0.0, 1.0, 1.0,
+        ]));
+    for vertex in &mut vertices {
+        vertex.back_uv = render_model::ONE_SIDED_BACK_UV;
+    }
+    let blocks = Arc::make_mut(&mut runtime.blocks.source);
+    blocks.models.insert(visual, vertices);
+    blocks
+        .alpha
+        .insert(visual, render_model::HandItemAlphaMode::Cutout);
+    runtime.held_mesh(&item, true).unwrap();
+    let geometry = runtime.take_pending_geometries().pop().unwrap();
+    assert!(
+        geometry
+            .vertices
+            .iter()
+            .all(|vertex| vertex.back_uv == render_model::ONE_SIDED_BACK_UV)
+    );
+}

@@ -640,7 +640,9 @@ export default defineConfig(
         rules: { "no-console": "off" }
     },
     {
-        files: [ "Script/bump-version.mts", "Script/publish.mts", "Script/sync-minecraft-mirrors.mts", "Script/WorldFixture.mts" ],
+        files: [ "Script/bump-version.mts", "Script/publish.mts", "Script/sync-minecraft-mirrors.mts",
+            "Script/check-cinnabar.mts", "Script/cinnabar.test.mts", "Script/workspace-mirrors.mts",
+            "Script/WorldFixture.mts" ],
         rules:
         {
             // These root tools use the package's file-reference license, checked by the Sorrell rule.

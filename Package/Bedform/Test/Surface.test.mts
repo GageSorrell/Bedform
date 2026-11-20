@@ -288,6 +288,94 @@ test("fixed and viewer-facing poses project position, size, depth layers and rol
         z: 0 }), TypeError);
 });
 
+test("overlapping sprites separate in paint order while disjoint sprites stay on their layers", () =>
+{
+    const bounds = { X: 0,
+        Y: 0,
+        Width: 16,
+        Height: 16 };
+    const placed = Surface.Flatten({ Kind: "viewport",
+        Clip: { ...bounds,
+            Width: 64 },
+        Children: [
+            Surface.Fill(bounds, "#FF0000", { Key: "background" }),
+            Surface.Fill(bounds, "#00FF00", { Key: "nested" }),
+            Surface.Fill(bounds, "#0000FF", { Layer: 0.5,
+                Key: "front" }),
+            Surface.Fill({ ...bounds,
+                X: 32 }, undefined, { Key: "disjoint" }),
+            Surface.Fill(bounds, undefined, { Layer: -2,
+                Key: "behind" })
+        ] });
+    const basis = Surface.FixedBasis({ x: 0,
+        y: 0,
+        z: -1 }, { x: 0,
+        y: 1,
+        z: 0 });
+    const quads = Surface.Project(placed, Wall, basis);
+    assert.deepEqual(quads.map((quad) => quad.Location.x), [ 0, 0.01, 0.02, 0, -0.02 ]);
+    assert.deepEqual(placed.map((sprite) => sprite.Key),
+        [ "background", "nested", "front", "disjoint", "behind" ]);
+    assert.deepEqual(quads[0]!.Floats, quads[1]!.Floats);
+    assert.deepEqual(quads[0]!.Direction, basis.Normal);
+    assert.equal(quads[0]!.Location.y, quads[1]!.Location.y);
+    assert.equal(quads[0]!.Location.z, quads[1]!.Location.z);
+    const custom = Surface.Project(placed, { ...Wall,
+        LayerDepth: 0.025 }, basis);
+    Near(custom[2]!.Location.x, 0.05);
+    for (const spacing of [ 0, -0.01, NaN, Infinity ])
+    {
+        assert.throws(() => Surface.Project(placed, { ...Wall,
+            LayerDepth: spacing }, basis), TypeError);
+    }
+});
+
+test("layer separation follows clipped overlap and survives viewer-facing orientations", () =>
+{
+    const placed = Surface.Flatten({ Kind: "viewport",
+        Clip: { X: 0,
+            Y: 0,
+            Width: 32,
+            Height: 16 },
+        Children: [
+            Surface.Fill({ X: 0,
+                Y: 0,
+                Width: 16,
+                Height: 16 }),
+            Surface.Fill({ X: 16,
+                Y: 0,
+                Width: 32,
+                Height: 16 }),
+            Surface.Fill({ X: 0,
+                Y: 0,
+                Width: 32,
+                Height: 16 }),
+            Surface.Fill({ X: 64,
+                Y: 0,
+                Width: 16,
+                Height: 16 })
+        ] });
+    assert.deepEqual(Surface.Depths(placed), [ 0, 0, 0.01 ]);
+    for (const eye of [ { x: 0,
+        y: 10,
+        z: 4 }, { x: 5,
+        y: 13,
+        z: 4 }, { x: -20,
+        y: 8,
+        z: -10 } ])
+    {
+        const basis = Surface.FacingBasis(Wall.Position, eye)!;
+        const quads = Surface.Project(placed, Wall, basis);
+        const samePlane = Surface.Project([ placed[2]! ], Wall, basis)[0]!;
+        const delta = { x: quads[2]!.Location.x - samePlane.Location.x,
+            y: quads[2]!.Location.y - samePlane.Location.y,
+            z: quads[2]!.Location.z - samePlane.Location.z };
+        Near(delta.x, basis.Normal.x * 0.01);
+        Near(delta.y, basis.Normal.y * 0.01);
+        Near(delta.z, basis.Normal.z * 0.01);
+    }
+});
+
 test("emission is private per viewer and skips invalid, foreign, distant and empty audiences", () =>
 {
     const log: Array<Spawn> = [];
@@ -494,6 +582,8 @@ test("managed surfaces refresh every tick, resize, report once, fail closed and 
     assert.ok(surface.VisibleTo("a") && surface.VisibleTo("b"));
 
     // Resize and reposition take effect on the next refresh; invalid updates keep the current frame.
+    assert.throws(() => surface.Update({ Pose: { ...Wall,
+        LayerDepth: 0 } }), TypeError);
     surface.Update({ Content: Surface.Fill({ X: 0,
         Y: 0,
         Width: 30,

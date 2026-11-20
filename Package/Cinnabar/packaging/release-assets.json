@@ -1,0 +1,57 @@
+{
+  "repository": "cinnabar-mc/cinnabar",
+  "checksums": "SHA256SUMS.txt",
+  "assets": {
+    "linux": {
+      "x86_64": "Cinnabar-x86_64.AppImage",
+      "arm64": "Cinnabar-aarch64.AppImage"
+    },
+    "windows": {
+      "x86_64": "Cinnabar-x64-setup.exe"
+    },
+    "macos": {
+      "arm64": "Cinnabar-arm64.dmg",
+      "x86_64": "Cinnabar-x86_64.dmg"
+    }
+  },
+  "manual_assets": {
+    "android": {
+      "arm64": "Cinnabar-arm64-v8a.apk"
+    },
+    "ios": {
+      "arm64": "Cinnabar-arm64-unsigned.ipa"
+    }
+  },
+  "symbols": {
+    "archive": "cinnabar-symbols-{version}-{platform}-{arch}.zip",
+    "manifest": "manifest.json"
+  },
+  "install_script": "install.sh",
+  "linux_install": { "app_dir": "app", "current": "current" },
+  "update_payload_prefix": "update-payload-",
+  "update_channels": {
+    "beta": { "track": "tagged", "manifest": "update-beta.json" },
+    "nightly": { "track": "rolling", "tag": "nightly", "manifest": "update-nightly.json" }
+  },
+  "update_assets": {
+    "windows": {
+      "x86_64": "Cinnabar-x64.msi"
+    }
+  },
+  "update_platforms": { "windows": "windows-user" },
+  "machine_update_assets": {
+    "windows": {
+      "x86_64": "Cinnabar-x64-machine.msi"
+    }
+  },
+  "windows_install": {
+    "parent": "Programs",
+    "folder": "Cinnabar",
+    "user_key": "Software\\Cinnabar\\User",
+    "user_folder_value": "folder",
+    "upgrade_code": "E383614E-D129-4E8E-A558-A5EEFC30643E",
+    "bundle_upgrade_code": "42848957-C057-4B56-9906-5D652E55C06D",
+    "machine_upgrade_code": "2A430447-F280-4F32-AFE9-F8A652811A04",
+    "machine_bundle_upgrade_code": "3D75803D-B970-4281-A17B-7BCC8CF39F7C"
+  }
+}

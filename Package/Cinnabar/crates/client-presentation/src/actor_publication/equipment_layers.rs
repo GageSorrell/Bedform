@@ -1,0 +1,192 @@
+//! Equipment publication keeps authored worn poses beneath the selected player body.
+
+use super::*;
+use crate::presentation::actors::ActorPresentationBatch;
+use crate::presentation::equipment::remote_input;
+
+/// Adds held and worn layers using the local actor identity and inventory facts.
+/// Cape artwork is applied afterward and may replace a worn wing texture.
+pub(super) fn attach(
+    batch: &mut ActorPresentationBatch,
+    equipment: &mut EquipmentRuntime,
+    stream: &WorldStream,
+    mut render_frame: Option<&mut actor_animation::ActorRenderFrame<'_>>,
+    poses: &super::layers::LayerPoses<'_>,
+    frame: (f32, f32, Option<&render_scene::UiGlintSettings>, bool),
+    mut style_of: impl FnMut(
+        &render_model::ActorRigSubmission,
+        bool,
+        Option<&mut actor_animation::ActorRenderFrame<'_>>,
+    ) -> Option<crate::presentation::entity_layers::ControllerStyle>,
+) -> std::collections::BTreeSet<u64> {
+    let (partial_tick, delta_seconds, glint_settings, local_coverage) = frame;
+    let mut wearing_elytra = std::collections::BTreeSet::new();
+    crate::presentation::actors::attach_layers(
+        batch,
+        equipment,
+        |equipment, body, runtime_skin| {
+            let runtime_id = body.input.identity.runtime_id;
+            let mut input = if runtime_id == poses.local_runtime_id {
+                local_equipment(stream, runtime_id, poses.local_equipment)
+            } else {
+                remote_input(stream, runtime_id)
+            };
+            if java::posed(poses.java_posed, runtime_id).is_some() {
+                let using = stream
+                    .authority()
+                    .actor(runtime_id)
+                    .is_some_and(|actor| actor.is_using_item());
+                input.java = Some(crate::presentation::equipment::JavaGrip { blocking: using });
+            }
+            let local_rig = local_coverage && runtime_id == poses.local_runtime_id;
+            // The covered local body draws its UI layers.
+            let ui_layers = local_rig
+                .then(|| stream.authority().actor_ui_layers(runtime_id))
+                .flatten();
+            // Roots follow the controller models this frame draws, not the completed tick's.
+            // Only owners that may draw other models copy the frame's layers.
+            let frame_layers = render_frame
+                .as_mut()
+                .filter(|frame| !local_rig && frame.may_replace_body_geometry(runtime_id))
+                .and_then(|frame| frame.layers(runtime_id));
+            let animation = stream.authority().actor(runtime_id).zip(
+                stream.authority().actor_rig(runtime_id).map(|rig| {
+                    let mut rig = if local_rig {
+                        rig
+                    } else {
+                        render_frame
+                            .as_mut()
+                            .map_or(rig, |frame| frame.sample_equipment_properties(rig))
+                    };
+                    if let Some(layers) = frame_layers.as_deref() {
+                        rig.render = layers;
+                    }
+                    if let Some(layers) = ui_layers.as_ref() {
+                        rig.render = &layers.render;
+                        rig.visibility = layers.visibility;
+                        rig.held_item_scale = layers.held_item_scale;
+                    }
+                    poses
+                        .emote(runtime_id)
+                        .map_or(rig, |pose| pose.snapshot(rig))
+                }),
+            );
+            let mut styled_body = body.clone();
+            if let Some(style) = runtime_skin
+                .and_then(|runtime_skin| style_of(body, runtime_skin, render_frame.as_deref_mut()))
+            {
+                styled_body.overlay_rgba8 = style.overlay_rgba8;
+                styled_body.light = style.light;
+            }
+            let selected = equipment.layers_for_profile(
+                &styled_body,
+                &input,
+                poses.combat_visuals,
+                animation.as_ref().map(|(owner, rig)| {
+                    crate::presentation::equipment::EquipmentAnimation {
+                        owner,
+                        rig,
+                        frame_alpha: partial_tick,
+                        delta_seconds,
+                    }
+                }),
+            );
+            if selected.wearing_elytra {
+                wearing_elytra.insert(runtime_id);
+            }
+            for layer in selected.layers.iter_mut() {
+                animate_glint(&mut layer.submission, partial_tick, glint_settings);
+            }
+            selected.layers
+        },
+    );
+    wearing_elytra
+}
+
+/// Reuses inventory facts while reading pose flags after this frame's local pose synchronization.
+pub(super) fn local_equipment(
+    stream: &WorldStream,
+    runtime_id: u64,
+    inventory: &crate::presentation::equipment::ActorEquipmentInput,
+) -> crate::presentation::equipment::ActorEquipmentInput {
+    let actor = stream.authority().actor(runtime_id);
+    crate::presentation::equipment::ActorEquipmentInput {
+        sneaking: actor.is_some_and(|actor| actor.is_sneaking()),
+        sleeping: actor.is_some_and(|actor| actor.is_sleeping()),
+        ..inventory.clone()
+    }
+}
+
+/// Animates the glint of a `GLINT` material layer as worn glint scrolls: from the actor's
+/// interpolated tick, with the glint accessibility settings applied.
+pub(super) fn animate_material_glint(
+    submission: &mut render_model::ActorRigSubmission,
+    partial_tick: f32,
+    settings: Option<&render_scene::UiGlintSettings>,
+) {
+    if submission.material.state.is_some_and(|state| state.glint) {
+        worn_glint(
+            &mut submission.material.glint,
+            submission.input.completed_tick,
+            partial_tick,
+            settings,
+        );
+    }
+}
+
+/// Sets a worn glint's clock to `completed_tick + partial_tick` and applies the settings.
+fn worn_glint(
+    glint: &mut render_model::ActorGlint,
+    completed_tick: u64,
+    partial_tick: f32,
+    settings: Option<&render_scene::UiGlintSettings>,
+) {
+    glint.time_seconds =
+        (completed_tick as f32 + partial_tick) * simulation_clock::TICK_DURATION.as_secs_f32();
+    if let Some(settings) = settings {
+        glint.strength = settings.strength;
+        glint.speed = settings.speed;
+    }
+}
+
+/// Applies the glint accessibility settings and starts held-item glint scrolling at the
+/// draw's interpolated tick; worn equipment keeps the clock its own layer set.
+pub(super) fn animate_glint(
+    submission: &mut render_model::ActorRigSubmission,
+    partial_tick: f32,
+    settings: Option<&render_scene::UiGlintSettings>,
+) {
+    let glint = &mut submission.material.glint;
+    if let Some(settings) = settings {
+        glint.strength = settings.strength;
+        glint.speed = settings.speed;
+    }
+    if glint.texture == render_model::GlintTexture::Item {
+        glint.time_seconds = (submission.input.completed_tick as f32 + partial_tick)
+            * simulation_clock::TICK_DURATION.as_secs_f32();
+    }
+}
+
+#[cfg(test)]
+mod material_glint_tests {
+    use super::*;
+
+    #[test]
+    fn material_glint_scrolls_smoothly_with_the_accessibility_settings() {
+        let mut glint = render_model::ActorGlint::default();
+        let settings = render_scene::UiGlintSettings {
+            strength: 0.25,
+            speed: 0.5,
+        };
+        worn_glint(&mut glint, 40, 0.5, Some(&settings));
+        let tick = simulation_clock::TICK_DURATION.as_secs_f32();
+        assert_eq!(glint.time_seconds, 40.5 * tick);
+        assert_eq!((glint.strength, glint.speed), (0.25, 0.5));
+        let mut later = glint;
+        worn_glint(&mut later, 40, 0.75, Some(&settings));
+        assert!(
+            later.time_seconds > glint.time_seconds,
+            "moves between ticks"
+        );
+    }
+}

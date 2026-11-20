@@ -1,0 +1,594 @@
+//! Applies FIFO-committed server authority to local gameplay before the next physics tick.
+//!
+//! Notification callbacks run at their original points inside reconciliation. Presentation
+//! and evidence adapters can observe the change without owning prediction decisions.
+
+use crate::movement::{
+    self, LocalMovementEffectTimeline, LocalMovementSpeedAuthority, LocalPhysicsController,
+    MovementTicker, PhysicsCorrectionMode, PhysicsCorrectionOutcome, ServerTeleportKind,
+    reconcile_candidate_physics_correction, reconcile_committed_correction,
+};
+use client_world::CommittedControlEvent;
+use sim::CollisionWorld;
+use tracing::{debug, warn};
+
+/// The local interpolation boundary requested by a committed spatial change.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SpatialReset {
+    Correction,
+    Dimension,
+}
+
+/// Whether the caller should publish environment state or reset its frame adapter.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ControlDisposition {
+    Handled,
+    Environment,
+    /// Physics eases the pose; the caller supplies its filtered aim target and keeps
+    /// its frame and camera history.
+    Aim,
+    Spatial(SpatialReset),
+}
+
+/// Synchronous observations emitted before their corresponding downstream publication.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ControlObservation {
+    Hurt {
+        source_direction: Option<[f32; 2]>,
+    },
+    Knockback {
+        motion: [f32; 3],
+    },
+    BeforeSpatial(CommittedControlEvent),
+    Correction {
+        outcome: PhysicsCorrectionOutcome,
+        previous: [f32; 3],
+        position: [f32; 3],
+    },
+    Dimension,
+}
+
+/// Mutable gameplay owners for one already committed control, without a second state copy.
+pub struct CommittedGameplayState<'a> {
+    pub movement: &'a mut MovementTicker,
+    pub physics: &'a mut LocalPhysicsController,
+    pub effects: &'a mut LocalMovementEffectTimeline,
+    pub speed: &'a mut LocalMovementSpeedAuthority,
+    pub session_generation: u64,
+    pub dimension: i32,
+    pub dimension_transfer_active: bool,
+}
+
+impl CommittedGameplayState<'_> {
+    /// Applies authority and reports observations in the existing per-control order.
+    /// The caller drains transport latency controls before entering this method.
+    pub fn apply(
+        &mut self,
+        control: CommittedControlEvent,
+        world: &impl CollisionWorld,
+        observe: impl FnMut(ControlObservation),
+    ) -> ControlDisposition {
+        self.physics.publish_replayed_movement_speed(self.speed);
+        let disposition = self.apply_control(control, world, observe);
+        self.physics.publish_replayed_movement_speed(self.speed);
+        disposition
+    }
+
+    /// Applies one control before publishing any resulting replayed speed.
+    fn apply_control(
+        &mut self,
+        control: CommittedControlEvent,
+        world: &impl CollisionWorld,
+        mut observe: impl FnMut(ControlObservation),
+    ) -> ControlDisposition {
+        if let CommittedControlEvent::LocalActorMove { movement, .. } = control
+            && movement.dimension != self.dimension
+        {
+            return ControlDisposition::Handled;
+        }
+        if let CommittedControlEvent::LocalHurt {
+            source_direction, ..
+        } = control
+        {
+            observe(ControlObservation::Hurt { source_direction });
+            return ControlDisposition::Handled;
+        }
+        if matches!(
+            control,
+            CommittedControlEvent::LocalDeath { .. }
+                | CommittedControlEvent::PlayerListChanged { .. }
+                | CommittedControlEvent::DimensionChangeAck { .. }
+                | CommittedControlEvent::ClientInputLocks { .. }
+        ) {
+            return ControlDisposition::Handled;
+        }
+        if let CommittedControlEvent::LocalMovementEffect { sequence, event } = control {
+            self.effects.apply(self.session_generation, sequence, event);
+            self.speed
+                .apply_effect(self.session_generation, sequence, event);
+            return ControlDisposition::Handled;
+        }
+        if let CommittedControlEvent::LocalMovementSpeed {
+            sequence,
+            dimension,
+            movement,
+            movement_received,
+            underwater,
+            lava,
+            air_drag_modifier,
+            tick,
+        } = control
+        {
+            // Every attribute edit shares the packet's stamp, so one replay covers them.
+            let mut rewind = None;
+            if movement_received && movement.is_none() {
+                self.speed
+                    .invalidate_reported(self.session_generation, sequence, dimension);
+            }
+            if let Some(attribute) = movement
+                && self
+                    .speed
+                    .apply(self.session_generation, sequence, dimension, attribute)
+                && self.movement.physics_is_authorized()
+                && let Some((edited, speed)) = self.physics.retime_movement_speed(tick, attribute)
+            {
+                self.speed.adopt_recorded_speed(speed);
+                rewind = edited;
+            }
+            if (underwater.is_some() || lava.is_some())
+                && let Some(speeds) = self.speed.apply_liquid(
+                    self.session_generation,
+                    sequence,
+                    dimension,
+                    underwater,
+                    lava,
+                )
+                && self.movement.physics_is_authorized()
+                && let Some(edited) = self.physics.retime_liquid_movement_speeds(tick, speeds)
+            {
+                rewind = Some(rewind.map_or(edited, |earlier: u64| earlier.min(edited)));
+            }
+            if let Some(current) = air_drag_modifier
+                && self.movement.physics_is_authorized()
+                && let Some(edited) = self.physics.retime_air_drag_modifier(tick, current)
+            {
+                rewind = Some(rewind.map_or(edited, |earlier: u64| earlier.min(edited)));
+            }
+            if let Some(rewind) = rewind {
+                replay_timeline_edit(self.movement, self.physics, rewind, world);
+            }
+            return ControlDisposition::Handled;
+        }
+        if let CommittedControlEvent::LocalGameMode { spectator, .. } = control {
+            if spectator {
+                self.physics.stop_item_use_for_game_mode();
+            }
+            return ControlDisposition::Handled;
+        }
+        if let CommittedControlEvent::LocalMovementFlags {
+            tick,
+            flags,
+            dimensions,
+            replacement,
+            ..
+        } = control
+        {
+            if replacement {
+                self.speed
+                    .replace_actor(self.session_generation, self.dimension);
+                self.physics
+                    .replace_actor_authority(flags, dimensions.expect("replacement dimensions"));
+                return ControlDisposition::Handled;
+            }
+            if self.movement.physics_is_authorized() {
+                if let Some(rewind) = self.physics.apply_server_movement_flags(tick, flags) {
+                    replay_timeline_edit(self.movement, self.physics, rewind, world);
+                }
+                if let Some(dimensions) = dimensions {
+                    self.physics.note_server_dimensions(dimensions);
+                }
+            }
+            return ControlDisposition::Handled;
+        }
+        if matches!(
+            control,
+            CommittedControlEvent::SetTime { .. }
+                | CommittedControlEvent::WorldClocks { .. }
+                | CommittedControlEvent::WeatherCycle { .. }
+                | CommittedControlEvent::DaylightCycle { .. }
+                | CommittedControlEvent::Weather { .. }
+        ) {
+            return ControlDisposition::Environment;
+        }
+        if let CommittedControlEvent::LocalMovementBoost { event, .. } = control {
+            // Vanilla applies a boost from the tick the server stamped, so
+            // retained ticks after it replay with the boost.
+            if let Some(boost) = movement::MovementBoost::from_kind(event.kind) {
+                let span = movement::BoostSpan::from_wire(event.duration_ticks);
+                if let Some(rewind) = self.physics.record_server_boost(boost, event.tick, span)
+                    && self.movement.physics_is_authorized()
+                {
+                    replay_timeline_edit(self.movement, self.physics, rewind, world);
+                }
+            }
+            return ControlDisposition::Handled;
+        }
+        if let CommittedControlEvent::VehicleMovementCorrection {
+            correction,
+            vehicle_runtime_id,
+            vehicle_revision,
+            ..
+        } = control
+        {
+            // Prediction restarts from the corrected boat and the rider snaps to its seat at
+            // the local tick, discarding stale inputs as a teleport does. A snap resets the
+            // local frame and camera history like any other correction.
+            if !self.movement.physics_is_authorized() {
+                return ControlDisposition::Handled;
+            }
+            let previous = self.physics.network_position();
+            let Some(seat) = self
+                .physics
+                .correct_vehicle(&movement::vehicle::VehicleCorrection {
+                    runtime_id: vehicle_runtime_id,
+                    revision: vehicle_revision,
+                    tick: correction.tick,
+                    position: correction.position,
+                    velocity: correction.delta,
+                    rotation: [correction.pitch, correction.yaw],
+                    angular_velocity: correction.vehicle_angular_velocity,
+                    on_ground: correction.on_ground,
+                })
+            else {
+                return ControlDisposition::Handled;
+            };
+            let position = [seat[0], seat[1] + protocol::PLAYER_NETWORK_OFFSET, seat[2]];
+            return match movement::reconcile_physics_anchor(
+                self.movement,
+                self.physics,
+                movement::PhysicsAnchor {
+                    network_position: position,
+                    tick: correction.tick,
+                    on_ground: false,
+                    velocity: Some([0.0; 3]),
+                },
+                movement::PhysicsCorrectionMode::Snap,
+                world,
+            ) {
+                Ok(outcome) => {
+                    observe(ControlObservation::Correction {
+                        outcome,
+                        previous: previous.unwrap_or(position),
+                        position,
+                    });
+                    ControlDisposition::Spatial(SpatialReset::Correction)
+                }
+                Err(fault) => {
+                    warn!(
+                        ?fault,
+                        "local physics authority failed while applying a vehicle correction"
+                    );
+                    ControlDisposition::Handled
+                }
+            };
+        }
+        if let CommittedControlEvent::LocalActorMotion { event, .. } = control {
+            // A server-driven impulse (knockback, explosion) must enter the
+            // prediction timeline; without it the client keeps its pre-hit
+            // trajectory and fights corrections after every hit. It needs no
+            // spatial reconciliation and does not reset interpolation frames.
+            observe(ControlObservation::Knockback {
+                motion: event.motion,
+            });
+            if self.movement.physics_is_authorized() {
+                movement::note_motion(event.tick, event.motion);
+                if let Some(rewind) = self.physics.queue_server_motion(event.motion, event.tick)
+                    && !replay_timeline_edit(self.movement, self.physics, rewind, world)
+                {
+                    self.physics.replace_live_velocity(event.motion);
+                }
+            }
+            return ControlDisposition::Handled;
+        }
+        if let CommittedControlEvent::MovePlayer {
+            movement,
+            riding_actor_resolved,
+            resolved,
+            ..
+        } = control
+            && let Some(disposition) = self.apply_normal_move_player(
+                &movement,
+                riding_actor_resolved,
+                resolved.position,
+                world,
+            )
+        {
+            if matches!(disposition, ControlDisposition::Spatial(_)) {
+                observe(ControlObservation::BeforeSpatial(control));
+                self.physics
+                    .apply_server_actor_position(resolved.position, Some(movement.on_ground));
+            }
+            return disposition;
+        }
+        observe(ControlObservation::BeforeSpatial(control));
+        let reset = match &control {
+            CommittedControlEvent::PlayerMovementCorrection {
+                correction,
+                resolved,
+                ..
+            } => {
+                if self.movement.physics_is_authorized() {
+                    let previous = self.physics.network_position().unwrap_or(resolved.position);
+                    // Shape classification (confirming / replay / teleport)
+                    // lives with the movement authority; a confirming
+                    // correction deliberately mutates no prediction state.
+                    match movement::reconcile_prediction_correction(
+                        self.movement,
+                        self.physics,
+                        resolved.position,
+                        correction.tick,
+                        correction.on_ground,
+                        correction.delta,
+                        world,
+                    ) {
+                        Ok(Some(outcome)) => {
+                            observe(ControlObservation::Correction {
+                                outcome,
+                                previous,
+                                position: resolved.position,
+                            });
+                            // Opt-in HandledTeleport acknowledgement dispatch
+                            // (see the movement `teleport_ack` module).
+                            self.movement.note_committed_correction_outcome(outcome);
+                        }
+                        Ok(None) => {}
+                        Err(fault) => warn!(
+                            ?fault,
+                            correction_tick = correction.tick,
+                            "local physics authority failed while applying a server correction"
+                        ),
+                    }
+                } else {
+                    self.movement
+                        .snap_non_authoritative_anchor(correction.tick, resolved.position);
+                    self.physics.reanchor_network_position_before_advance(
+                        resolved.position,
+                        correction.tick,
+                        correction.on_ground,
+                    );
+                }
+                SpatialReset::Correction
+            }
+            CommittedControlEvent::MovePlayer {
+                movement: correction,
+                resolved,
+                ..
+            } => {
+                let tick = if self.dimension_transfer_active {
+                    self.movement.completed_tick()
+                } else {
+                    correction.source_tick
+                };
+                if self.movement.physics_is_authorized() {
+                    let previous = self.physics.network_position().unwrap_or(resolved.position);
+                    // A teleport rewinds when nearby and retained, else snaps. Another
+                    // unmarked MovePlayer that cannot ease is classified like a correction
+                    // (Cinnabar policy). HandledTeleport arms on the teleport path only.
+                    let outcome = if correction.teleported {
+                        self.movement
+                            .note_server_teleport(ServerTeleportKind::MovePlayer);
+                        movement::note_correction(
+                            movement::CorrectionKind::Teleport,
+                            tick,
+                            resolved.position,
+                            correction.on_ground,
+                            self.physics.sample_at(tick),
+                        );
+                        movement::reconcile_move_player_teleport(
+                            self.movement,
+                            self.physics,
+                            resolved.position,
+                            tick,
+                            correction.on_ground,
+                            world,
+                        )
+                        .ok()
+                    } else {
+                        self.movement.note_unmarked_local_move_player();
+                        reconcile_committed_correction(
+                            self.movement,
+                            self.physics,
+                            resolved.position,
+                            tick,
+                            correction.on_ground,
+                            None,
+                            world,
+                        )
+                        .ok()
+                        .flatten()
+                    };
+                    if let Some(outcome) = outcome {
+                        observe(ControlObservation::Correction {
+                            outcome,
+                            previous,
+                            position: resolved.position,
+                        });
+                    }
+                } else {
+                    self.movement
+                        .snap_non_authoritative_anchor(tick, resolved.position);
+                    self.physics.reanchor_network_position_before_advance(
+                        resolved.position,
+                        tick,
+                        correction.on_ground,
+                    );
+                }
+                SpatialReset::Correction
+            }
+            CommittedControlEvent::LocalActorMove {
+                movement: correction,
+                resolved,
+                ..
+            } => {
+                self.physics
+                    .apply_server_actor_position(resolved.position, correction.on_ground);
+                SpatialReset::Correction
+            }
+            CommittedControlEvent::ChangeDimension { resolved, .. } => {
+                let tick = self.movement.completed_tick();
+                // Not a server teleport for HandledTeleport acknowledgement:
+                // drop any armed assertion instead of leaking it across the
+                // boundary.
+                self.movement.clear_pending_teleport_ack();
+                // Server flag writes for the old world never reach the destination.
+                self.physics.discard_server_flag_writes();
+                self.speed
+                    .replace_dimension(self.session_generation, self.dimension);
+                observe(ControlObservation::Dimension);
+                if self.movement.physics_is_authorized() {
+                    let previous = self.physics.network_position().unwrap_or(resolved.position);
+                    if let Ok(outcome) = reconcile_candidate_physics_correction(
+                        self.movement,
+                        self.physics,
+                        resolved.position,
+                        tick,
+                        false,
+                        PhysicsCorrectionMode::Snap,
+                        world,
+                    ) {
+                        observe(ControlObservation::Correction {
+                            outcome,
+                            previous,
+                            position: resolved.position,
+                        });
+                    }
+                } else {
+                    self.movement
+                        .snap_non_authoritative_anchor(tick, resolved.position);
+                    self.physics.reanchor_network_position_before_advance(
+                        resolved.position,
+                        tick,
+                        false,
+                    );
+                }
+                SpatialReset::Dimension
+            }
+            CommittedControlEvent::Respawn {
+                respawn, resolved, ..
+            } => {
+                if !respawn.ready_to_spawn() {
+                    return ControlDisposition::Handled;
+                }
+                self.movement.discard_respawn_actions(self.physics);
+                let tick = self.movement.completed_tick();
+                if self.movement.physics_is_authorized() {
+                    // Opt-in HandledTeleport acknowledgement: a committed
+                    // respawn is a server-driven anchor, marked on admission
+                    // under authority like the other qualifying sites (see
+                    // the movement `teleport_ack` module).
+                    self.movement
+                        .note_server_teleport(ServerTeleportKind::Respawn);
+                    let previous = self.physics.network_position().unwrap_or(resolved.position);
+                    if let Ok(outcome) = reconcile_candidate_physics_correction(
+                        self.movement,
+                        self.physics,
+                        resolved.position,
+                        tick,
+                        false,
+                        PhysicsCorrectionMode::Snap,
+                        world,
+                    ) {
+                        observe(ControlObservation::Correction {
+                            outcome,
+                            previous,
+                            position: resolved.position,
+                        });
+                    }
+                } else {
+                    self.movement
+                        .snap_non_authoritative_anchor(tick, resolved.position);
+                    self.physics.reanchor_network_position_before_advance(
+                        resolved.position,
+                        tick,
+                        false,
+                    );
+                }
+                SpatialReset::Correction
+            }
+            CommittedControlEvent::SetTime { .. }
+            | CommittedControlEvent::ClientInputLocks { .. }
+            | CommittedControlEvent::DimensionChangeAck { .. }
+            | CommittedControlEvent::WorldClocks { .. }
+            | CommittedControlEvent::WeatherCycle { .. }
+            | CommittedControlEvent::DaylightCycle { .. }
+            | CommittedControlEvent::Weather { .. }
+            | CommittedControlEvent::LocalMovementEffect { .. }
+            | CommittedControlEvent::LocalMovementSpeed { .. }
+            | CommittedControlEvent::LocalMovementFlags { .. }
+            | CommittedControlEvent::LocalGameMode { .. }
+            | CommittedControlEvent::NetworkStackLatency { .. }
+            | CommittedControlEvent::LocalActorMotion { .. }
+            | CommittedControlEvent::VehicleMovementCorrection { .. }
+            | CommittedControlEvent::LocalMovementBoost { .. }
+            | CommittedControlEvent::LocalDeath { .. }
+            | CommittedControlEvent::LocalHurt { .. }
+            | CommittedControlEvent::PlayerListChanged { .. } => {
+                unreachable!(
+                    "environment-only and impulse controls return before spatial reconciliation"
+                )
+            }
+        };
+        self.movement.enforce_local_physics_authority(self.physics);
+        ControlDisposition::Spatial(reset)
+    }
+
+    /// Eases resident Normal targets and places unloaded targets without replacing an ease.
+    fn apply_normal_move_player(
+        &mut self,
+        movement: &protocol::MovePlayerEvent,
+        riding_actor_resolved: bool,
+        position: [f32; 3],
+        world: &impl CollisionWorld,
+    ) -> Option<ControlDisposition> {
+        if movement.teleported
+            || movement.mode != protocol::MovePlayerMode::Normal
+            || riding_actor_resolved
+            || !self.movement.physics_is_authorized()
+            || !self.physics.is_active()
+            || !position.into_iter().all(f32::is_finite)
+        {
+            return None;
+        }
+        self.movement.note_unmarked_local_move_player();
+        if self
+            .physics
+            .start_server_movement_lerp(position, movement.on_ground, world)
+        {
+            Some(ControlDisposition::Aim)
+        } else {
+            Some(ControlDisposition::Spatial(SpatialReset::Correction))
+        }
+    }
+}
+
+/// Replays a timeline edit; on failure the caller keeps the edit's live effect.
+fn replay_timeline_edit(
+    movement: &mut MovementTicker,
+    physics: &mut LocalPhysicsController,
+    rewind: u64,
+    world: &impl CollisionWorld,
+) -> bool {
+    match movement::reconcile_timeline_rewind(movement, physics, rewind, world) {
+        Ok(_) => true,
+        Err(fault) => {
+            debug!(
+                ?fault,
+                rewind, "timeline replay failed; the edit applies live only"
+            );
+            false
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests;

@@ -15,10 +15,10 @@
 // on the registry is skipped, so an interrupted run can simply be repeated. npm's own prompts, such as
 // two-factor approval in the browser, pass through to the terminal.
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import type { Dirent } from "node:fs";
+import { discoverMirrors } from "./workspace-mirrors.mts";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 
 /**
  * The fields of a workspace manifest that publishing reads.
@@ -123,13 +123,8 @@ const branch = execFileSync("git", [ "rev-parse", "--abbrev-ref", "HEAD" ], { cw
 const channel = branch === "Beta" ? "beta" : branch === "Master" ? "dev" : fail(
     `Publish from Master or Beta, not ${branch}.`);
 
-// Every directory directly under Package/ other than Bedform, Effect and Deprecated is a mirror.
-const mirrors = readdirSync(path.join(Repository, "Package"), { withFileTypes: true })
-    .filter((entry: Dirent) => entry.isDirectory() &&
-        ![ "Bedform", "Deprecated", "Effect" ].includes(entry.name) &&
-        existsSync(path.join(Repository, "Package", entry.name, "package.json")))
-    .map((entry: Dirent) => `Package/${entry.name}`)
-    .sort();
+// Cinnabar is a native Rust/Go fork, outside npm mirror discovery and publishing.
+const mirrors = discoverMirrors(Repository);
 
 const releases: Array<Release> = [];
 for (const directory of [ ...First, ...mirrors, ...Last ])

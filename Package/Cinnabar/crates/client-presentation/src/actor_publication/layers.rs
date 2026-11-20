@@ -1,0 +1,299 @@
+//! Composes actor layers in draw order and applies final visibility and cosmetic routes.
+use super::*;
+use crate::presentation::{
+    actors::ActorPresentationBatch, cape::CapeState, entity_layers::LayerPoseCache,
+    equipment::ActorEquipmentInput, skin_layers::ActorLayerCache, skin_rig::SkinRigCache,
+};
+
+/// Sampled actor poses used by equipment, capes and skin layers.
+pub(super) struct LayerPoses<'a> {
+    pub local_runtime_id: u64,
+    pub local_equipment: &'a ActorEquipmentInput,
+    pub java_posed: &'a [java::Posed],
+    pub combat_visuals: render_api::CombatVisuals,
+    pub local_emote_pose: Option<&'a actor_animation::CustomEmotePose>,
+    pub remote_emote_poses:
+        &'a bevy::platform::collections::HashMap<u64, actor_animation::CustomEmotePose>,
+    pub native_body_sampled: bool,
+    pub local_coverage: bool,
+    pub remote_skin_layers: &'a super::bodies::RemoteSkinLayers,
+    pub native_pose: &'a hand::NativePoseCache,
+}
+
+impl<'a> LayerPoses<'a> {
+    /// Selects one render-only overlay for body-dependent clothing, cape and equipment layers.
+    pub(super) fn emote(&self, runtime_id: u64) -> Option<&'a actor_animation::CustomEmotePose> {
+        if runtime_id == self.local_runtime_id {
+            self.local_emote_pose
+        } else {
+            self.remote_emote_poses.get(&runtime_id)
+        }
+    }
+}
+
+/// Retained layer geometry and pose conversions, borrowed only during layer assembly.
+pub(super) struct LayerCaches<'a> {
+    pub layer_poses: &'a mut LayerPoseCache,
+    pub equipment: Option<&'a mut EquipmentRuntime>,
+    pub cape_state: &'a mut CapeState,
+    pub skin_layers: &'a mut ActorLayerCache,
+    pub skin_rigs: &'a mut SkinRigCache,
+}
+
+/// Attaches equipment to unmasked poses, then masks the body before composing capes.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn attach(
+    batch: &mut ActorPresentationBatch,
+    stream: Option<&WorldStream>,
+    mut render_frame: Option<&mut actor_animation::ActorRenderFrame<'_>>,
+    poses: LayerPoses<'_>,
+    caches: LayerCaches<'_>,
+    artwork: &render_model::ActorArtworkPages,
+    entity_assets: Option<&assets::RuntimeEntityAssets>,
+    scene: &mut ActorRenderScene,
+    frame: (f32, f32, Option<&render_scene::UiGlintSettings>),
+    new_geometries: &mut Vec<render_model::ActorRigGeometry>,
+) {
+    let LayerPoses {
+        local_runtime_id,
+        local_equipment: _,
+        java_posed,
+        combat_visuals: _,
+        local_emote_pose: _,
+        remote_emote_poses: _,
+        native_body_sampled,
+        local_coverage,
+        remote_skin_layers,
+        native_pose,
+    } = poses;
+    let LayerCaches {
+        layer_poses,
+        mut equipment,
+        cape_state,
+        skin_layers,
+        skin_rigs,
+    } = caches;
+    let (partial_tick, delta_seconds, glint_settings) = frame;
+    let wearing_elytra = if let (Some(equipment), Some(stream)) = (equipment.as_deref_mut(), stream)
+    {
+        equipment_layers::attach(
+            batch,
+            equipment,
+            stream,
+            render_frame.as_deref_mut(),
+            &poses,
+            (partial_tick, delta_seconds, glint_settings, local_coverage),
+            |body, runtime_skin, render_frame| {
+                let runtime_id = body.input.identity.runtime_id;
+                let render_frame = render_frame?;
+                let layers = if let Some(pose) = poses.emote(runtime_id) {
+                    std::borrow::Cow::Borrowed(pose.render.as_slice())
+                } else if local_coverage && runtime_id == local_runtime_id {
+                    stream.authority().actor_ui_layers(runtime_id)?.render
+                } else {
+                    render_frame.layers_with_skin(runtime_id)?.render
+                };
+                Some(crate::presentation::entity_layers::controller_style(
+                    body,
+                    &layers,
+                    artwork,
+                    layer_poses,
+                    runtime_skin,
+                ))
+            },
+        )
+    } else {
+        Default::default()
+    };
+    let mut layers_of = |runtime_id| {
+        let render_frame = render_frame.as_mut()?;
+        let mut layers = if local_coverage && runtime_id == local_runtime_id {
+            stream?.authority().actor_ui_layers(runtime_id)?
+        } else {
+            render_frame.layers_with_skin(runtime_id)?
+        };
+        if let Some(pose) = poses.emote(runtime_id) {
+            layers.render = std::borrow::Cow::Borrowed(pose.render.as_slice());
+        }
+        Some(layers)
+    };
+    // Equipment inherits animation poses before body-only visibility masks are applied.
+    crate::presentation::entity_layers::apply_render_layers_cached(
+        batch,
+        &mut layers_of,
+        artwork,
+        layer_poses,
+    );
+    for submission in &mut batch.submissions {
+        if submission.material.state.is_some_and(|state| state.glint) {
+            equipment_layers::animate_material_glint(submission, partial_tick, glint_settings);
+        } else if submission.material.glint.texture == render_model::GlintTexture::Item {
+            equipment_layers::animate_glint(submission, partial_tick, glint_settings);
+        }
+    }
+    if let (Some(stream), Some((cape, preparation))) = (stream, cape_state.rig(entity_assets)) {
+        if !scene.contains_geometry(cape.geometry.id) {
+            let _ = scene.insert_geometry(cape.geometry.clone());
+        }
+        crate::presentation::cape::apply_capes(
+            batch,
+            cape,
+            preparation,
+            |runtime_id| {
+                stream.authority().actor_rig(runtime_id).map(|mut rig| {
+                    if local_coverage
+                        && runtime_id == local_runtime_id
+                        && let Some(pose) = stream.authority().actor_ui_pose(runtime_id)
+                    {
+                        rig.previous = pose;
+                        rig.current = pose;
+                    }
+                    if let Some(pose) = poses.emote(runtime_id) {
+                        pose.snapshot(rig)
+                    } else {
+                        rig
+                    }
+                })
+            },
+            |runtime_id| stream.authority().actor_player_profile(runtime_id),
+            |runtime_id| java::posed(java_posed, runtime_id).map(|posed| posed.cape),
+            |runtime_id| wearing_elytra.contains(&runtime_id),
+        );
+    }
+
+    if let Some(stream) = stream
+        && let Some(pages) = skin_layers.apply(
+            batch,
+            artwork,
+            |runtime_id| {
+                let mut rig = stream.authority().actor_rig(runtime_id)?;
+                if local_coverage && runtime_id == local_runtime_id {
+                    let pose = stream.authority().actor_ui_pose(runtime_id)?;
+                    rig.previous = pose;
+                    rig.current = pose;
+                    let layers = stream.authority().actor_ui_layers(runtime_id)?;
+                    // UI layers are retained by the animation owner; no frame-owned copy.
+                    if let std::borrow::Cow::Borrowed(skin) = layers.skin {
+                        rig.skin_layers = skin;
+                    }
+                }
+                let emote = poses.emote(runtime_id);
+                let java_layers =
+                    java::posed(java_posed, runtime_id).map(|posed| posed.skin_layers.as_slice());
+                let native_layers = if local_coverage && runtime_id == local_runtime_id {
+                    None
+                } else if runtime_id == local_runtime_id && native_body_sampled {
+                    native_pose.skin_layers()
+                } else {
+                    remote_skin_layers.get(&runtime_id).map(AsRef::as_ref)
+                };
+                Some(emote_geometry::skin_layer_snapshot(
+                    rig,
+                    emote,
+                    java_layers,
+                    native_layers,
+                ))
+            },
+            skin_rigs,
+            |geometry| new_geometries.push(geometry),
+            |draw, location| {
+                use crate::presentation::equipment::{
+                    LAYER_MAIN_HAND, LAYER_OFF_HAND, armor_slot_index, is_armor_layer,
+                };
+                let layer = draw.input.identity.layer;
+                if layer != LAYER_MAIN_HAND && layer != LAYER_OFF_HAND && !is_armor_layer(layer) {
+                    return None;
+                }
+                let remote;
+                let input = if draw.input.identity.runtime_id == local_runtime_id {
+                    poses.local_equipment
+                } else {
+                    remote = crate::presentation::equipment::remote_input(
+                        stream,
+                        draw.input.identity.runtime_id,
+                    );
+                    &remote
+                };
+                let item = match layer {
+                    LAYER_MAIN_HAND => input.main.as_ref(),
+                    LAYER_OFF_HAND => input.off.as_ref(),
+                    _ => input
+                        .armor
+                        .get(armor_slot_index(layer)?)
+                        .and_then(Option::as_ref),
+                }?;
+                let equipment = equipment.as_deref_mut()?;
+                let location = location?;
+                if let Some(raster) =
+                    equipment.trim_draw(item, artwork, location, draw, is_armor_layer(layer))
+                {
+                    return Some(raster);
+                }
+                equipment.shield_raster(item, artwork, location, draw.input.rig)
+            },
+        )
+    {
+        scene.configure_artwork(pages);
+    }
+}
+
+/// The facts mod presentation rules select `actor` by.
+pub fn mod_actor_facts(
+    authority: &client_world::WorldAuthority,
+    actor: &client_world::ActorSnapshot,
+) -> ui::mod_presentation::ActorFacts {
+    ui::mod_presentation::ActorFacts {
+        runtime_id: actor.runtime_id,
+        player: matches!(actor.kind, protocol::ActorKind::Player { .. }),
+        local: actor.runtime_id == authority.local_player_runtime_id(),
+        riding: authority.ridden_unique_id(actor.unique_id).is_some(),
+    }
+}
+
+/// Applies cosmetic overlays before hiding body layers, leaving armor and held items visible.
+pub(super) fn apply_style_and_visibility(
+    batch: &mut ActorPresentationBatch,
+    stream: Option<&WorldStream>,
+    style: Option<&ActorPresentationStyle>,
+) {
+    if style.is_none() && stream.is_none() {
+        return;
+    }
+    // Each submission's overlay and route depend only on itself, so one pass with one lookup
+    // per run of an actor's adjacent layers matches separate style and visibility passes.
+    let mut looked_up: Option<(u64, Option<&client_world::ActorSnapshot>)> = None;
+    for submission in &mut batch.submissions {
+        let identity = submission.input.identity;
+        let actor = match looked_up {
+            Some((runtime_id, actor)) if runtime_id == identity.runtime_id => actor,
+            _ => {
+                let actor = stream.and_then(|stream| stream.authority().actor(identity.runtime_id));
+                looked_up = Some((identity.runtime_id, actor));
+                actor
+            }
+        };
+        if !submission.material.allows_overlay() {
+            submission.overlay_rgba8 = 0;
+        } else if let Some(((style, actor), stream)) = style.zip(actor).zip(stream) {
+            let armor = (3..=6).contains(&identity.layer);
+            let state = ui::mod_presentation::TintState::of(actor.hurt_overlay_active());
+            if let Some(color) = style
+                .presentation
+                .tint(&mod_actor_facts(stream.authority(), actor), state)
+                .and_then(|tint| tint.overlay(state, armor, submission.overlay_rgba8 != 0))
+            {
+                submission.overlay_rgba8 = render_model::pack_overlay_rgba8(color);
+            }
+        }
+        // Hiding skin layers keeps armor and held items visible.
+        if (identity.layer == render_model::ACTOR_LAYER_BODY
+            || identity.layer == crate::presentation::cape::ACTOR_LAYER_CAPE
+            || render_model::hats::is_cosmetic_layer(identity.layer)
+            || crate::presentation::skin_layers::is_skin_layer(identity.layer)
+            || identity.layer >= crate::presentation::entity_layers::ACTOR_LAYER_TEXTURE_BASE)
+            && actor.is_some_and(|actor| actor.is_invisible())
+        {
+            submission.route = render_model::ActorRigRoute::NoDraw;
+        }
+    }
+}

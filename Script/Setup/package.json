@@ -1,0 +1,26 @@
+{
+  "name": "monorepo-setup",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Effect-based setup for the monorepo-owned Cinnabar fork.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "typecheck:tools": "npm run typecheck",
+    "lint": "eslint Source Test",
+    "test": "npm run build && node --import tsx --test Test/*.test.mts",
+    "verify": "npm run typecheck && npm test && npm run lint"
+  },
+  "dependencies": {
+    "@effect/platform-node": "4.0.5",
+    "@effect/platform-node-shared": "4.0.5",
+    "effect": "4.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "typescript": "6.0.3"
+  }
+}

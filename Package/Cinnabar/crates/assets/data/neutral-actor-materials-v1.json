@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "profile": "neutral_unlit_binary_alpha_two_sided",
+  "material_names": [
+    "entity_alphatest",
+    "tadpole"
+  ],
+  "public_material_version": "1.26.33.01",
+  "public_material_sha256": "6b481fb5ba8ffff97c6222c37e379e34a03e04ebad42566c5d85e207af010272",
+  "limitations": "Neutral engine support only. Target-version lighting, tint, overlay and arbitrary fractional-alpha material parity remain unverified. Colour masking follows USE_COLOR_MASK and three-sampler draws follow USE_MULTITEXTURE; the native sheep and wolf bases declare the first and llama the second. Sheep dye callbacks and independent server-pack sampler overrides remain incomplete. Installed material/shader evidence is near-version, not an exact target-binary witness.",
+  "native_reference": {
+    "runtime_version": "1.26.51",
+    "material_sha256": "f5c38e892b88d991212b637d686d1a37eb4ffdde0d0494b02f6918e14928e966",
+    "fragment_sha256": "056f225da55a2a168cf170b0ec24f7019d8d65e455fd06ca14036e7a682e11ef"
+  },
+  "color_mask_reference": {
+    "material": "sheep:entity_change_color",
+    "contract": "USE_COLOR_MASK interpolates the RGB dye multiplier by raster alpha. No alpha test or blending; alpha is a color mask, not opacity. Near-version installed vanilla runtime witness."
+  },
+  "multitexture_reference": {
+    "material": "llama:entity_multitexture",
+    "contract": "USE_MULTITEXTURE samples three textures on the same normalized UV. RGB first interpolates base toward texture1 by texture1 alpha, then toward texture2 by texture2 alpha; base alpha is retained. Llama has no ALPHA_TEST, COLOR_SECOND_TEXTURE or blending. Near-version installed runtime witness."
+  }
+}

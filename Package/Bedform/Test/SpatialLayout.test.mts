@@ -327,6 +327,89 @@ test("inline Text measures content, retains color runs, and wraps without splitt
     assert.equal(item.Text!.Runs[1]!.Color, "#FF0000");
     assert.equal(item.Text!.Runs[2]!.Length, 2);
 });
+test("nested and overlaid paint depths agree with targeting across rotated Views", () =>
+{
+    const nested = N(Kind.Panel, { Width: 16,
+        Height: 16 });
+    const panel = N(Kind.Panel, { Width: 16,
+        Height: 16 }, [ nested ]);
+    const overlay = N(Kind.Panel, { Width: 16,
+        Height: 16,
+        Position: "absolute",
+        Layer: 0.25 });
+    const hidden = N(Kind.Panel, { Width: 16,
+        Height: 16,
+        Visible: false });
+    for (const rotation of [ { x: 0,
+        y: 0,
+        z: 0,
+        w: 1 }, { x: 1,
+        y: 2,
+        z: 3,
+        w: 4 } ])
+    {
+        const root = V([ panel, hidden, overlay ], { Width: 32,
+            Height: 32,
+            Transform: { position: { x: 100,
+                y: 20,
+                z: -100 },
+            rotation } });
+        const result = Layout.Compute([ root ]);
+        const view = result.Views[0]!;
+        assert.equal(view.LayerDepth, 0.01);
+        assert.deepEqual([ root, panel, nested, overlay ].map((node) => Item(result, node).Depth),
+            [ 0, 0.01, 0.02, 0.03 ]);
+        const point = { X: 8,
+            Y: 8 };
+        const hits = Layout.HitTest(result, root.Id, point);
+        assert.deepEqual(hits.map((item) => item.Id), [ overlay.Id, nested.Id, panel.Id, root.Id ]);
+        for (const hit of hits)
+        {
+            const world = Layout.Project(view, point, hit.Depth);
+            const local = Layout.Unproject(view, world);
+            assert.ok(Math.abs(local.X - point.X) < 1e-10);
+            assert.ok(Math.abs(local.Y - point.Y) < 1e-10);
+        }
+
+        const custom = Layout.Compute([ { ...root,
+            Props: { ...root.Props,
+                LayerDepth: 0.02 } } ]);
+        assert.equal(Item(custom, overlay).Depth, 0.06);
+    }
+
+    assert.throws(() => Layout.Compute([ V([], { LayerDepth: 0 }) ]), /LayerDepth/);
+});
+
+test("depth allocation ignores clipped and hidden boxes and isolates independent Views", () =>
+{
+    const clipped = N(Kind.Panel, { Width: 16,
+        Height: 16,
+        Position: "absolute",
+        X: 32,
+        Layer: 20 });
+    const hidden = N(Kind.Panel, { Width: 16,
+        Height: 16,
+        Position: "absolute",
+        Visible: false,
+        Layer: 20 });
+    const visible = N(Kind.Panel, { Width: 16,
+        Height: 16 });
+    const scroll = N(Kind.ScrollView, { Width: 16,
+        Height: 16 }, [ clipped, hidden, visible ]);
+    const first = V([ scroll ], { Width: 16,
+        Height: 16 });
+    const second = V([ N(Kind.Panel, { Width: 16,
+        Height: 16 }) ], { Width: 16,
+        Height: 16 });
+    const result = Layout.Compute([ first, second ]);
+    assert.equal(Item(result, visible).Depth, 0.02);
+    assert.equal(Item(result, second).Depth, 0);
+    assert.equal(Item(result, second.Children[0]!).Depth, 0.01);
+    assert.ok(!Layout.HitTest(result, first.Id, { X: 8,
+        Y: 8 }).some((item) =>
+        item.Id === clipped.Id || item.Id === hidden.Id));
+});
+
 test("tabs anchor above the upper-right frame edge and narrow panels hide their hit targets", () =>
 {
     const a = N(Kind.TabButton, { Width: 24,

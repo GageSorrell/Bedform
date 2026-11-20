@@ -1,0 +1,81 @@
+//! What the menu and the core learn about the open world.
+
+use bridge::{LocalTarget, LocalWorld, LocalWorldInfo, Transport, WorldState};
+use launcher::local_worlds::world::{World, WorldStatus};
+
+use super::Manager;
+use crate::local_worlds::{lock, process::Instance};
+
+impl Manager {
+    /// The open world's lifecycle and the dedicated server's setup.
+    pub fn status(&self) -> WorldStatus {
+        let mut status = {
+            let life = lock(&self.inner.life);
+            WorldStatus {
+                state: life.state,
+                world_id: life.world.as_ref().map(|world| world.id.clone()),
+                backend: life.world.as_ref().map(|world| world.backend),
+                paused: false,
+                pause_supported: false,
+                error: life.failure.clone(),
+                setup: None,
+                backend_unavailable_reason: None,
+                max_players: life
+                    .instance
+                    .as_ref()
+                    .and_then(|instance| instance.max_players()),
+            }
+        };
+        if let Some(setup) = &self.inner.setup {
+            let (setup, unavailable) = setup.status();
+            status.setup = Some(setup);
+            status.backend_unavailable_reason = unavailable;
+        }
+        status
+    }
+
+    /// The open world as the core routes and hosts it.
+    pub(crate) fn core_report(&self) -> LocalWorld {
+        let life = lock(&self.inner.life);
+        let target = match (&life.instance, &life.world) {
+            (Some(instance), Some(world)) if life.state == WorldState::Running => {
+                Some(target_for(world, instance.as_ref()))
+            }
+            _ => None,
+        };
+        LocalWorld {
+            state: life.state,
+            world: life.world.as_ref().map(|world| LocalWorldInfo {
+                id: world.id.clone(),
+                name: world.name.clone(),
+                game_mode: world.game_mode,
+                backend: world.backend,
+                multiplayer_disabled: !world
+                    .options
+                    .enabled(launcher::local_worlds::options::WorldOption::Multiplayer),
+            }),
+            target,
+            error: life.failure.clone(),
+        }
+    }
+}
+
+/// Where the core dials the running BDS world: NetherNet, through its
+/// LAN advertisement when the server publishes one.
+pub(super) fn target_for(world: &World, instance: &dyn Instance) -> LocalTarget {
+    let address = instance.address().to_owned();
+    match instance.lan_address() {
+        Some(lan) if !lan.is_empty() => LocalTarget {
+            address,
+            transport: Transport::NetherNetLan,
+            lan_address: Some(lan.to_owned()),
+            level_name: Some(world.id.clone()),
+        },
+        _ => LocalTarget {
+            address,
+            transport: Transport::NetherNet,
+            lan_address: None,
+            level_name: None,
+        },
+    }
+}

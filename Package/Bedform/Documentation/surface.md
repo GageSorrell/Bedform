@@ -54,8 +54,17 @@ blocks per pixel. The orientation is one of:
 - **`"FaceViewer"`:** the surface turns toward each viewer's head separately, keeping
   world up. Intent bubbles use this.
 
-`Layer` moves a sprite `LayerDepth` blocks (0.002 by default) per layer along the normal,
-toward the viewer side, so overlapping content separates in depth deliberately.
+`Layer` determines paint order, with later tree entries in front when layers are equal.
+`Depths` resolves offsets along the surface normal toward its visible side. Each sprite starts
+at `Layer * LayerDepth`; overlapping sprites move forward as needed to remain at least
+`LayerDepth` blocks in front of earlier paint entries. Disjoint sprites keep their original
+plane. This also separates nested backgrounds and fractional layers without changing bounds,
+clipping, UVs or emission order. `LayerDepth` defaults to 0.01 blocks and must be positive
+and finite; zero and negative values now fail validation instead of collapsing or reversing
+the paint stack. Explicit positive spacing remains configurable.
+
+The depth policy has host regression coverage. Client observation from multiple angles and
+distances is still required to qualify flicker, transparency sorting and visible parallax.
 
 ## Emission and audiences
 

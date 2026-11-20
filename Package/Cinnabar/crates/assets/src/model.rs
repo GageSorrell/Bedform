@@ -1,0 +1,596 @@
+use crate::{AssetError, TEXTURE_LAYER_MASK, TextureArray};
+
+pub const MAX_TEXTURE_PAGES: usize = 5;
+pub const MAX_MODEL_TEMPLATES: usize = 65_536;
+pub const MAX_MODEL_TEMPLATE_QUADS: usize = u32::BITS as usize;
+pub const MAX_MODEL_QUADS: usize = MAX_MODEL_TEMPLATES * MAX_MODEL_TEMPLATE_QUADS;
+pub const MAX_ANIMATIONS: usize = 65_536;
+pub const MAX_ANIMATION_FRAMES: usize = 1_048_576;
+pub const NO_MODEL_TEMPLATE: u32 = u32::MAX;
+pub const NO_ANIMATION: u32 = u32::MAX;
+/// Native TopSnow has this many equal-height visual layers per full block.
+pub const TOP_SNOW_LAYER_COUNT: u8 = 8;
+/// Semantic TopSnow identity, including the full-height cube fast path. This
+/// high bit is not part of the packed model transform and preserves the native
+/// snow/covered-vegetation pairing without inferring identity from its texture.
+pub const BLOCK_VISUAL_VARIANT_TOP_SNOW: u32 = 1 << 31;
+/// Full snow and powder snow also select the snowy side of grass below them.
+pub const BLOCK_VISUAL_VARIANT_SNOW_COVER: u32 = 1 << 30;
+/// Cube-only neighbor material selector. The low material bits carry the
+/// untinted side material used when native snow cover is directly above grass.
+pub const BLOCK_VISUAL_VARIANT_COVERED_GRASS: u32 = 1 << 29;
+/// Base of world-only leaf materials: covered/exposed faces, followed by their
+/// opaque deep-leaf counterparts. Carried faces remain in the ordinary table.
+pub const BLOCK_VISUAL_VARIANT_SEASONAL_LEAF: u32 = 1 << 28;
+pub const SEASONAL_LEAF_EXPOSED_OFFSET: u32 = crate::BlockFace::ALL.len() as u32;
+pub const SEASONAL_LEAF_DEEP_OFFSET: u32 = SEASONAL_LEAF_EXPOSED_OFFSET * 2;
+pub const SEASONAL_LEAF_MATERIAL_COUNT: u32 = SEASONAL_LEAF_DEEP_OFFSET * 2;
+/// Season-agnostic leaves use the same cutout/deep group layout, without a
+/// seasonal colour selector. Its carried face table is unchanged.
+pub const BLOCK_VISUAL_VARIANT_NONSEASONAL_LEAF: u32 = 1 << 27;
+pub const BLOCK_VISUAL_VARIANT_MATERIAL_MASK: u32 = crate::MAX_MATERIALS as u32 - 1;
+/// Native final grass-side texture variant, precolored for snow cover.
+pub const SNOWED_GRASS_SIDE_TEXTURE: &str = "textures/blocks/grass_side_snowed";
+
+pub(crate) fn covered_grass_variant_is_valid(
+    kind: VisualKind,
+    variant: u32,
+    material_count: usize,
+) -> bool {
+    if variant & BLOCK_VISUAL_VARIANT_SEASONAL_LEAF != 0 {
+        let base = variant & BLOCK_VISUAL_VARIANT_MATERIAL_MASK;
+        return kind == VisualKind::Cube
+            && variant
+                & !(BLOCK_VISUAL_VARIANT_SEASONAL_LEAF | BLOCK_VISUAL_VARIANT_MATERIAL_MASK)
+                == 0
+            && base != crate::DIAGNOSTIC_MATERIAL
+            && base
+                .checked_add(SEASONAL_LEAF_MATERIAL_COUNT)
+                .is_some_and(|end| end as usize <= material_count);
+    }
+    if variant & BLOCK_VISUAL_VARIANT_NONSEASONAL_LEAF != 0 {
+        let base = variant & BLOCK_VISUAL_VARIANT_MATERIAL_MASK;
+        return kind == VisualKind::Cube
+            && variant
+                & !(BLOCK_VISUAL_VARIANT_NONSEASONAL_LEAF | BLOCK_VISUAL_VARIANT_MATERIAL_MASK)
+                == 0
+            && base != crate::DIAGNOSTIC_MATERIAL
+            && base
+                .checked_add(SEASONAL_LEAF_MATERIAL_COUNT)
+                .is_some_and(|end| end as usize <= material_count);
+    }
+    if variant & BLOCK_VISUAL_VARIANT_COVERED_GRASS == 0 {
+        return true;
+    }
+    let material = variant & BLOCK_VISUAL_VARIANT_MATERIAL_MASK;
+    kind == VisualKind::Cube
+        && variant & !(BLOCK_VISUAL_VARIANT_COVERED_GRASS | BLOCK_VISUAL_VARIANT_MATERIAL_MASK) == 0
+        && material != crate::DIAGNOSTIC_MATERIAL
+        && (material as usize) < material_count
+}
+
+/// The conditional terrain layer of an otherwise invisible block, held in its visual's variant.
+///
+/// Vanilla tessellates barriers and light blocks as camera-facing sprites and structure voids as
+/// boxes, each into its own terrain layer that is drawn only while that layer is shown.
+#[repr(u32)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum TerrainMarker {
+    Barrier = 1,
+    Light = 2,
+    StructureVoid = 3,
+}
+
+impl TerrainMarker {
+    pub const ALL: [Self; 3] = [Self::Barrier, Self::Light, Self::StructureVoid];
+
+    /// The marker an invisible visual's `variant` names; other kinds and variant zero name none.
+    #[must_use]
+    pub const fn from_variant(kind: VisualKind, variant: u32) -> Option<Self> {
+        match (kind, variant) {
+            (VisualKind::Invisible, 1) => Some(Self::Barrier),
+            (VisualKind::Invisible, 2) => Some(Self::Light),
+            (VisualKind::Invisible, 3) => Some(Self::StructureVoid),
+            _ => None,
+        }
+    }
+
+    /// The visual variant that stores this marker.
+    #[must_use]
+    pub const fn variant(self) -> u32 {
+        self as u32
+    }
+
+    /// This marker's bit in a set of shown layers, as vanilla's render-block flags order them.
+    #[must_use]
+    pub const fn layer(self) -> u8 {
+        1 << (self as u32 - 1)
+    }
+
+    /// Whether the marker is a sprite facing the camera rather than a box.
+    #[must_use]
+    pub const fn is_camera_facing(self) -> bool {
+        !matches!(self, Self::StructureVoid)
+    }
+}
+
+/// An invisible visual names no marker or one marker class; its art may be missing.
+pub(crate) const fn terrain_marker_variant_is_valid(kind: VisualKind, variant: u32) -> bool {
+    !matches!(kind, VisualKind::Invisible)
+        || variant == 0
+        || TerrainMarker::from_variant(kind, variant).is_some()
+}
+
+/// Template selects its body or head quads from the primary block above it.
+pub const MODEL_TEMPLATE_FLAG_KELP: u32 = 1 << 0;
+/// Template belongs to a contiguous five-shape stair topology group.
+pub const MODEL_TEMPLATE_FLAG_STAIR: u32 = 1 << 1;
+/// Template continues into the immediately following part. A plain part ends
+/// the chain, and each part retains one bounded visibility mask.
+pub const MODEL_TEMPLATE_FLAG_COMPOUND_NEXT: u32 = 1 << 2;
+/// Template belongs to a contiguous sixteen-mask thin-pane topology group.
+pub const MODEL_TEMPLATE_FLAG_PANE: u32 = 1 << 3;
+/// Quad counts a pane template can have: an unconnected post, up to a four-way two-faced pane.
+pub(crate) const PANE_TEMPLATE_QUADS: std::ops::RangeInclusive<u32> = 6..=22;
+/// Template belongs to a wood-fence post plus sixteen-mask arm group.
+pub const MODEL_TEMPLATE_FLAG_FENCE_WOOD: u32 = 1 << 4;
+/// Template belongs to a nether-fence post plus sixteen-mask arm group.
+pub const MODEL_TEMPLATE_FLAG_FENCE_NETHER: u32 = 1 << 5;
+/// Template belongs to the connection-aware wall family.
+pub const MODEL_TEMPLATE_FLAG_WALL: u32 = 1 << 6;
+/// Compound fence gate whose facing direction lies on the X axis.
+pub const MODEL_TEMPLATE_FLAG_GATE_AXIS_X: u32 = 1 << 7;
+/// Compound fence gate whose facing direction lies on the Z axis.
+pub const MODEL_TEMPLATE_FLAG_GATE_AXIS_Z: u32 = 1 << 8;
+/// Standalone six-quad unit cube whose materials use alpha blending.
+pub const MODEL_TEMPLATE_FLAG_TRANSPARENT_CUBE: u32 = 1 << 9;
+/// Floor-anchored snow cuboid whose touching sides use height-aware occlusion.
+pub const MODEL_TEMPLATE_FLAG_SNOW_LAYER: u32 = 1 << 10;
+/// Native lily-pad planes use positional quarter turns and own-cell flat light.
+pub const MODEL_TEMPLATE_FLAG_LILY_PAD: u32 = 1 << 11;
+/// Template belongs to the supported/attached native fire topology group.
+pub const MODEL_TEMPLATE_FLAG_FIRE: u32 = 1 << 12;
+/// Nether portal cuboids; legacy unknown-axis visuals select between a Z/X pair.
+pub const MODEL_TEMPLATE_FLAG_NETHER_PORTAL: u32 = 1 << 13;
+/// Bamboo stalks and radial leaves select position-dependent stem UVs and offsets.
+pub const MODEL_TEMPLATE_FLAG_BAMBOO: u32 = 1 << 14;
+/// Potted contents precede their ordinary standalone world template.
+pub const MODEL_TEMPLATE_FLAG_POTTED_PLANT: u32 = 1 << 15;
+/// Bubble-column shells select positional sprites and an exposed surface template.
+pub const MODEL_TEMPLATE_FLAG_BUBBLE_COLUMN: u32 = 1 << 16;
+/// Native torch planes take one light value from their own cell, with no neighbour AO.
+pub const MODEL_TEMPLATE_FLAG_TORCH: u32 = 1 << 17;
+/// Templates retain all poses and both texture halves for one door class.
+pub const MODEL_TEMPLATE_FLAG_DOOR: u32 = 1 << 18;
+/// Native grass crosses use a coordinate-derived three-axis component displacement.
+pub const MODEL_TEMPLATE_FLAG_SHORT_GRASS: u32 = 1 << 19;
+/// Template keeps the placed chorus envelope and selects its distinct inventory shape.
+pub const MODEL_TEMPLATE_FLAG_CHORUS: u32 = 1 << 20;
+/// Heavy-core templates retain their placed shape with a larger inventory preview.
+pub const MODEL_TEMPLATE_FLAG_HEAVY_CORE: u32 = 1 << 21;
+/// Shelf templates retain their placed size with a larger inventory preview.
+pub const MODEL_TEMPLATE_FLAG_SHELF: u32 = 1 << 22;
+/// Azalea templates select a separate stem and canopy for inventory previews.
+pub const MODEL_TEMPLATE_FLAG_AZALEA: u32 = 1 << 23;
+/// First of a chorus plant's template bank, indexed by `chorus::template_offset`.
+pub const MODEL_TEMPLATE_FLAG_CHORUS_PLANT: u32 = 1 << 28;
+/// The item GUI draws this shape through its world tessellator, so its faces take flat world
+/// directional shading instead of the inventory cube's.
+pub const MODEL_TEMPLATE_FLAG_GUI_WORLD_SHADE: u32 = 1 << 31;
+/// Pointed dripstone and sulfur spike crosses slide around their column by a narrower offset.
+pub const MODEL_TEMPLATE_FLAG_SPELEOTHEM: u32 = 1 << 24;
+/// Downward-growing vine: two stem planes then two tip planes, chosen by the cell below.
+pub const MODEL_TEMPLATE_FLAG_WEEPING_VINE: u32 = 1 << 25;
+/// Upward-growing vine: two stem planes then two tip planes, chosen by the cell above.
+pub const MODEL_TEMPLATE_FLAG_TWISTING_VINE: u32 = 1 << 26;
+/// Head of a scaffolding chain: a foot ring only drawn with no support below, then the
+/// rest of the model in the following parts.
+pub const MODEL_TEMPLATE_FLAG_SCAFFOLDING: u32 = 1 << 29;
+
+/// Reports whether scaffolding above a block with these facts stands on it, which starts its
+/// template chain after the foot ring. Terrain and block overlays share this answer.
+#[must_use]
+pub const fn scaffolding_is_supported(below: crate::BlockFlags, below_template_flags: u32) -> bool {
+    below.contains(crate::BlockFlags::FIRE_TOP_SUPPORT)
+        || below_template_flags & MODEL_TEMPLATE_FLAG_SCAFFOLDING != 0
+}
+/// A piston's three-quarter world body; the next template is the full cube its item draws.
+pub const MODEL_TEMPLATE_FLAG_PISTON_BODY: u32 = 1 << 27;
+/// Draws a sheet's regions from its full-resolution quadrant layers; the next template is the same
+/// shape with UVs across the whole sheet, for a sheet replaced by art on a single layer.
+pub const MODEL_TEMPLATE_FLAG_SHEET_TILES: u32 = 1 << 30;
+
+/// Standalone plant templates that may follow their separate pot-content geometry.
+pub(crate) const fn potted_world_template_flags_are_valid(flags: u32) -> bool {
+    matches!(
+        flags,
+        0 | MODEL_TEMPLATE_FLAG_BAMBOO
+            | MODEL_TEMPLATE_FLAG_SHORT_GRASS
+            | MODEL_TEMPLATE_FLAG_AZALEA
+            | MODEL_TEMPLATE_FLAG_WEEPING_VINE
+            | MODEL_TEMPLATE_FLAG_TWISTING_VINE
+    )
+}
+
+/// Templates in one stair topology group: the straight shape and four corner shapes.
+pub const STAIR_TEMPLATE_COUNT: u32 = 5;
+/// Templates in one thin-pane group, one per connection mask.
+pub const PANE_TEMPLATE_COUNT: u32 = 16;
+/// Templates in one fence group: the post, then one arm set per connection mask.
+pub const FENCE_TEMPLATE_COUNT: u32 = 1 + 16;
+/// Number of positional sprite variants in each bubble-column surface group.
+pub const BUBBLE_COLUMN_POSITION_VARIANTS: u32 = 4;
+/// Submerged and exposed bubble-column templates, in that order.
+pub const BUBBLE_COLUMN_TEMPLATE_COUNT: u32 = BUBBLE_COLUMN_POSITION_VARIANTS * 2;
+
+/// Returns the shell and optional surface quad count for a column template offset.
+pub const fn bubble_column_quad_count(offset: u32) -> u32 {
+    8 + (offset >= BUBBLE_COLUMN_POSITION_VARIANTS) as u32
+}
+/// Neighbor-selected portal axis. The low two model-transform bits stay zero.
+pub const BLOCK_VISUAL_VARIANT_PORTAL_UNKNOWN: u32 = 1 << 2;
+pub const NETHER_PORTAL_IDENTIFIER: &str = crate::facts::VanillaBlock::Portal.identifier();
+
+/// The End portal surface is drawn by the block-entity renderer.
+pub const END_PORTAL_IDENTIFIER: &str = crate::facts::VanillaBlock::EndPortal.identifier();
+
+/// The End gateway uses the same animated surface family.
+pub const END_GATEWAY_IDENTIFIER: &str = crate::facts::VanillaBlock::EndGateway.identifier();
+
+/// End portal frame state identity shared by compilation and presentation.
+pub const END_PORTAL_FRAME_IDENTIFIER: &str =
+    crate::facts::VanillaBlock::EndPortalFrame.identifier();
+
+/// Checks the six outward unit-cube surfaces in canonical face order.
+pub(crate) fn unit_cube_quad_geometry_is_valid(
+    index: usize,
+    positions: [[i16; 3]; 4],
+    flags: u32,
+) -> bool {
+    const POSITIONS: [[[i16; 3]; 4]; 6] = [
+        [[0, 0, 0], [0, 0, 256], [0, 256, 256], [0, 256, 0]],
+        [[256, 0, 0], [256, 256, 0], [256, 256, 256], [256, 0, 256]],
+        [[0, 0, 0], [256, 0, 0], [256, 0, 256], [0, 0, 256]],
+        [[0, 256, 0], [0, 256, 256], [256, 256, 256], [256, 256, 0]],
+        [[0, 0, 0], [0, 256, 0], [256, 256, 0], [256, 0, 0]],
+        [[0, 0, 256], [256, 0, 256], [256, 256, 256], [0, 256, 256]],
+    ];
+    const FLAGS: [u32; 6] = [3, 4, 1, 2, 5, 6];
+    POSITIONS.get(index) == Some(&positions) && FLAGS.get(index) == Some(&flags)
+}
+
+/// The template an item of `template`'s block draws: a piston item is a full cube although its
+/// world body stops short of the head.
+#[must_use]
+pub fn item_model_template(templates: &[ModelTemplate], template: u32) -> u32 {
+    let body = templates
+        .get(template as usize)
+        .is_some_and(|part| part.flags & MODEL_TEMPLATE_FLAG_PISTON_BODY != 0);
+    template + u32::from(body)
+}
+
+/// Selects the shape whose UVs are fractions of the block's whole texture sheet, which is what a
+/// surface drawn with other art, such as breaking cracks, maps across each face.
+pub fn whole_sheet_model_template(templates: &[ModelTemplate], template: u32) -> u32 {
+    let tiled = templates
+        .get(template as usize)
+        .is_some_and(|part| part.flags & MODEL_TEMPLATE_FLAG_SHEET_TILES != 0);
+    template + u32::from(tiled)
+}
+
+/// Requires a sheet-tile template to be followed by its whole-sheet pair of equal shape.
+pub(crate) const fn sheet_tile_template_pair_is_valid(
+    flags: u32,
+    quad_count: u32,
+    next: Option<(u32, u32)>,
+) -> bool {
+    if flags & MODEL_TEMPLATE_FLAG_SHEET_TILES == 0 {
+        return true;
+    }
+    match next {
+        Some((next_flags, next_quad_count)) => {
+            next_flags == flags & !MODEL_TEMPLATE_FLAG_SHEET_TILES && next_quad_count == quad_count
+        }
+        None => false,
+    }
+}
+
+pub(crate) const fn model_template_flags_are_valid(flags: u32) -> bool {
+    matches!(
+        flags,
+        0 | MODEL_TEMPLATE_FLAG_KELP
+            | MODEL_TEMPLATE_FLAG_STAIR
+            | MODEL_TEMPLATE_FLAG_PANE
+            | MODEL_TEMPLATE_FLAG_FENCE_WOOD
+            | MODEL_TEMPLATE_FLAG_FENCE_NETHER
+            | MODEL_TEMPLATE_FLAG_WALL
+            | MODEL_TEMPLATE_FLAG_COMPOUND_NEXT
+            | MODEL_TEMPLATE_FLAG_TRANSPARENT_CUBE
+            | MODEL_TEMPLATE_FLAG_SNOW_LAYER
+            | MODEL_TEMPLATE_FLAG_LILY_PAD
+            | MODEL_TEMPLATE_FLAG_FIRE
+            | MODEL_TEMPLATE_FLAG_NETHER_PORTAL
+            | MODEL_TEMPLATE_FLAG_BAMBOO
+            | MODEL_TEMPLATE_FLAG_POTTED_PLANT
+            | MODEL_TEMPLATE_FLAG_BUBBLE_COLUMN
+            | MODEL_TEMPLATE_FLAG_TORCH
+            | MODEL_TEMPLATE_FLAG_DOOR
+            | MODEL_TEMPLATE_FLAG_SHORT_GRASS
+            | MODEL_TEMPLATE_FLAG_CHORUS
+            | MODEL_TEMPLATE_FLAG_HEAVY_CORE
+            | MODEL_TEMPLATE_FLAG_SHELF
+            | MODEL_TEMPLATE_FLAG_AZALEA
+            | MODEL_TEMPLATE_FLAG_CHORUS_PLANT
+            | MODEL_TEMPLATE_FLAG_SPELEOTHEM
+            | MODEL_TEMPLATE_FLAG_WEEPING_VINE
+            | MODEL_TEMPLATE_FLAG_TWISTING_VINE
+            | MODEL_TEMPLATE_FLAG_PISTON_BODY
+            | MODEL_TEMPLATE_FLAG_GUI_WORLD_SHADE
+    ) || flags == MODEL_TEMPLATE_FLAG_COMPOUND_NEXT | MODEL_TEMPLATE_FLAG_GATE_AXIS_X
+        || flags == MODEL_TEMPLATE_FLAG_COMPOUND_NEXT | MODEL_TEMPLATE_FLAG_GATE_AXIS_Z
+        || flags == MODEL_TEMPLATE_FLAG_SHEET_TILES
+        || flags == MODEL_TEMPLATE_FLAG_SHELF | MODEL_TEMPLATE_FLAG_SHEET_TILES
+        || flags == MODEL_TEMPLATE_FLAG_COMPOUND_NEXT | MODEL_TEMPLATE_FLAG_SCAFFOLDING
+}
+
+/// Number of templates from `first` that terrain meshing and model consumers may select for a
+/// visual whose template is `first`: a topology group's complete span, or the compound chain
+/// otherwise. `None` when the selection has no fixed span, as for nether portals, or the flags
+/// are unknown, so copying the span never drops a template the mesher can reach.
+#[must_use]
+pub fn model_template_span(templates: &[ModelTemplate], first: u32) -> Option<u32> {
+    let flags = templates.get(first as usize)?.flags;
+    let group = match flags {
+        MODEL_TEMPLATE_FLAG_STAIR => STAIR_TEMPLATE_COUNT,
+        MODEL_TEMPLATE_FLAG_PANE => PANE_TEMPLATE_COUNT,
+        MODEL_TEMPLATE_FLAG_FENCE_WOOD | MODEL_TEMPLATE_FLAG_FENCE_NETHER => FENCE_TEMPLATE_COUNT,
+        MODEL_TEMPLATE_FLAG_DOOR => crate::door::TEMPLATE_COUNT,
+        MODEL_TEMPLATE_FLAG_BUBBLE_COLUMN => BUBBLE_COLUMN_TEMPLATE_COUNT,
+        MODEL_TEMPLATE_FLAG_FIRE => crate::fire::FIRE_TEMPLATE_COUNT,
+        0
+        | MODEL_TEMPLATE_FLAG_COMPOUND_NEXT
+        | MODEL_TEMPLATE_FLAG_KELP
+        | MODEL_TEMPLATE_FLAG_WALL
+        | MODEL_TEMPLATE_FLAG_TRANSPARENT_CUBE
+        | MODEL_TEMPLATE_FLAG_SNOW_LAYER
+        | MODEL_TEMPLATE_FLAG_LILY_PAD
+        | MODEL_TEMPLATE_FLAG_BAMBOO
+        | MODEL_TEMPLATE_FLAG_TORCH
+        | MODEL_TEMPLATE_FLAG_SHORT_GRASS => {
+            return model_template_parts(templates, first).map(|parts| parts.len() as u32);
+        }
+        _ if flags & MODEL_TEMPLATE_FLAG_COMPOUND_NEXT != 0
+            && model_template_flags_are_valid(flags) =>
+        {
+            return model_template_parts(templates, first).map(|parts| parts.len() as u32);
+        }
+        _ => return None,
+    };
+    (templates.len() >= first as usize + group as usize).then_some(group)
+}
+
+/// Page field of a texture reference: three bits above the GPU metadata word,
+/// addressing the base carrier page plus up to four overlay shards. Layer
+/// addressing is unchanged, so each shard stays within the device per-array
+/// limit while the overlay totals four shards.
+pub const TEXTURE_PAGE_SHIFT: u32 = 28;
+pub const TEXTURE_PAGE_MASK: u32 = (1 << 3) - 1;
+const TEXTURE_RESERVED_MASK: u32 =
+    !((TEXTURE_PAGE_MASK << TEXTURE_PAGE_SHIFT) | TEXTURE_LAYER_MASK);
+
+/// Canonical reference to a layer in one of at most [`MAX_TEXTURE_PAGES`]
+/// texture-array pages: page zero is the base carrier, higher pages are
+/// overlay shards in order.
+#[repr(transparent)]
+#[derive(
+    Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
+pub struct TextureRef(u32);
+
+impl TextureRef {
+    pub const DIAGNOSTIC: Self = Self(0);
+
+    pub fn new(page: u32, layer: u32) -> Result<Self, AssetError> {
+        if page >= MAX_TEXTURE_PAGES as u32 || layer > TEXTURE_LAYER_MASK {
+            return Err(invalid(format!(
+                "texture reference page {page}, layer {layer} is out of range"
+            )));
+        }
+        Ok(Self((page << TEXTURE_PAGE_SHIFT) | layer))
+    }
+
+    pub fn from_raw(raw: u32) -> Result<Self, AssetError> {
+        if raw & TEXTURE_RESERVED_MASK != 0 {
+            return Err(invalid(format!(
+                "texture reference {raw:#010x} has non-zero reserved bits"
+            )));
+        }
+        if (raw >> TEXTURE_PAGE_SHIFT) & TEXTURE_PAGE_MASK >= MAX_TEXTURE_PAGES as u32 {
+            return Err(invalid(format!(
+                "texture reference {raw:#010x} names no allocated page"
+            )));
+        }
+        Ok(Self(raw))
+    }
+
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+
+    #[must_use]
+    pub const fn page(self) -> u32 {
+        (self.0 >> TEXTURE_PAGE_SHIFT) & TEXTURE_PAGE_MASK
+    }
+
+    #[must_use]
+    pub const fn layer(self) -> u32 {
+        self.0 & TEXTURE_LAYER_MASK
+    }
+}
+
+/// One physical texture-array page. Pages are serialized with independent hashes.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TexturePage {
+    pub texture: TextureArray,
+}
+
+impl TexturePage {
+    #[must_use]
+    pub const fn new(texture: TextureArray) -> Self {
+        Self { texture }
+    }
+}
+
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum VisualKind {
+    Diagnostic = 0,
+    Cube = 1,
+    Cross = 2,
+    Model = 3,
+    Liquid = 4,
+    Invisible = 5,
+}
+
+impl VisualKind {
+    pub(crate) fn from_raw(raw: u8) -> Result<Self, AssetError> {
+        match raw {
+            0 => Ok(Self::Diagnostic),
+            1 => Ok(Self::Cube),
+            2 => Ok(Self::Cross),
+            3 => Ok(Self::Model),
+            4 => Ok(Self::Liquid),
+            5 => Ok(Self::Invisible),
+            _ => Err(invalid(format!("unknown visual kind {raw}"))),
+        }
+    }
+}
+
+/// Evidence status of a compiled canonical block visual.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum VisualSupport {
+    Exact = 0,
+    VanillaFallback = 1,
+    Diagnostic = 2,
+}
+
+impl VisualSupport {
+    pub(crate) fn from_raw(raw: u8) -> Result<Self, AssetError> {
+        match raw {
+            0 => Ok(Self::Exact),
+            1 => Ok(Self::VanillaFallback),
+            2 => Ok(Self::Diagnostic),
+            _ => Err(invalid(format!("unknown visual support {raw}"))),
+        }
+    }
+}
+
+/// A bounded span of immutable model quads.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ModelTemplate {
+    pub quad_start: u32,
+    pub quad_count: u32,
+    pub flags: u32,
+}
+
+/// Returns the contiguous parts of one admitted compound model without allocating.
+#[must_use]
+pub fn model_template_parts(templates: &[ModelTemplate], first: u32) -> Option<&[ModelTemplate]> {
+    let first = first as usize;
+    let mut end = first;
+    loop {
+        let part = templates.get(end)?;
+        end += 1;
+        if part.flags & MODEL_TEMPLATE_FLAG_COMPOUND_NEXT == 0 {
+            return templates.get(first..end);
+        }
+    }
+}
+
+/// Fixed-point position units in one model block.
+pub const MODEL_POSITION_SCALE: i16 = 256;
+/// Fixed-point UV units in one texture tile.
+pub const MODEL_UV_SCALE: u16 = 4096;
+
+/// Fixed-point template quad. Position coordinates use 1/256 block units.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ModelQuad {
+    pub positions: [[i16; 3]; 4],
+    /// Per-vertex UV coordinates in 1/4096 texture-tile units. Values above
+    /// 4096 intentionally support wrapped UVs on greedy-compatible templates.
+    pub uvs: [[u16; 2]; 4],
+    pub material: u32,
+    pub flags: u32,
+}
+
+const _: () = assert!(std::mem::size_of::<ModelQuad>() == 48);
+
+/// Optional face and cull-face use `0 = none`, `1..=6 =
+/// down/up/west/east/north/south` in their respective three-bit fields.
+pub const MODEL_QUAD_FLAG_FACE_MASK: u32 = 0x07;
+pub const MODEL_QUAD_FLAG_TWO_SIDED: u32 = 1 << 3;
+pub const MODEL_QUAD_FLAG_CULL_FACE_MASK: u32 = 0x70;
+/// Detail quad that native tessellation draws straight after a cuboid without setting a new
+/// vertex colour or light. It keeps the shade and final vertex light of the last face that
+/// cuboid drew; the cuboid is the run of distinct faced quads just before the detail quads.
+pub const MODEL_QUAD_FLAG_INHERITED_SHADE: u32 = 1 << 7;
+/// Down or up quad whose UVs stay aligned to the world axes when its template is turned about
+/// y: renderers undo the model's quarter turns on the UVs with [`world_aligned_uv`].
+pub const MODEL_QUAD_FLAG_WORLD_ALIGNED_UV: u32 = 1 << 8;
+pub(crate) const MODEL_QUAD_FLAGS_MASK: u32 = MODEL_QUAD_FLAG_FACE_MASK
+    | MODEL_QUAD_FLAG_TWO_SIDED
+    | MODEL_QUAD_FLAG_CULL_FACE_MASK
+    | MODEL_QUAD_FLAG_INHERITED_SHADE
+    | MODEL_QUAD_FLAG_WORLD_ALIGNED_UV;
+
+/// The UV a template corner samples once its template is turned `turns` quarter turns about y,
+/// as `model.wesl::rotate_cross` turns positions.
+///
+/// Quads without [`MODEL_QUAD_FLAG_WORLD_ALIGNED_UV`] keep their authored UV. Flagged down and
+/// up quads author the native cube UV of their unturned position (down `+x/-z`, up `+x/+z`)
+/// and get the native UV of their turned position.
+#[must_use]
+pub fn world_aligned_uv(flags: u32, turns: u32, [u, v]: [f32; 2]) -> [f32; 2] {
+    if flags & MODEL_QUAD_FLAG_WORLD_ALIGNED_UV == 0 {
+        return [u, v];
+    }
+    let up = flags & MODEL_QUAD_FLAG_FACE_MASK == 2;
+    match (turns & 3, up) {
+        (1, true) | (3, false) => [1.0 - v, u],
+        (1, false) | (3, true) => [v, 1.0 - u],
+        (2, _) => [1.0 - u, 1.0 - v],
+        _ => [u, v],
+    }
+}
+
+pub(crate) const fn model_quad_flags_are_valid(flags: u32) -> bool {
+    flags & !MODEL_QUAD_FLAGS_MASK == 0
+        && flags & MODEL_QUAD_FLAG_FACE_MASK <= 6
+        && (flags & MODEL_QUAD_FLAG_CULL_FACE_MASK) >> 4 <= 6
+}
+
+/// Immutable animation timeline descriptor.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Animation {
+    pub frame_start: u32,
+    pub frame_count: u32,
+    pub ticks_per_frame: u32,
+    pub atlas_index: u32,
+    pub atlas_tile_variant: u32,
+    pub replicate: u32,
+    pub flags: u32,
+}
+
+pub const ANIMATION_FLAG_BLEND: u32 = 1;
+pub(crate) const ANIMATION_FLAGS_MASK: u32 = ANIMATION_FLAG_BLEND;
+
+fn invalid(detail: impl Into<Box<str>>) -> AssetError {
+    AssetError::InvalidCompiledAssets {
+        detail: detail.into(),
+    }
+}

@@ -10,8 +10,8 @@
  */
 
 import type { Fallback, Pose, TextProps } from "../ComponentTypes.js";
+import { Defaults as SurfaceDefaults, Tint } from "../../Canvas/Surface.js";
 import { Kind } from "./ComponentKind.js";
-import { Tint } from "../../Canvas/Surface.js";
 
 /**
  * Host context survives providers, fragments and ordinary function components.
@@ -432,7 +432,11 @@ export function CheckProps(type: string, props: Readonly<Record<string, unknown>
             throw new Error("PixelsPerBlock must be positive.");
         }
 
-        NumberOf(props.LayerDepth ?? 0.002, "LayerDepth");
+        if (NumberOf(props.LayerDepth ?? SurfaceDefaults.LayerDepth, "LayerDepth") === 0)
+        {
+            throw new Error("LayerDepth must be positive.");
+        }
+
         PoseOf(props.Transform as Pose | undefined);
     }
 

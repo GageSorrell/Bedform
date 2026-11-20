@@ -1,0 +1,521 @@
+//! Anonymous session-boundary and launcher popup fixtures.
+
+use super::{Arc, Fixture, GUI_SCALE, SIZE, SettingSection, State, settings};
+use launcher::menu::{MenuAction, MenuDialog, MenuScreen, MenuView};
+
+/// Creates a menu fixture with no account or network services.
+fn menu() -> MenuView {
+    MenuView::new(true, "Player".into())
+}
+
+/// Shows the loaded Profile card with an anonymous account and no featured screenshot.
+pub(super) fn profile_loaded() -> Fixture {
+    let mut view = MenuView::new(true, "ExamplePlayer".into());
+    view.screen = MenuScreen::Profile;
+    view.auth_state = launcher::menu::auth::AuthState::Authenticated;
+    view.feeds.profile.loaded = true;
+    view.feeds.profile.avatar_loaded = true;
+    view.feeds.profile.featured_screenshot_loaded = true;
+    view.feeds.profile.gamertag = "ExamplePlayer".into();
+    view.feeds.profile.xuid = "0".into();
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows invalid-cache failure or the fresh sign-in prompt with anonymous credentials.
+pub(super) fn sign_in_recovery(recovered: bool) -> Fixture {
+    use launcher::menu::{auth::AuthState, sign_in::BrowserState};
+
+    let mut view = menu();
+    view.sign_in_requested = true;
+    if recovered {
+        view.auth_state = AuthState::AwaitingCode {
+            uri: "https://example.invalid/sign-in".into(),
+            code: "DEMO-CODE".into(),
+        };
+        view.sign_in_browser = BrowserState::Opened;
+        view.focused_action = Some(MenuAction::OpenSignInLink);
+    } else {
+        view.auth_state = AuthState::Failed("Could not validate the saved account.".into());
+        view.focused_action = Some(MenuAction::StartSignIn);
+    }
+    Fixture::Menu(Box::new(view))
+}
+
+/// Wraps a launcher dialog over settings.
+fn dialog(value: MenuDialog) -> Fixture {
+    let mut view = menu();
+    view.screen = MenuScreen::Settings;
+    view.dialog = Some(value);
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows a retryable remote-session failure.
+pub(super) fn disconnect() -> Fixture {
+    let mut view = menu();
+    view.disconnect_message = Some(launcher::menu::disconnect::from_server(
+        "The server is restarting. Please try again in a moment.",
+    ));
+    view.can_reconnect = true;
+    view.focused_action = Some(MenuAction::Reconnect);
+    view.navigation_focus_visible = true;
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows wrapping, paragraph breaks and server-supplied formatting.
+pub(super) fn disconnect_ban() -> Fixture {
+    let Fixture::Menu(mut view) = disconnect() else {
+        unreachable!()
+    };
+    view.disconnect_message = Some(launcher::menu::disconnect::from_server(
+        "§c§lYou are banned from this server.§r\n\n§eReason: §fRepeated violations of the community rules after multiple warnings. This restriction applies to all game modes on this server.\n\n§7Duration: §f7 days\n§7Reference: §fEXAMPLE-1234\n\n§aIf you believe this was a mistake, contact the moderation team with the reference above and a description of what happened.",
+    ));
+    Fixture::Menu(view)
+}
+
+/// Shows an acknowledgement when no reconnect destination exists.
+pub(super) fn disconnect_no_retry() -> Fixture {
+    let Fixture::Menu(mut view) = disconnect() else {
+        unreachable!()
+    };
+    view.can_reconnect = false;
+    view.focused_action = Some(MenuAction::DismissDialog);
+    Fixture::Menu(view)
+}
+
+/// Shows a join the core refused because this device's clock rejected the sign-in token.
+pub(super) fn disconnect_device_clock() -> Fixture {
+    let Fixture::Menu(mut view) = disconnect() else {
+        unreachable!()
+    };
+    view.disconnect_message = Some(launcher::menu::disconnect::from_server(
+        bridge::contract::DISCONNECT_KEY_DEVICE_CLOCK,
+    ));
+    Fixture::Menu(view)
+}
+
+/// Shows a local BDS world the core could not reach because the device is offline.
+pub(super) fn disconnect_local_world_offline() -> Fixture {
+    let Fixture::Menu(mut view) = disconnect() else {
+        unreachable!()
+    };
+    view.disconnect_message = Some(launcher::menu::disconnect::from_server(
+        bridge::contract::DISCONNECT_KEY_LOCAL_WORLD_OFFLINE,
+    ));
+    Fixture::Menu(view)
+}
+
+/// Shows an unreachable destination under the failed-connection title.
+pub(super) fn connect_failed() -> Fixture {
+    let Fixture::Menu(mut view) = disconnect() else {
+        unreachable!()
+    };
+    view.disconnect_message =
+        Some("bridge connection failed: Connection refused (os error 61)".into());
+    Fixture::Menu(view)
+}
+
+/// Shows the first-join trust question over progress.
+pub(super) fn server_trust() -> Fixture {
+    let mut view = menu();
+    view.connecting = true;
+    view.feeds.server_trust = Some(launcher::menu::ServerTrustPrompt {
+        id: 1,
+        url: "https://example.invalid".into(),
+        from_session_core: false,
+    });
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows a pending join request from an anonymous friend.
+pub(super) fn join_request() -> Fixture {
+    let mut view = menu();
+    view.join_request = Some("Friend".into());
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows the saved-server removal confirmation.
+pub(super) fn remove_server() -> Fixture {
+    let Fixture::Menu(mut view) = dialog(MenuDialog::RemoveSaved(0)) else {
+        unreachable!()
+    };
+    view.servers.push(launcher::menu::SavedServer {
+        name: "Example server".into(),
+        address: "example.invalid".into(),
+        favorite: false,
+        last_joined_unix: 0,
+    });
+    Fixture::Menu(view)
+}
+
+/// Shows the cached-data deletion confirmation.
+pub(super) fn storage_delete() -> Fixture {
+    let Fixture::Menu(mut view) = settings_storage() else {
+        unreachable!()
+    };
+    view.dialog = Some(MenuDialog::StorageDelete);
+    Arc::make_mut(&mut view.storage).delete_summary =
+        "Cloud Islands 1.2.3\naaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee".into();
+    Fixture::Menu(view)
+}
+
+/// Shows a local storage failure.
+pub(super) fn storage_error() -> Fixture {
+    let Fixture::Menu(mut view) = dialog(MenuDialog::StorageError) else {
+        unreachable!()
+    };
+    std::sync::Arc::make_mut(&mut view.storage).error =
+        Some("The selected files could not be removed. Please try again.".into());
+    Fixture::Menu(view)
+}
+
+/// Shows a storage failure long enough that its body scrolls above pinned actions.
+pub(super) fn storage_error_long() -> Fixture {
+    let Fixture::Menu(mut view) = dialog(MenuDialog::StorageError) else {
+        unreachable!()
+    };
+    std::sync::Arc::make_mut(&mut view.storage).error = Some(
+        (1..=24)
+            .map(|line| format!("Line {line}: example.invalid/cache/pack-{line} could not be removed because another process holds it open."))
+            .collect::<Vec<_>>()
+            .join("\n"),
+    );
+    Fixture::Menu(view)
+}
+
+/// Shows the help-center question.
+pub(super) fn settings_help() -> Fixture {
+    dialog(MenuDialog::SettingsSupport(
+        launcher::menu::settings_support::SupportDialog::Help,
+    ))
+}
+
+/// Shows the bundled font notice.
+pub(super) fn font_license() -> Fixture {
+    dialog(MenuDialog::SettingsSupport(
+        launcher::menu::settings_support::SupportDialog::FontLicense,
+    ))
+}
+
+/// Shows the keyboard-binding reset confirmation.
+pub(super) fn reset_bindings() -> Fixture {
+    dialog(MenuDialog::SettingsResetBindings(false))
+}
+
+/// Shows the settings reset confirmation.
+pub(super) fn reset_settings() -> Fixture {
+    dialog(MenuDialog::SettingsResetGroup(
+        launcher::menu::settings_options::SettingsGroup::Video,
+    ))
+}
+
+/// Play keyboard focus, joined Realm selection and leave confirmation.
+pub(super) const STATES: &[State] = &[
+    State {
+        name: "play-worlds-keyboard-focus",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: play_worlds_keyboard_focus,
+    },
+    State {
+        name: "realms-joined",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || realms_joined(None),
+    },
+    State {
+        name: "leave-realm",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || realms_joined(Some(MenuDialog::LeaveRealm(7))),
+    },
+];
+
+/// Shows the Realms tab with an owned and a selected joined Realm, optionally under a dialog.
+pub(super) fn realms_joined(dialog: Option<MenuDialog>) -> Fixture {
+    let mut view = menu();
+    view.screen = MenuScreen::Social;
+    view.auth_state = launcher::menu::auth::AuthState::Authenticated;
+    let realm = |name: &str, id: u32, member: bool| launcher::menu::MenuRealmCard {
+        name: name.to_owned(),
+        state: "OPEN".to_owned(),
+        target: format!("{}{id}", launcher::menu::REALM_ADDRESS_PREFIX),
+        address: String::new(),
+        owner: String::new(),
+        online_players: 2,
+        max_players: 10,
+        days_left: 30,
+        expired: false,
+        member,
+    };
+    view.realms = vec![
+        realm("My Realm", 3, false),
+        realm("Friend's Realm", 7, true),
+    ]
+    .into();
+    view.feeds.selected_realm = Some(1);
+    view.dialog = dialog;
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows the Worlds tab with one saved world under its create and import buttons.
+pub(super) fn play_worlds() -> Fixture {
+    let mut view = menu();
+    view.screen = MenuScreen::Play;
+    view.local_worlds = vec![launcher::menu::LocalWorldCard {
+        name: "My World".to_owned(),
+        game_mode: "Survival".to_owned(),
+        world_type: launcher::local_worlds::NORMAL_WORLD_LABEL.to_owned(),
+        server: String::new(),
+        date: "9/30/2026".to_owned(),
+        size: "12.0 MB".to_owned(),
+        thumbnail: None,
+    }]
+    .into();
+    Fixture::Menu(Box::new(view))
+}
+
+/// The Worlds tab while a controller drives the menu, showing the bumper hints.
+pub(super) fn play_worlds_gamepad() -> Fixture {
+    let Fixture::Menu(mut view) = play_worlds() else {
+        unreachable!("play_worlds is a menu fixture")
+    };
+    view.gamepad_input = true;
+    view.navigation_focus_visible = true;
+    Fixture::Menu(view)
+}
+
+/// The Worlds tab with keyboard focus on the first world, outlined on every side.
+pub(super) fn play_worlds_keyboard_focus() -> Fixture {
+    let Fixture::Menu(mut view) = play_worlds() else {
+        unreachable!("play_worlds is a menu fixture")
+    };
+    view.focused_action = Some(MenuAction::PlayLocalWorld(0));
+    view.navigation_focus_visible = true;
+    Fixture::Menu(view)
+}
+
+/// Shows the modal over the Worlds tab while a world file is copied in.
+pub(super) fn play_worlds_importing() -> Fixture {
+    let Fixture::Menu(mut view) = play_worlds() else {
+        unreachable!()
+    };
+    view.local.screen = launcher::local_worlds::Screen::Importing;
+    view.local.busy = true;
+    Fixture::Menu(view)
+}
+
+/// Drives Create World through the real menu while the Docker probe reports `reason`.
+pub(super) fn docker_prompt(reason: launcher::local_worlds::world::UnavailableReason) -> Fixture {
+    use launcher::local_worlds::world::{Prefs, Setup, SetupState, WorldStatus};
+    use launcher::local_worlds::{Event, Input, WorldsMenu};
+    let status = WorldStatus {
+        state: bridge::WorldState::Idle,
+        world_id: None,
+        backend: None,
+        paused: false,
+        pause_supported: true,
+        error: None,
+        setup: Some(Setup {
+            state: SetupState::Unsupported,
+            version: None,
+            bytes_done: 0,
+            bytes_total: 0,
+            layers_done: 0,
+            layers_total: 0,
+            eula_accepted: false,
+            error: None,
+            runtime: "none".into(),
+            reason: None,
+        }),
+        backend_unavailable_reason: Some(reason),
+        max_players: None,
+    };
+    let mut worlds = WorldsMenu::default();
+    let _ = worlds.apply(Event::Prefs(Prefs::default(), status.clone()));
+    let _ = worlds.update(Input::BeginCreate);
+    let _ = worlds.update(Input::SubmitCreate);
+    let _ = worlds.apply(Event::Prefs(Prefs::default(), status));
+    let Fixture::Menu(mut view) = play_worlds() else {
+        unreachable!()
+    };
+    view.local = worlds.view();
+    Fixture::Menu(view)
+}
+
+/// Drives the real delete-and-Back transition while the worker's reply is still pending.
+pub(super) fn world_edit_after_delete_back() -> Fixture {
+    use launcher::local_worlds::{Event, Input, WorldsMenu, world::World};
+    let mut worlds = WorldsMenu::default();
+    let _ = worlds.apply(Event::Listed(vec![World {
+        options: Default::default(),
+        id: "original-fixture".into(),
+        name: "Fixture World".into(),
+        game_mode: Default::default(),
+        generator: Default::default(),
+        difficulty: Default::default(),
+        backend: Default::default(),
+        seed: 1,
+        created_unix: 0,
+        last_played_unix: 0,
+        options_unavailable: false,
+        size_bytes: 0,
+    }]));
+    for input in [
+        Input::BeginEdit(0),
+        Input::RequestDelete,
+        Input::ConfirmDelete,
+        Input::Back,
+    ] {
+        let _ = worlds.update(input);
+    }
+    let mut view = menu();
+    view.screen = MenuScreen::Play;
+    view.local = worlds.view();
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows Storage as a desktop host fills it, with the folder buttons.
+pub(super) fn settings_storage() -> Fixture {
+    let mut view = settings(SettingSection::StorageManagement.definition().name);
+    let storage = Arc::make_mut(&mut view.storage);
+    storage.opens_folders = true;
+    storage.expanded =
+        launcher::menu::settings_storage::CATEGORIES.map(|category| category == "cache");
+    storage.cached = [
+        (
+            "Cloud Islands",
+            "1.2.3",
+            "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+        ),
+        (
+            "Harbor Textures",
+            "2.0.0",
+            "bbbbbbbb-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+        ),
+    ]
+    .into_iter()
+    .map(
+        |(name, version, id)| launcher::menu::settings_storage::StorageItem {
+            name: name.into(),
+            icon: (name == "Cloud Islands").then(super::mods::icon),
+            version: version.into(),
+            pack_id: id.into(),
+            bytes: 12 * 1024 * 1024,
+            path: format!("{id}.mcpack").into(),
+            ..Default::default()
+        },
+    )
+    .collect();
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows an anonymous Create World tab without starting a server.
+pub(super) fn world_create(tab: usize) -> Fixture {
+    let mut view = menu();
+    view.screen = MenuScreen::Play;
+    view.local.screen = launcher::local_worlds::Screen::Create;
+    view.local.tab = launcher::local_worlds::Tab::ALL[tab];
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows the preserved-save error without starting a server.
+pub(super) fn world_legacy_conversion() -> Fixture {
+    let mut view = menu();
+    view.screen = MenuScreen::Play;
+    view.local.screen = launcher::local_worlds::Screen::Error;
+    view.local.error = Some(launcher::local_worlds::world::LEGACY_WORLD_REQUIRES_CONVERSION.into());
+    Fixture::Menu(Box::new(view))
+}
+
+/// Shows saved BDS generation settings beside editable advanced rules.
+pub(super) fn world_edit_advanced() -> Fixture {
+    use launcher::local_worlds::{
+        form::EditForm,
+        world::{Difficulty, Generator, World},
+    };
+    let Fixture::Menu(mut view) = world_create(1) else {
+        unreachable!()
+    };
+    let world = World {
+        id: "fixture".into(),
+        name: "Fixture World".into(),
+        game_mode: bridge::GameMode::Survival,
+        generator: Generator::Normal,
+        difficulty: Difficulty::Normal,
+        backend: bridge::Backend::Bds,
+        seed: -42,
+        options: Default::default(),
+        created_unix: 0,
+        last_played_unix: 0,
+        options_unavailable: false,
+        size_bytes: 0,
+    };
+    view.local.screen = launcher::local_worlds::Screen::Edit;
+    view.local.edit = Some(EditForm::of(&world));
+    view.local.edited = Some(world);
+    Fixture::Menu(view)
+}
+
+/// Create and edit world-form states, one per tab plus the tall full-advanced view.
+pub(super) const WORLD_FORM_STATES: &[State] = &[
+    State {
+        name: "world-legacy-conversion",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: world_legacy_conversion,
+    },
+    State {
+        name: "world-create-general",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(0),
+    },
+    State {
+        name: "world-create-advanced",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(1),
+    },
+    State {
+        name: "world-create-multiplayer",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(2),
+    },
+    State {
+        name: "world-create-cheats",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(3),
+    },
+    State {
+        name: "world-create-resource-packs",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(4),
+    },
+    State {
+        name: "world-create-behaviour-packs",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(5),
+    },
+    State {
+        name: "world-create-experiments",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(6),
+    },
+    State {
+        name: "world-create-advanced-all",
+        size: [1280, 2048],
+        gui_scale: GUI_SCALE,
+        fixture: || world_create(1),
+    },
+    State {
+        name: "world-edit-advanced",
+        size: SIZE,
+        gui_scale: GUI_SCALE,
+        fixture: world_edit_advanced,
+    },
+];

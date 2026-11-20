@@ -1,0 +1,546 @@
+use super::page_budget::{MAX_ACTOR_PAGE_BYTES, MAX_ACTOR_PAGE_LAYERS, page_layers, push_page};
+use super::*;
+
+#[test]
+fn equipment_appends_and_page_updates_keep_actor_pixels_reusable() {
+    let texture = assets::ActorTexture {
+        source: 0,
+        width: 2,
+        height: 2,
+        pixel_sha256: Sha256::digest([79; 16]).into(),
+        rgba8: Arc::from([79; 16]),
+    };
+    let first = ActorArtworkPages::default().with_pack_artwork(
+        std::slice::from_ref(&texture),
+        &[],
+        &Default::default(),
+    );
+    let raster = EquipmentRaster {
+        width: 1,
+        height: 1,
+        rgba8: Arc::from([101; 4]),
+    };
+    let (first, _) = first.with_equipment_rasters(&[raster]);
+    let replacement = EquipmentRaster {
+        width: 1,
+        height: 1,
+        rgba8: Arc::from([103; 4]),
+    };
+    let (first, locations) = first.with_equipment_raster_page_updates(&[(1, replacement)]);
+    assert!(locations[0].is_some());
+    let second =
+        ActorArtworkPages::default().with_pack_artwork(&[texture], &[], &Default::default());
+    assert!(first.pages()[0].rgba8.ptr_eq(&second.pages()[0].rgba8));
+}
+
+#[test]
+fn retiring_the_newest_collection_keeps_older_live_pixels_reusable() {
+    let texture = assets::ActorTexture {
+        source: 0,
+        width: 2,
+        height: 2,
+        pixel_sha256: Sha256::digest([89; 16]).into(),
+        rgba8: Arc::from([89; 16]),
+    };
+    let first = ActorArtworkPages::default().with_pack_artwork(
+        std::slice::from_ref(&texture),
+        &[],
+        &Default::default(),
+    );
+    let newer = ActorArtworkPages::default().with_pack_artwork(
+        std::slice::from_ref(&texture),
+        &[],
+        &Default::default(),
+    );
+    drop(newer);
+    let last = ActorArtworkPages::default().with_pack_artwork(&[texture], &[], &Default::default());
+    assert!(first.pages()[0].rgba8.ptr_eq(&last.pages()[0].rgba8));
+}
+
+#[test]
+fn recompiled_actor_pages_share_pixels_and_release_them_after_the_last_owner() {
+    let texture = assets::ActorTexture {
+        source: 0,
+        width: 2,
+        height: 2,
+        pixel_sha256: Sha256::digest([73; 16]).into(),
+        rgba8: Arc::from([73; 16]),
+    };
+    let first = ActorArtworkPages::default().with_pack_artwork(
+        std::slice::from_ref(&texture),
+        &[],
+        &Default::default(),
+    );
+    let base = ActorArtworkPages {
+        identity: [19; 32],
+        ..Default::default()
+    };
+    let second = base.with_pack_artwork(&[texture], &[], &Default::default());
+    let pixels = first.pages()[0].rgba8.downgrade();
+    assert!(first.pages()[0].rgba8.ptr_eq(&second.pages()[0].rgba8));
+    drop(first);
+    assert!(pixels.iter().all(|pixels| pixels.upgrade().is_some()));
+    drop(second);
+    assert!(
+        pixels.iter().all(|pixels| pixels.upgrade().is_none()),
+        "the page cache must not retain pixels"
+    );
+}
+
+#[test]
+fn a_pack_texture_change_or_layer_reorder_keeps_its_own_pixels() {
+    let textures = [83, 149].map(|value| assets::ActorTexture {
+        source: u32::from(value),
+        width: 1,
+        height: 1,
+        pixel_sha256: Sha256::digest([value; 4]).into(),
+        rgba8: Arc::from([value; 4]),
+    });
+    let first = ActorArtworkPages::default().with_pack_artwork(&textures, &[], &Default::default());
+    let rasters = textures
+        .iter()
+        .map(|texture| EquipmentRaster {
+            width: texture.width,
+            height: texture.height,
+            rgba8: Arc::clone(&texture.rgba8),
+        })
+        .collect::<Vec<_>>();
+    let (equipment, _) = ActorArtworkPages::default().with_equipment_rasters(&rasters);
+    assert!(first.pages()[0].rgba8.ptr_eq(&equipment.pages()[0].rgba8));
+    let mut reversed = textures;
+    reversed.reverse();
+    let changed =
+        ActorArtworkPages::default().with_pack_artwork(&reversed, &[], &Default::default());
+    assert_eq!(
+        first.pages()[0].pixels().as_ref(),
+        &[83, 83, 83, 83, 149, 149, 149, 149]
+    );
+    assert_eq!(
+        changed.pages()[0].pixels().as_ref(),
+        &[149, 149, 149, 149, 83, 83, 83, 83]
+    );
+    assert!(!first.pages()[0].rgba8.ptr_eq(&changed.pages()[0].rgba8));
+}
+
+#[test]
+fn pack_artwork_retains_more_than_byte_sized_distinct_texture_pages() {
+    let textures = (0..usize::from(u8::MAX) + 8)
+        .map(|index| {
+            let height = u16::try_from(index + 1).unwrap();
+            let pixel = [index as u8, (index >> 8) as u8, 7, 255];
+            let rgba8 = pixel.repeat(usize::from(height));
+            assets::ActorTexture {
+                source: index as u32,
+                width: 1,
+                height,
+                pixel_sha256: Sha256::digest(&rgba8).into(),
+                rgba8: rgba8.into(),
+            }
+        })
+        .collect::<Vec<_>>();
+    let bindings = textures
+        .iter()
+        .enumerate()
+        .map(|(index, _)| assets::ActorArtworkBinding {
+            rig: index as u32,
+            geometry_candidate: index as u32,
+            entity_symbol: index as u32,
+            geometry: index as u32,
+            render_controller: 0,
+            texture: index as u32,
+            material: "entity".into(),
+            pose_mode: assets::ActorPoseMode::CompiledLiteral,
+        })
+        .collect::<Vec<_>>();
+    let pages =
+        ActorArtworkPages::default().with_pack_artwork(&textures, &bindings, &Default::default());
+    assert_eq!(pages.rejected_bindings(), 0);
+    assert_eq!(pages.pages().len(), textures.len());
+    for (index, texture) in textures.iter().enumerate() {
+        let rig = crate::pack_rig_id(index as u32);
+        let location = pages
+            .route(rig)
+            .expect("valid pack binding retains its page");
+        assert!(pages.valid(rig, location));
+        assert_eq!(pages.variant_location(rig, index as u32), Some(location));
+        let page = &pages.pages()[usize::from(location.page()) - 1];
+        assert_eq!(page.dimensions(), (texture.width, texture.height));
+        assert_eq!(page.pixels().as_ref(), texture.rgba8.as_ref());
+    }
+}
+
+#[test]
+fn a_single_layer_pack_page_shares_its_source_allocation() {
+    let pixels: Arc<[u8]> = (0..68).map(|byte| byte as u8).collect::<Vec<_>>().into();
+    let texture = assets::ActorTexture {
+        source: 0,
+        width: 17,
+        height: 1,
+        pixel_sha256: Sha256::digest(&pixels).into(),
+        rgba8: pixels,
+    };
+    let pages = ActorArtworkPages::default().with_pack_artwork(
+        std::slice::from_ref(&texture),
+        &[],
+        &Default::default(),
+    );
+    assert_eq!(pages.pages().len(), 1);
+    let page = &pages.pages()[0];
+    assert!(Arc::ptr_eq(&page.rgba8.parts()[0], &texture.rgba8));
+    assert_eq!(page.layers, 1);
+    assert_eq!(page.pixels().as_ref(), texture.rgba8.as_ref());
+}
+
+#[test]
+fn a_single_layer_equipment_page_shares_its_source_allocation() {
+    let raster = EquipmentRaster {
+        width: 19,
+        height: 1,
+        rgba8: (11..87).map(|byte| byte as u8).collect::<Vec<_>>().into(),
+    };
+    let (pages, locations) =
+        ActorArtworkPages::default().with_equipment_rasters(std::slice::from_ref(&raster));
+    let location = locations[0].unwrap();
+    let page = &pages.pages()[usize::from(location.page()) - 1];
+    assert!(Arc::ptr_eq(&page.rgba8.parts()[0], &raster.rgba8));
+    assert_eq!(page.layers, 1);
+    assert_eq!(page.pixels().as_ref(), raster.rgba8.as_ref());
+}
+
+// A pack with a texture size per page past the old 32-page cap places every texture.
+#[test]
+fn pack_art_of_many_sizes_gets_a_page_per_size() {
+    let textures: Vec<_> = (1..=40u16)
+        .map(|side| assets::ActorTexture {
+            source: u32::from(side),
+            width: side,
+            height: 1,
+            pixel_sha256: [0; 32],
+            rgba8: vec![9; usize::from(side) * 4].into(),
+        })
+        .collect();
+    let pages = ActorArtworkPages::default().with_pack_artwork(&textures, &[], &Default::default());
+    assert_eq!(pages.pages().len(), 40);
+}
+
+// Same-size equipment rasters past one page's layer limit spill onto further pages.
+#[test]
+fn equipment_rasters_past_one_page_spill_onto_more_pages() {
+    let raster = EquipmentRaster {
+        width: 1,
+        height: 1,
+        rgba8: vec![9; 4].into(),
+    };
+    let rasters = vec![raster; MAX_ACTOR_PAGE_LAYERS + 3];
+    let (pages, locations) = ActorArtworkPages::default().with_equipment_rasters(&rasters);
+    assert_eq!(pages.pages().len(), 2);
+    assert!(locations.iter().all(Option::is_some));
+}
+
+// Past the byte budget a page is downscaled to fit rather than dropped.
+#[test]
+fn a_page_past_the_byte_budget_is_downscaled_not_dropped() {
+    let page = ActorTexturePage {
+        width: 16,
+        height: 16,
+        layers: 1,
+        rgba8: vec![9; 16 * 16 * 4].into(),
+        multitexture: false,
+    };
+    let mut pages = Vec::new();
+    let mut gpu_bytes = MAX_ACTOR_GPU_PIXEL_BYTES - 16 * 16;
+    assert_eq!(push_page(&mut pages, &mut gpu_bytes, page), Some(1));
+    assert_eq!(pages[0].dimensions(), (8, 8));
+    assert_eq!(gpu_bytes, MAX_ACTOR_GPU_PIXEL_BYTES);
+}
+
+// Same-size pack textures over the page byte cap become several bounded GPU allocations.
+#[test]
+fn large_same_size_textures_split_into_pages_within_the_byte_cap() {
+    let (width, height) = (4000u16, 1280u16);
+    let layer = usize::from(width) * usize::from(height) * 4;
+    let textures: Vec<_> = (0..3u8)
+        .map(|value| {
+            let rgba8: Arc<[u8]> = vec![value; layer].into();
+            assets::ActorTexture {
+                source: u32::from(value),
+                width,
+                height,
+                pixel_sha256: Sha256::digest(&rgba8).into(),
+                rgba8,
+            }
+        })
+        .collect();
+    let pages = ActorArtworkPages::default().with_pack_artwork(&textures, &[], &Default::default());
+    assert_eq!(pages.pages().len(), 3);
+    assert!(
+        pages
+            .pages()
+            .iter()
+            .all(|page| page.rgba8.len() <= MAX_ACTOR_PAGE_BYTES)
+    );
+    assert_eq!(page_layers(128, 128), MAX_ACTOR_PAGE_LAYERS);
+    assert_eq!(page_layers(u16::MAX, u16::MAX), 1);
+}
+
+/// Builds a same-size test page of `layers` copies of one value.
+fn group_page(side: u16, layers: usize) -> ActorTexturePage {
+    ActorTexturePage {
+        width: side,
+        height: side,
+        layers: layers as u32,
+        rgba8: vec![9; usize::from(side) * usize::from(side) * 4 * layers].into(),
+        multitexture: false,
+    }
+}
+
+// A group over the remaining budget shares one downscale, so every member keeps a location.
+#[test]
+fn a_split_group_downscales_together_so_every_member_is_admitted() {
+    let members: Vec<usize> = (0..9).collect();
+    let (mut pages, mut placed) = (Vec::new(), 0);
+    let mut gpu_bytes = MAX_ACTOR_GPU_PIXEL_BYTES - 32 * 1024 * 1024;
+    push_group(
+        &mut pages,
+        &mut gpu_bytes,
+        &members,
+        [1024, 1024],
+        false,
+        |_| None,
+        |chunk, _| (group_page(1024, chunk.len()), ()),
+        |chunk, _, (), _| placed += chunk.len(),
+    );
+    assert_eq!(placed, 9);
+    assert!(pages.iter().all(|page| page.dimensions() == (512, 512)));
+    assert!(gpu_bytes <= MAX_ACTOR_GPU_PIXEL_BYTES);
+}
+
+// A downscaled chunk's full-resolution pixels are freed before the next chunk is built.
+#[test]
+fn a_downscaled_group_frees_each_original_before_building_the_next() {
+    let members: Vec<usize> = (0..300).collect();
+    let mut pages = Vec::new();
+    let mut gpu_bytes = MAX_ACTOR_GPU_PIXEL_BYTES - 8 * 1024 * 1024;
+    let mut originals: Vec<std::sync::Weak<[u8]>> = Vec::new();
+    let (mut chunks, mut placed) = (0, 0);
+    push_group(
+        &mut pages,
+        &mut gpu_bytes,
+        &members,
+        [128, 128],
+        false,
+        |_| None,
+        |chunk, _| {
+            assert!(
+                originals
+                    .iter()
+                    .all(|original| original.upgrade().is_none())
+            );
+            let page = group_page(128, chunk.len());
+            originals.extend(page.rgba8.downgrade());
+            chunks += 1;
+            (page, ())
+        },
+        |chunk, _, (), kept| {
+            assert!(!kept);
+            placed += chunk.len();
+        },
+    );
+    assert!(chunks > 1, "the fixture must split into several pages");
+    assert_eq!(placed, members.len());
+    assert!(pages.iter().all(|page| page.dimensions() == (64, 64)));
+}
+
+// Joined runs move whole to the next page; a run larger than a page splits at its layer count
+// and repeats its copied members on each of its pages.
+#[test]
+fn page_chunks_keep_joined_runs_on_one_page() {
+    use super::page_budget::{Companion, page_chunks};
+    let grouped = |size: usize| {
+        move |member: usize| {
+            Some(Companion {
+                group: (member / size) as u32,
+                copied: false,
+            })
+        }
+    };
+    let members: Vec<usize> = (0..10).collect();
+    assert_eq!(
+        page_chunks(&members, 4, |_| None),
+        members.chunks(4).map(<[usize]>::to_vec).collect::<Vec<_>>()
+    );
+    assert_eq!(
+        page_chunks(&members, 4, grouped(3)),
+        [vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8, 9]]
+    );
+    let long: Vec<usize> = (0..MAX_ACTOR_PAGE_LAYERS + 2).collect();
+    let lengths = |chunks: Vec<Vec<usize>>| chunks.iter().map(Vec::len).collect::<Vec<_>>();
+    assert_eq!(
+        lengths(page_chunks(&long, 2, grouped(usize::MAX))),
+        [2; (MAX_ACTOR_PAGE_LAYERS + 2) / 2]
+    );
+    // Member 0 is a mask shared by every other member of the run.
+    let mask = |member: usize| {
+        Some(Companion {
+            group: 0,
+            copied: member == 0,
+        })
+    };
+    let shared = page_chunks(&long, 4, mask);
+    assert!(shared.iter().all(|chunk| chunk.len() <= 4));
+    assert!(shared.iter().all(|chunk| chunk.contains(&0)));
+    let mut placed: Vec<usize> = shared.concat();
+    placed.sort_unstable();
+    placed.dedup();
+    assert_eq!(placed, long);
+    // A single layer per page still pairs each base with its mask.
+    let single = page_chunks(&long, 1, mask);
+    assert!(
+        single
+            .iter()
+            .all(|chunk| chunk.len() == 2 && chunk.contains(&0))
+    );
+}
+
+// A run of masked textures past one page stays within the page byte cap.
+#[test]
+fn an_oversized_masked_run_keeps_every_page_within_the_byte_cap() {
+    use super::page_budget::Companion;
+    let side = 256;
+    let members: Vec<usize> = (0..300).collect();
+    let (mut pages, mut gpu_bytes, mut placed) = (Vec::new(), 0, Vec::new());
+    push_group(
+        &mut pages,
+        &mut gpu_bytes,
+        &members,
+        [side, side],
+        false,
+        |member| {
+            Some(Companion {
+                group: 0,
+                copied: member == 0,
+            })
+        },
+        |chunk, _| (group_page(side, chunk.len()), ()),
+        |chunk, _, (), _| placed.push(chunk.to_vec()),
+    );
+    assert!(pages.len() > 1);
+    assert!(pages.iter().all(|page| page.dimensions() == (side, side)));
+    assert!(
+        pages
+            .iter()
+            .all(|page| page.rgba8.len() <= MAX_ACTOR_PAGE_BYTES)
+    );
+    assert!(placed.iter().all(|chunk| chunk.contains(&0)));
+    assert_eq!(placed.concat().len(), members.len() + pages.len() - 1);
+}
+
+// Repeated masks count against the pixel budget like any other layer.
+#[test]
+fn repeated_masks_count_against_the_pixel_budget() {
+    use super::page_budget::Companion;
+    let members: Vec<usize> = (0..MAX_ACTOR_PAGE_LAYERS + 1).collect();
+    let mut pages = Vec::new();
+    let layer = 64 * 64 * 4;
+    // Room for every member once at full size, but not for the repeated mask too.
+    let mut gpu_bytes = MAX_ACTOR_GPU_PIXEL_BYTES - layer * members.len();
+    let mut layers = 0;
+    push_group(
+        &mut pages,
+        &mut gpu_bytes,
+        &members,
+        [64, 64],
+        false,
+        |member| {
+            Some(Companion {
+                group: 0,
+                copied: member == 0,
+            })
+        },
+        |chunk, limit| {
+            let [width, height] = crate::fitted_dimensions(64, 64, limit);
+            assert_eq!(width, height);
+            (group_page(width, chunk.len()), ())
+        },
+        |chunk, _, (), kept| {
+            assert!(kept, "the repeated masks fit before page allocation");
+            layers += chunk.len();
+        },
+    );
+    assert_eq!(layers, members.len() + 1, "the mask is on both pages");
+    assert!(pages.iter().all(|page| page.dimensions() == (32, 32)));
+    assert!(gpu_bytes <= MAX_ACTOR_GPU_PIXEL_BYTES);
+}
+
+#[test]
+fn multitexture_expansion_allocates_only_the_remaining_pixel_budget() {
+    let textures: Vec<_> = (0..20)
+        .map(|source| {
+            let (width, height) = match source {
+                0 => (128, 1),
+                1 => (1, 128),
+                _ => (1, 1),
+            };
+            assets::ActorTexture {
+                source,
+                width,
+                height,
+                pixel_sha256: [0; 32],
+                rgba8: [source as u8, 0, 0, 255]
+                    .repeat(usize::from(width) * usize::from(height))
+                    .into(),
+            }
+        })
+        .collect();
+    let sources =
+        assets::ActorMultitextureSources::from_draws((2..20).map(|source| [0, 1, source]));
+    let groups = multitexture::pack_pages(&textures, &sources);
+    assert_eq!(groups.len(), 1);
+    let ((width, height), members) = &groups[0];
+    let remaining = members.len() * 4 * 4 * 4;
+    let mut gpu_bytes = MAX_ACTOR_GPU_PIXEL_BYTES - remaining;
+    let (mut pages, mut placed) = (Vec::new(), 0);
+    let ((), allocations) = test_alloc::measure(|| {
+        push_group(
+            &mut pages,
+            &mut gpu_bytes,
+            members,
+            [*width, *height],
+            true,
+            |_| None,
+            |chunk, limit| {
+                let [out_width, out_height] = crate::fitted_dimensions(*width, *height, limit);
+                let layers: Vec<_> = chunk
+                    .iter()
+                    .map(|index| {
+                        multitexture::replicated(&textures[*index], *width, *height, limit)
+                    })
+                    .collect();
+                (
+                    ActorTexturePage {
+                        width: out_width,
+                        height: out_height,
+                        layers: chunk.len() as u32,
+                        rgba8: PagePixels::from_layers(layers.iter()),
+                        multitexture: true,
+                    },
+                    (),
+                )
+            },
+            |chunk, _, (), kept| {
+                assert!(kept, "expansion already fits the budget");
+                placed += chunk.len();
+            },
+        );
+    });
+    assert_eq!(placed, textures.len());
+    assert_eq!(pages[0].dimensions(), (4, 4));
+    assert_eq!(gpu_bytes, MAX_ACTOR_GPU_PIXEL_BYTES);
+    assert!(
+        allocations.bytes < remaining * 4 + 16 * 1024,
+        "small sources must not allocate the unbudgeted expanded page: {allocations:?}"
+    );
+    for (index, layer) in pages[0].rgba8.parts().iter().enumerate() {
+        assert_eq!(layer.as_ref(), [index as u8, 0, 0, 255].repeat(16));
+    }
+}

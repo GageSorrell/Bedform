@@ -27,7 +27,9 @@
   "type": "module",
   "scripts": {
     "prepare": "husky",
+    "postinstall": "npm run build --workspace monorepo-setup && npm run setup",
     "pull": "node ./Script/PullMonorepo/Distribution/index.js",
+    "setup": "node ./Script/Setup/Distribution/index.js",
     "firewall:configure": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File Script/configure-test-firewall.ps1",
     "typecheck:tools": "tsc -p tsconfig.tools.json && npm run typecheck:tools --workspaces --if-present",
     "demo:create": "node --import tsx Script/Deprecated/Demonstration/Source/cli.mts",

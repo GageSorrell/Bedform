@@ -74,12 +74,12 @@ export const DefaultLimits = Object.freeze({ MaxSpawns: 2_048,
     MaxSprites: 512 } as const);
 
 /**
- * Default audience range in blocks and depth separation per layer in blocks.
+ * Default audience range and minimum separation of overlapping paint entries, in blocks.
  *
  * @category Configuration
  * @since 1.0.0
  */
-export const Defaults = Object.freeze({ LayerDepth: 0.002,
+export const Defaults = Object.freeze({ LayerDepth: 0.01,
     MaxDistance: 64 } as const);
 
 /**
@@ -173,7 +173,8 @@ export interface Point
 
 /**
  * One textured rectangle. Particle is the base identifier; surfaces spawn its oriented variant. UV
- * selects texels of that particle's texture. Layer offsets depth toward the viewer side of the plane.
+ * selects texels of that particle's texture. Higher Layer values paint toward the visible side;
+ * overlapping entries on the same layer paint in tree order, with later entries in front.
  * Key identifies the sprite to hit-testing consumers.
  *
  * @category Model
@@ -445,6 +446,46 @@ export interface Pose
 }
 
 /**
+ * Resolves world-depth offsets in ascending Layer and input paint order. Overlapping rectangles
+ * receive at least one LayerDepth of separation, including equal or fractional layers; disjoint
+ * rectangles retain their planar placement. Explicit layer gaps remain minimum offsets from the
+ * base plane. Supply clipped bounds so invisible regions do not push visible content forward.
+ * A positive LayerDepth is required to preserve front-to-back ordering.
+ *
+ * @throws { TypeError } If LayerDepth is not positive and finite, or an offset overflows.
+ *
+ * @category Converting
+ * @since 1.0.0
+ */
+export function Depths(entries: ReadonlyArray<Pick<Placed, "Bounds" | "Layer">>,
+    layerDepth: number = Defaults.LayerDepth): ReadonlyArray<number>
+{
+    const spacing = Finite(layerDepth, "LayerDepth", "positive");
+    const order = entries.map((entry: Pick<Placed, "Bounds" | "Layer">, index: number): number =>
+    {
+        Finite(entry.Layer, "Layer");
+        return index;
+    }).sort((a: number, b: number): number => entries[a]!.Layer - entries[b]!.Layer || a - b);
+    const depths: Array<number> = new Array(entries.length);
+    order.forEach((index: number, position: number): void =>
+    {
+        const entry = entries[index]!;
+        let depth = entry.Layer * spacing;
+        for (let previous = 0; previous < position; previous++)
+        {
+            const behind = order[previous]!;
+            if (Intersect(entry.Bounds, entries[behind]!.Bounds))
+            {
+                depth = Math.max(depth, depths[behind]! + spacing);
+            }
+        }
+
+        depths[index] = Finite(depth, "resolved depth");
+    });
+    return Object.freeze(depths);
+}
+
+/**
  * Right, up and normal unit vectors; the normal points toward the visible side.
  *
  * @category Model
@@ -583,7 +624,8 @@ export function Roll(basis: Basis): number
 }
 
 /**
- * Projects placed sprites through a pose and basis into world quads.
+ * Projects placed sprites through a pose and basis into world quads. Depths separates overlapping
+ * paint entries along the basis normal without changing their bounds, UVs or emission order.
  *
  * @throws { TypeError } If the pose is invalid.
  *
@@ -596,14 +638,14 @@ export function Project(placed: ReadonlyArray<Placed>, pose: Pose, basis: Basis)
     const scale = Finite(pose.Scale, "Scale", "positive");
     const pivot = pose.Pivot ?? { X: 0,
         Y: 0 };
-    const depth = pose.LayerDepth === undefined ? Defaults.LayerDepth : Finite(pose.LayerDepth, "LayerDepth");
+    const depths = Depths(placed, pose.LayerDepth);
     const roll = Roll(basis);
-    return placed.map((sprite: Placed): Quad =>
+    return placed.map((sprite: Placed, index: number): Quad =>
     {
         const cx = (sprite.Bounds.X + sprite.Bounds.Width / 2 - pivot.X) * scale;
         const cy = (sprite.Bounds.Y + sprite.Bounds.Height / 2 - pivot.Y) * scale;
         const planar = Add(Add(position, basis.Right, cx), basis.Up, -cy);
-        const location = Add(planar, basis.Normal, sprite.Layer * depth);
+        const location = Add(planar, basis.Normal, depths[index]);
         return Object.freeze({ Color: sprite.Tint,
             Direction: basis.Normal,
             Floats: Object.freeze({ [ParticleVariable.Height]: sprite.UV.Height,
@@ -757,6 +799,7 @@ export function Emit(emission: Emission): Report
         : Flatten(emission.Content as Node);
     const rendered = all.slice(0, limits.MaxSprites);
     const position = CheckVector(emission.Pose.Position, "Position");
+    Finite(emission.Pose.LayerDepth ?? Defaults.LayerDepth, "LayerDepth", "positive");
     const fixed = emission.Pose.Orientation === "FaceViewer" ? undefined
         : FixedBasis(emission.Pose.Orientation.Right, emission.Pose.Orientation.Up);
     const fixedQuads = fixed && Project(rendered, emission.Pose, fixed);
@@ -970,6 +1013,7 @@ export function Create(options: Options): Handle
         const pose = change.Pose ?? base!.Pose;
         CheckVector(pose.Position, "Position");
         Finite(pose.Scale, "Scale", "positive");
+        Finite(pose.LayerDepth ?? Defaults.LayerDepth, "LayerDepth", "positive");
         if (pose.Orientation !== "FaceViewer")
         {
             FixedBasis(pose.Orientation.Right, pose.Orientation.Up);

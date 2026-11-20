@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-11-20",
+  "upstreamCommit": "db7ea1f1a964baa9c9612845ea60575d76a012ec",
+  "sources": [
+    {
+      "path": "src/mc/server/SimulatedPlayer.h",
+      "url": "https://github.com/LiteLDev/LeviLamina/blob/db7ea1f1a964baa9c9612845ea60575d76a012ec/src/mc/server/SimulatedPlayer.h",
+      "gitBlob": "7ee880a11842ac503c46c86850e0bc4cd22bf790",
+      "sha256": "b60cf819e57a28f9d5a4c238e025dd70a747acd816d1a6a8e26d830c68950116"
+    },
+    {
+      "path": "src/mc/server/ServerPlayer.h",
+      "url": "https://github.com/LiteLDev/LeviLamina/blob/db7ea1f1a964baa9c9612845ea60575d76a012ec/src/mc/server/ServerPlayer.h",
+      "gitBlob": "93af089cdc89e3a24f5b67f16c0c26a991cb3352",
+      "sha256": "e67e2bd3a225ac4d626a2a318b8233c397ce1e8cf6708aac9108f4d4fc3f4ff2"
+    },
+    {
+      "path": "src/mc/network/ServerNetworkHandler.h",
+      "url": "https://github.com/LiteLDev/LeviLamina/blob/db7ea1f1a964baa9c9612845ea60575d76a012ec/src/mc/network/ServerNetworkHandler.h",
+      "gitBlob": "6bb9958a9e2ea9fb7f1ac379e68ab9d45e93ec97",
+      "sha256": "e3098430d11b6cc47221596062ed8e0fccd1f083ad0e78cd44e671993bbf2bb3"
+    },
+    {
+      "path": "src/mc/network/LoopbackPacketSender.h",
+      "url": "https://github.com/LiteLDev/LeviLamina/blob/db7ea1f1a964baa9c9612845ea60575d76a012ec/src/mc/network/LoopbackPacketSender.h",
+      "gitBlob": "2005dbd8ed6b5fd69dfb7d242c8da79e9436ae73",
+      "sha256": "7eea252d996517e355e38e35361524f58bda7d774a9a282dc6b3de9d5166d295"
+    },
+    {
+      "path": "src/ll/core/tweak/SimulatedPlayerFixes.cpp",
+      "url": "https://github.com/LiteLDev/LeviLamina/blob/db7ea1f1a964baa9c9612845ea60575d76a012ec/src/ll/core/tweak/SimulatedPlayerFixes.cpp",
+      "gitBlob": "79433b0246ee1ecfb4ef189590cc3c9d4603e95b",
+      "sha256": "9aa2044ecfce211b4e7ee520eb94fbdd60be00ab135bad44269602d13e6a459d"
+    }
+  ],
+  "status": "source-investigation-only",
+  "nativeAttachExecuted": false,
+  "renderedFrameObtained": false
+}
