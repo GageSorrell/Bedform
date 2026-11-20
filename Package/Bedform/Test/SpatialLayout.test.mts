@@ -889,7 +889,13 @@ test("font-setting conflicts and non-Text Slot children fail before presentation
         { Font: "Legacy" },
         { Fallback: "Omit" },
         { FallbackScope: "Text" },
-        { Width: 20 }
+        { Width: 20 },
+        { Align: "center" },
+        { Justify: "end" },
+        { Visible: false },
+        { RequiredItem: "test:item" },
+        { Access: { LockedTo: "viewer" } },
+        { Pointer: { Enabled: false } }
     ])
     {
         const fixture = await Fixture(

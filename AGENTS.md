@@ -236,6 +236,10 @@ entity.setProperty(EntityProperty.Sequence, sequence);
 
 Run BDS tests through the package runners. Windows Firewall approval is tied to the executable path: use each runner's fixed `dist/bds-runtime/bedrock_server.exe`, never a fresh executable path per test run. `Package/Bedform`, `Package/Effect` and `Addon/BedformCanvas` are covered by `npm run firewall:configure` at the repository root. This explicit one-time setup installs program-specific allow rules and requires Windows administrator approval; ordinary tests must not elevate. Repeat setup after moving the repository. See [test firewall setup](Script/TestFirewall.md). Preserve this fixed-path design when adding or changing test runners.
 
+## Demonstration servers
+
+Demonstration servers (the `Addon/*Demo` worlds prepared with `Script/Deprecated/Demonstration/Source/create.mts`) listen on IPv4 port `19133` and IPv6 port `19134`, so they run alongside the main server on `19132`. The helper still defaults to `19132`/`19133`, so always pass `port: 19133` and `portV6: 19134` explicitly in a demo's `Tool/Demonstration.mts`, and give the same ports in its ReadMe and connection instructions. Port `19133` is shared by every demo, so stop one demonstration server before starting another.
+
 ## Text rendering in the world
 
 Before writing code that places, measures or styles `TextPrimitive` text (Bedform's terminal and Diagetic displays included), read [Rendering text with `TextPrimitive`](Documentation/TextPrimitive.md): fonts and widths, line layout, limits, yaw, depth, custom glyph pages and the two-layer fine-pixel overlay. Add new client findings there.

@@ -9,13 +9,13 @@
  * @license   MIT
  */
 
+import { ParticleDefinition, ParticleVariants } from "./CanvasParticle.js";
 import { lstat, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import type { BedformConfig } from "../Config.js";
 import type { Catalog } from "./PhysicsStage.js";
 import type { ImageDescriptor } from "../Canvas/Image.js";
-import { OrientedSuffix } from "../Canvas/Surface.js";
 import { PNG } from "pngjs";
-import { ParticleDefinition } from "./CanvasParticle.js";
+import type { ParticleVariant } from "./CanvasParticle.js";
 import { parseConfigFileTextToJson } from "typescript";
 import path from "node:path";
 
@@ -268,10 +268,11 @@ export async function Compile(settings: BedformConfig.Canvas, root: string,
             deflateLevel: 9,
             deflateStrategy: 3,
             filterType: 4 }));
-        for (const oriented of [ false, true ])
+        for (const variant of ParticleVariants)
         {
-            files.set(`particles/canvas/images/${key}${oriented ? OrientedSuffix : ""}.json`,
-                Buffer.from(ParticleDefinition(particle, texture, width, oriented, stripHeight)));
+            files.set(`particles/canvas/images/${key}${variant.Suffix}.json`,
+                Buffer.from(ParticleDefinition(particle, texture, width, variant.Oriented, stripHeight,
+                    variant.Depth)));
         }
     }
 
@@ -284,7 +285,7 @@ export async function Compile(settings: BedformConfig.Canvas, root: string,
         version ?? "1.0.0", typeof metadata.license === "string" ? metadata.license : "MIT");
     // Preflight collisions in authored resources, then recheck exclusive writes in the stage.
     const identifiers = new Set(Object.values(images).flatMap((image: ImageDescriptor) =>
-        [ image.Particle, image.Particle + OrientedSuffix ]));
+        ParticleVariants.map((variant: ParticleVariant) => image.Particle + variant.Suffix)));
     for (const resource of resources)
     {
         await NoLinks(resource);

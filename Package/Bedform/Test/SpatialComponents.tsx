@@ -85,9 +85,9 @@ const ImageChild: C.ImageProps["children"] = "bad";
 const GlyphChild: C.GlyphProps["children"] = "bad";
 // @ts-expect-error A title is an explicit Text element slot.
 const Title = <C.TitledPanel Title="bad" />;
-const Heading = <C.Callout Kind="Note"
-    // @ts-expect-error A heading is an explicit Text element slot.
-    Heading="bad" />;
+// @ts-expect-error A heading is an explicit Text element slot.
+const Heading = <C.Callout Heading="bad"
+    Kind="Note" />;
 // @ts-expect-error Labels belong in Text children.
 const Label = <C.Button label="bad" />;
 // @ts-expect-error No premature Terminal export.

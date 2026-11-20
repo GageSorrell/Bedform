@@ -15,5 +15,5 @@ import type { BuildSettings } from "../Source/Build/Settings.js";
 declare const Settings: BuildSettings;
 const Bundle: BuildOptions = Settings.bundle;
 const Mode: "react-jsx" | "react-jsxdev" = Settings.typescript.jsx;
-const Source: "bedform/DDUI" = Settings.typescript.jsxImportSource;
+const Source: "bedform/Spatial/React" = Settings.typescript.jsxImportSource;
 void [ Bundle, Mode, Source ];

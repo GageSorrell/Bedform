@@ -296,6 +296,10 @@
     "./Spatial/Layout": {
       "types": "./Distribution/Spatial/Layout.d.ts",
       "import": "./Distribution/Spatial/Layout.js"
+    },
+    "./Spatial/Text": {
+      "types": "./Distribution/Spatial/Text.d.ts",
+      "import": "./Distribution/Spatial/Text.js"
     }
   },
   "scripts": {
@@ -372,7 +376,9 @@
     "test:react": "npm run build && node --import tsx --test Test/ReactVendor.test.mts Test/ReactPublic.test.mts Test/ReactPacked.test.mts Test/ReactDifferential.test.mts",
     "test:react:differential": "node --import tsx --test Test/ReactDifferential.test.mts",
     "test:spatial-runtime": "npm run build && node --import tsx --test Test/SpatialRuntime.test.mts Test/ReactPacked.test.mts",
-    "test:spatial-layout": "npm run build && node --import tsx --test Test/SpatialLayout.test.mts Test/ReactPacked.test.mts"
+    "test:spatial-layout": "npm run build && node --import tsx --test Test/SpatialLayout.test.mts Test/ReactPacked.test.mts",
+    "test:spatial-pointer": "node --import tsx --test Test/SpatialPointer.test.mts",
+    "test:spatial-access": "node --import tsx --test Test/SpatialAccess.test.mts"
   },
   "peerDependenciesMeta": {
     "effect": {

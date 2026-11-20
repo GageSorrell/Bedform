@@ -38,7 +38,7 @@ export const Theme = Object.freeze({
         ContentPadding: 4,
         Control: "#555555",
         ControlPadding: 4,
-        Foreground: "#FFFFFF",
+        Foreground: "#4D4D4D",
         FrameMinHeight: 32,
         FrameMinWidth: 32,
         FramePadding: 8,

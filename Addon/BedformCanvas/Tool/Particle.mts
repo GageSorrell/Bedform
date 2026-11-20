@@ -11,8 +11,9 @@
  * @license   MIT
  */
 
-import { OrientedSuffix, Rectangle } from "bedform/Canvas/Surface";
-import { ParticleDefinition } from "../../../Package/Bedform/Source/Build/CanvasParticle.js";
+import { ParticleDefinition, ParticleVariants }
+    from "../../../Package/Bedform/Source/Build/CanvasParticle.js";
+import { Rectangle } from "bedform/Canvas/Surface";
 
 /**
  * Generated surface base outputs, relative to the workspace root.
@@ -26,15 +27,17 @@ export const SurfaceOutput = Object.freeze({
 } as const);
 
 /**
- * Shared image, glyph and surface particle serializer, including rectangular vertical strips.
+ * Shared image, glyph and surface particle serializer, including rectangular vertical strips, and the
+ * particle variants (camera-facing, oriented and oriented depth-writing) every generator emits.
  *
  * @category Serialization
  * @since 1.0.0
  */
-export { ParticleDefinition } from "../../../Package/Bedform/Source/Build/CanvasParticle.js";
+export { ParticleDefinition, ParticleVariants }
+    from "../../../Package/Bedform/Source/Build/CanvasParticle.js";
 
 /**
- * The plain rectangle particle pair and its opaque white texture as raw RGBA.
+ * The plain rectangle particle variants and its opaque white texture as raw RGBA.
  *
  * @category Tool
  * @since 1.0.0
@@ -45,11 +48,11 @@ export function SurfaceOutputs(): { Images: Map<string, Uint8Array>;
     const size = Rectangle.TextureSize;
     const name = Rectangle.Particle.split(":")[1];
     const texts = new Map<string, string>();
-    for (const oriented of [ false, true ])
+    for (const variant of ParticleVariants)
     {
-        texts.set(`${SurfaceOutput.Particles}/${name}${oriented ? OrientedSuffix : ""}.json`,
+        texts.set(`${SurfaceOutput.Particles}/${name}${variant.Suffix}.json`,
             ParticleDefinition(Rectangle.Particle, "textures/bedform_canvas/surface/rectangle", size,
-                oriented));
+                variant.Oriented, size, variant.Depth));
     }
 
     return { Images: new Map([ [ SurfaceOutput.Texture, new Uint8Array(size * size * 4).fill(0xFF) ] ]),

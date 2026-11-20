@@ -1,0 +1,80 @@
+{
+  "format_version": "1.26.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bedform_canvas:item_holder",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "runtime_identifier": "minecraft:armor_stand"
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "bedform_canvas_presentation",
+          "inanimate"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.1,
+        "height": 0.1
+      },
+      "minecraft:physics": {
+        "has_collision": false,
+        "has_gravity": false
+      },
+      "minecraft:pushable_by_entity": {
+        "presets": [
+          {
+            "push_mode": "none"
+          }
+        ]
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
+      "minecraft:health": {
+        "value": 1,
+        "max": 1
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "all",
+            "deals_damage": "no"
+          }
+        ]
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/bedform_canvas/empty.json"
+      },
+      "minecraft:inventory": {
+        "inventory_size": 1,
+        "container_type": "inventory",
+        "private": true,
+        "restrict_to_owner": true
+      },
+      "minecraft:equippable": {
+        "slots": [
+          {
+            "slot": 0,
+            "accepted_items": []
+          }
+        ]
+      },
+      "minecraft:equipment": {
+        "table": "loot_tables/bedform_canvas/empty.json",
+        "slot_drop_chance": [
+          {
+            "slot": "slot.weapon.mainhand",
+            "drop_chance": 0
+          },
+          {
+            "slot": "slot.weapon.offhand",
+            "drop_chance": 0
+          }
+        ]
+      }
+    }
+  }
+}

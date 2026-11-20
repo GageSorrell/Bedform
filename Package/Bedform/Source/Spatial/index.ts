@@ -64,3 +64,27 @@ export * as Components from "./Components.js";
  * @since 1.0.0
  */
 export * as Layout from "./Layout.js";
+
+/**
+ * Crosshair targeting, world occlusion, eligibility and per-player pointer lines.
+ *
+ * @category Exports
+ * @since 1.0.0
+ */
+export * as Pointer from "./Pointer.js";
+
+/**
+ * Reusable access controllers: player limits, locks and nested admission policies.
+ *
+ * @category Exports
+ * @since 1.0.0
+ */
+export * as Access from "./Access.js";
+
+/**
+ * Explicit private TextPrimitive presentation using the committed text layout.
+ *
+ * @category Factory
+ * @since 1.0.0
+ */
+export * as Text from "./Text.js";

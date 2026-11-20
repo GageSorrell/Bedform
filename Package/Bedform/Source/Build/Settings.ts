@@ -46,7 +46,7 @@ export interface BuildArguments
 export namespace BuildSettings
 {
     /**
-     * Options applied together by strict-aware compilation before official script bundling.
+     * Spatial React JSX options and legacy runtime substitutions applied before official bundling.
      *
      * @category Build
      * @since 1.0.0
@@ -56,7 +56,7 @@ export namespace BuildSettings
         readonly define: Readonly<Record<string, string>>;
         readonly jsx: "automatic";
         readonly jsxDev: boolean;
-        readonly jsxImportSource: "bedform/DDUI";
+        readonly jsxImportSource: "bedform/Spatial/React";
     }
 
     /**
@@ -68,12 +68,12 @@ export namespace BuildSettings
     export interface TypeScript
     {
         readonly jsx: "react-jsx" | "react-jsxdev";
-        readonly jsxImportSource: "bedform/DDUI";
+        readonly jsxImportSource: "bedform/Spatial/React";
     }
 }
 
 /**
- * One effective mode drives runtime substitution, source metadata, and typechecking.
+ * Build settings with matching Spatial React JSX modes and independent legacy runtime diagnostics.
  *
  * @category Build
  * @since 1.0.0
@@ -236,6 +236,7 @@ export const resolveBuildSettings = (project: LoadedProjectConfig, strict: boole
     }
 
     const Effective = strict ?? Configured ?? false;
+    const Development = options.development ?? false;
     const Permission = project.input.Development?.AllowDevelopmentModulesInProduction;
     const Override = options.allowDevelopmentModulesInProduction;
     if (Override !== undefined && Permission !== undefined)
@@ -246,14 +247,14 @@ export const resolveBuildSettings = (project: LoadedProjectConfig, strict: boole
 
     return {
         strict: Effective,
-        development: options.development ?? false,
+        development: Development,
         allowDevelopmentModulesInProduction: Override ?? Permission ?? false,
         bundle: { define: { [StrictModeDefine]: String(Effective) },
             jsx: "automatic",
-            jsxDev: Effective,
-            jsxImportSource: "bedform/DDUI" },
-        typescript: { jsx: Effective ? "react-jsxdev" : "react-jsx",
-            jsxImportSource: "bedform/DDUI" }
+            jsxDev: Development,
+            jsxImportSource: "bedform/Spatial/React" },
+        typescript: { jsx: Development ? "react-jsxdev" : "react-jsx",
+            jsxImportSource: "bedform/Spatial/React" }
     };
 };
 

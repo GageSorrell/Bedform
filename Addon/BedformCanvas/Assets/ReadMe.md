@@ -5,6 +5,20 @@ and canonical display/VM entity resources. BedformCommon retains imperative DDUI
 Diagetic controls, their player/camera additions and their related resources. The
 existing demos remain reference sources until their separately tracked migration.
 
+## Widget artwork and proxies (`ty2k.6`)
+
+`Tool/WidgetArt.mts` owns 90 non-glyph widget sprites, their shared-serializer particle
+pairs, three bodyless presentation actor definitions and attachment skeletons. Captured
+source pixels, slicing metadata, PNG hashes and screen/template references are pinned to
+Minecraft for Windows 1.26.6501.0 in `Widget/Input.json`. The stripped armor-stand
+skeleton and native textures are Mojang-derived; original callout/arrow masks and flat
+theme fills are MIT. The resource pack includes their `NOTICE-Mojang.txt`.
+
+See [widget inventory and limits](../Documentation/Widgets.md) for every state family,
+the shared pause/disconnect reference, theme/tint rules, native safety qualification and
+the world-visible actor restriction. Shared rounded frame geometry remains `9rdk.9`;
+glyphs remain with the single generator below. No second frame or glyph output is emitted.
+
 Canvas code, manifests and original drawings are MIT-licensed (`License.txt`). Both
 packs include `License.txt` and this inventory as `AssetProvenance.md`. Upstream
 material keeps its own notices beside the files derived from it; the MIT license never

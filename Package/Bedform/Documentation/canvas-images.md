@@ -87,13 +87,17 @@ For `Namespace: "example"` and `Name: "Spinner"`, the selected resource pack get
 textures/example/canvas/images/spinner.png
 particles/canvas/images/spinner.json
 particles/canvas/images/spinner_oriented.json
+particles/canvas/images/spinner_oriented_depth.json
 ```
 
 The descriptor identifies `example:spinner` and particle
 `example:canvas_image_spinner`. The camera-facing particle uses `rotate_xyz`;
 the `_oriented` variant uses the shared surface direction and roll contract.
-Both use shared Surface Molang keys for size, UVs and RGBA tint, live for two
-ticks and use the depth-tested `particles_blend` material. The compiler shares
+All use shared Surface Molang keys for size, UVs and RGBA tint and live for two
+ticks. The first two use the blended `particles_blend` material, which does not
+write depth; `_oriented_depth` is the alpha-tested, depth-writing
+`particles_alpha` copy that surfaces select with `Pose.DepthWrite` (see
+[surface depth writing](surface.md#depth-writing)). The compiler shares
 its particle serializer with Canvas glyphs and surfaces.
 
 The PNG has its authored colors. Tint multiplies those colors and texture alpha;

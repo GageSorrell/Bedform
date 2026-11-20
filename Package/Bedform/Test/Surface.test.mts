@@ -14,6 +14,7 @@
 /* eslint-disable @typescript-eslint/typedef, sort-keys */
 
 import * as Surface from "bedform/Canvas/Surface";
+import { ParticleDefinition, ParticleVariants } from "../Source/Build/CanvasParticle.js";
 import type { Vector3 } from "@minecraft/server";
 import assert from "node:assert/strict";
 import { build } from "esbuild";

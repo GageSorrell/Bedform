@@ -215,10 +215,10 @@ function ForwardingConsole(
 export const EngineReactConsole: ReactHost.Console = ForwardingConsole(
     (method: keyof ReactHost.Console, data: ReadonlyArray<unknown>): void =>
     {
-        const engine = typeof console === "object" && console !== null ?
-            console as unknown as Partial<Record<keyof ReactHost.Console, ConsoleMethod>> :
-            undefined;
-        const call = engine?.[method];
+        const engine = (globalThis as {
+            readonly console?: Partial<Record<keyof ReactHost.Console, ConsoleMethod>>;
+        }).console;
+        const call = typeof engine === "object" && engine !== null ? engine[method] : undefined;
         if (typeof call === "function")
         {
             Reflect.apply(call, engine, data);

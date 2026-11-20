@@ -1,0 +1,317 @@
+{
+  "Passed": true,
+  "NativeAcceptance": true,
+  "ClientAcceptance": false,
+  "StartedAt": "2026-11-19T21:49:58.981Z",
+  "Archive": {
+    "Path": "dist/bedform-canvas.mcaddon",
+    "Sha256": "8c19190e63a43d2a0e13170cc088833d2b31a3277f73d2f9317e2d19f23561c8",
+    "InstalledFiles": 394,
+    "InstalledMatchesBuild": true,
+    "ObservedScriptSuffixMatches": true
+  },
+  "Engine": {
+    "Version": "1.26.63.1",
+    "Build": "53340801",
+    "Sha256": "40829d7cbedefca14ed28122b7d9eb7284fc9595ef64d2d6b3f33a3be54bcc56",
+    "Source": "C:/MineCraft/Server"
+  },
+  "Modules": {
+    "Canvas": [
+      {
+        "module_name": "@minecraft/server",
+        "version": "2.10.0"
+      }
+    ],
+    "Consumers": {
+      "@minecraft/server": "2.10.0"
+    },
+    "Driver": {
+      "@minecraft/server": "2.10.0",
+      "@minecraft/server-gametest": "1.0.0-beta"
+    },
+    "Experiments": [
+      "gametest (Beta APIs)"
+    ]
+  },
+  "Runtime": "Addon/BedformCanvas/dist/bds-runtime",
+  "World": "canvas-native-SZT83N",
+  "Phases": [
+    {
+      "ElapsedMs": 50430,
+      "EngineWarnings": [],
+      "Evidence": {
+        "Session": "observed",
+        "Steps": [
+          "Setup",
+          "WidgetAssets",
+          "RawProtocol",
+          "PlayerSubjectPrivacy",
+          "RangeBoundary",
+          "Movement",
+          "ReplacementAndDisposal",
+          "NpcExpiryAndClear",
+          "ErrorIsolation",
+          "DimensionChange",
+          "UnloadReload",
+          "Death",
+          "Disconnect",
+          "ScopedDisposal",
+          "ActiveAtStop"
+        ],
+        "Evidence": {
+          "AcknowledgementSourceType": "Server",
+          "Setup": {
+            "ObserverTick": 64,
+            "Players": {
+              "Subject": {
+                "Id": "4294967297",
+                "Dimension": "minecraft:overworld",
+                "Head": {
+                  "x": 0,
+                  "y": -58.47998809814453,
+                  "z": 0
+                }
+              },
+              "North": {
+                "Id": "4294967298",
+                "Dimension": "minecraft:overworld",
+                "Head": {
+                  "x": 0,
+                  "y": -58.47998809814453,
+                  "z": -6
+                }
+              },
+              "South": {
+                "Id": "4294967299",
+                "Dimension": "minecraft:overworld",
+                "Head": {
+                  "x": 0,
+                  "y": -58.47998809814453,
+                  "z": 6
+                }
+              },
+              "Far": {
+                "Id": "4294967300",
+                "Dimension": "minecraft:overworld",
+                "Head": {
+                  "x": 40,
+                  "y": -58.47998809814453,
+                  "z": 0
+                }
+              },
+              "Nether": {
+                "Id": "4294967301",
+                "Dimension": "minecraft:nether",
+                "Head": {
+                  "x": 0.5,
+                  "y": 94.52001190185547,
+                  "z": 0.5
+                }
+              }
+            },
+            "Npc": "4294967302"
+          },
+          "WidgetAssets": {
+            "Actors": [
+              "bedform_canvas:interaction_proxy",
+              "bedform_canvas:item_holder",
+              "bedform_canvas:mob_anchor"
+            ],
+            "Equipment": [
+              "minecraft:stone",
+              "minecraft:stick"
+            ],
+            "EquipmentApi": false,
+            "EquipmentMutation": "replaceitem; hasitem mainhand verified",
+            "DriftTicks": 40,
+            "WalkedThrough": true,
+            "NoPickup": true,
+            "NoDropsOnRemove": true,
+            "NoDropsOnDeath": true,
+            "Particles": 90,
+            "TintCalls": 360,
+            "Audience": "World-visible actors; no private-actor claim",
+            "ClientAppearance": false
+          },
+          "RawProtocol": {
+            "RuntimeId": "canvas-mwo32xdl-7wm8sgjr5zo-gacdtzvlf0h",
+            "AcknowledgementSourceType": "Server",
+            "VersionMismatch": "Canvas Intent protocol version 2 is unsupported; this runtime speaks version 1. Update Bedform and BedformCanvas together.",
+            "InvalidBody": "Canvas Intent requires bounded nonempty identifiers without control characters.",
+            "MissingSubject": "Canvas Intent subject -4242 is unavailable in this world.",
+            "Stale": "Canvas Intent request 3 is stale or duplicated.",
+            "MalformedAcknowledged": false
+          },
+          "PlayerSubjectPrivacy": {
+            "AcceptTicks": 1,
+            "Viewers": [
+              "4294967298",
+              "4294967299"
+            ],
+            "TextScale": 1.25,
+            "ParticlesPerViewer": {
+              "4294967298": 56,
+              "4294967299": 56
+            },
+            "WindowTicks": 4
+          },
+          "RangeBoundary": {
+            "Distance": 40,
+            "Inside": 40.01,
+            "Outside": 39.99
+          },
+          "Movement": {
+            "HeadBefore": {
+              "x": 0,
+              "y": -58.47998809814453,
+              "z": 0
+            },
+            "HeadAfter": {
+              "x": 2.5,
+              "y": -58.47998809814453,
+              "z": 1.5
+            },
+            "Before": [
+              0,
+              -57.73,
+              -0.02
+            ],
+            "After": [
+              2.5,
+              -57.73,
+              1.48
+            ],
+            "Audience": [
+              "4294967298",
+              "4294967299",
+              "4294967300"
+            ]
+          },
+          "ReplacementAndDisposal": {
+            "DisposeTicks": 1,
+            "OwnershipConflict": "Canvas Intent Id bedform_native:consumer_a already has an active connection; dispose it before starting another.",
+            "LateOperation": "Canvas Intent connection is disposed; create a new connection with Start."
+          },
+          "NpcExpiryAndClear": {
+            "NpcAudience": [
+              "4294967297",
+              "4294967298",
+              "4294967299"
+            ],
+            "StaleExpiryTick": 338,
+            "ReplacementExpiryTick": 379
+          },
+          "ErrorIsolation": {
+            "FaultedViewer": "4294967298",
+            "InjectedFailures": 18
+          },
+          "DimensionChange": {
+            "PlayerTransferTicks": 0,
+            "PlayerOverworldAudience": [
+              "4294967297",
+              "4294967298",
+              "4294967299"
+            ],
+            "NpcTransferTicks": 0,
+            "NpcSameEntityId": true,
+            "NetherAudience": [
+              "4294967301"
+            ]
+          },
+          "UnloadReload": {
+            "UnloadTicks": 2,
+            "ReloadTicks": 2,
+            "LapsedDuration": 300,
+            "ExpiredWhileUnloaded": true
+          },
+          "Death": {
+            "Audience": [
+              "4294967297",
+              "4294967298",
+              "4294967299"
+            ],
+            "ValidWhileDying": true,
+            "LaterRequest": "Canvas Intent rejected set: Canvas Intent subject 4294967315 has died; set a new intent after it respawns or for another entity."
+          },
+          "Disconnect": {
+            "Audience": [
+              "4294967297",
+              "4294967298"
+            ]
+          },
+          "ScopedDisposal": {
+            "LateOperation": "Canvas Intent connection is disposed; create a new connection with Start."
+          },
+          "ActiveAtStop": {
+            "ActiveAtStop": 2,
+            "KeptId": "4294967313",
+            "Phase": 1,
+            "RawConnectionId": "raw-179",
+            "RawRequestId": 4,
+            "RuntimeId": "canvas-mwo32xdl-7wm8sgjr5zo-gacdtzvlf0h"
+          }
+        }
+      },
+      "ExitCode": 0,
+      "ExpectedWarnings": 2,
+      "Name": "observed"
+    },
+    {
+      "ElapsedMs": 8508,
+      "EngineWarnings": [],
+      "Evidence": {
+        "Session": "restart",
+        "Steps": [
+          "RestartCleanup",
+          "RestartRendering"
+        ],
+        "Evidence": {
+          "AcknowledgementSourceType": "Server",
+          "RestartCleanup": {
+            "PreviousRuntimeId": "canvas-mwo32xdl-7wm8sgjr5zo-gacdtzvlf0h",
+            "RuntimeId": "canvas-mwo33y4y-ow22fsclto-9hij77iiero",
+            "ActiveTextsAtStop": 2,
+            "PreviousSubjectLoaded": true,
+            "AddedBeforeNewRequests": 0,
+            "ParticleViewersBeforeNewRequests": 0,
+            "StaleConnection": "Canvas Intent runtime restarted; dispose and create a new connection."
+          },
+          "RestartRendering": {
+            "Audience": [
+              "4294967298"
+            ],
+            "Removed": 1
+          }
+        }
+      },
+      "ExitCode": 0,
+      "ExpectedWarnings": 0,
+      "Name": "restart"
+    },
+    {
+      "ElapsedMs": 8285,
+      "EngineWarnings": [],
+      "Evidence": {
+        "Session": "unmodified",
+        "Steps": [
+          "UnmodifiedArtifact"
+        ],
+        "Evidence": {
+          "AcknowledgementSourceType": "Server",
+          "UnmodifiedArtifact": {
+            "PreviousRuntimeId": "canvas-mwo33y4y-ow22fsclto-9hij77iiero",
+            "RuntimeId": "canvas-mwo344pu-3utyxm551qc-k8j661illug",
+            "StaleConnection": "Canvas Intent runtime restarted; dispose and create a new connection.",
+            "AcceptTicks": 1,
+            "CrossPackShapeQuery": false
+          }
+        }
+      },
+      "ExitCode": 0,
+      "ExpectedWarnings": 0,
+      "Name": "unmodified"
+    }
+  ],
+  "FinishedAt": "2026-11-19T21:51:12.466Z"
+}

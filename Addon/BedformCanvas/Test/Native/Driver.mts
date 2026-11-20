@@ -21,8 +21,18 @@ import type { Observation, TextRecord } from "./Observer.mjs";
 import { ScriptEvent, Version } from "bedform/Canvas/IntentProtocol";
 import type { Acknowledgement } from "bedform/Canvas/IntentProtocol";
 import type { Command as ConsumerCommand } from "./Consumer.mjs";
+import { QualifyText } from "./Text.mjs";
+import { QualifyWidgets } from "./Widgets.mjs";
 import type { SimulatedPlayer } from "@minecraft/server-gametest";
 import { spawnSimulatedPlayer } from "@minecraft/server-gametest";
+
+/**
+ * Bundled by the fixed-path runner to select text qualification without the independent actor probe.
+ *
+ * @category Configuration
+ * @since 1.0.1
+ */
+declare const NativeTextOnly: boolean;
 
 /**
  * A consumer's reply to one driver command.
@@ -493,6 +503,12 @@ async function Observed(): Promise<void>
                 Dimension: player.dimension.id,
                 Head: player.getHeadLocation() } ])),
         Npc: npc.id });
+    if (!NativeTextOnly)
+    {
+        Step("WidgetAssets", await QualifyWidgets(overworld, subject));
+    }
+
+    Step("SpatialText", await QualifyText(overworld, subject));
 
     // Raw wire: delivery, actionable version mismatch, ownership, malformed and stale traffic.
     const rawConnection = `raw-${system.currentTick}`;

@@ -109,7 +109,64 @@ export interface AccessPolicy {
 }
 
 /**
- * Pointer admission and line-visibility metadata; hiding the line does not hide targets.
+ * Why an aimed surface is not an eligible interactive target: its control or pointer is disabled, it
+ * lies beyond the pointer's maximum distance, the held item fails a required item, or an access policy
+ * denies the player.
+ *
+ * @category Model
+ * @since 1.0.0
+ */
+export type PointerDenial = "disabled" | "distance" | "item" | "access";
+
+/**
+ * A player's input as sampled by the pointer: the held item's type identifier, if any, and whether a
+ * Use press was observed within the brief press-feedback window.
+ *
+ * @category Model
+ * @since 1.0.0
+ */
+export interface PointerInput {
+    readonly HeldItem?: string;
+    readonly Use: boolean;
+}
+
+/**
+ * The aimed surface passed to a pointer color callback. Id and Type identify the committed layout item
+ * that is the interactive target, or the topmost hit surface when nothing interactive was hit. Part is
+ * "track" when a ScrollView's scrollbar track was hit, including a hover track that is not drawn.
+ *
+ * @category Model
+ * @since 1.0.0
+ */
+export interface PointerTarget {
+    readonly Id: number;
+    readonly Type: string;
+    readonly Part: "content" | "track";
+    readonly Interactive: boolean;
+    readonly Distance: number;
+}
+
+/**
+ * Inputs to a reactive pointer color callback. Eligible is true exactly when the target is interactive
+ * and has no Denial. Default is the color the pointer would use without the callback.
+ *
+ * @category Model
+ * @since 1.0.0
+ */
+export interface PointerColorContext {
+    readonly ViewerId: string;
+    readonly Target: PointerTarget;
+    readonly Input: PointerInput;
+    readonly Denial?: PointerDenial;
+    readonly Eligible: boolean;
+    readonly Default: TintInput;
+}
+
+/**
+ * Pointer admission and line-visibility metadata; hiding the line does not hide targets or remove the
+ * player from access counting. MaxDistance, in blocks from the eye, hides the line and rejects
+ * interaction beyond it. Color chooses the line color from the current target, input and denial;
+ * returning undefined keeps the default.
  *
  * @category Model
  * @since 1.0.0
@@ -118,6 +175,7 @@ export interface PointerSettings {
     readonly Enabled?: boolean;
     readonly Visible?: boolean;
     readonly MaxDistance?: number;
+    readonly Color?: (context: PointerColorContext) => TintInput | undefined;
 }
 
 /**

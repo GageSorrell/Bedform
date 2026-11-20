@@ -1,0 +1,3 @@
+Minecraft widget artwork and armor-stand attachment skeleton derive from Minecraft for Windows 1.26.6501.0.
+Sources and original slicing metadata: Assets/Widget/Input.json. Mojang artwork is outside MIT.
+Original masks and theme fills are MIT. Minecraft is a trademark of Mojang Synergies AB.

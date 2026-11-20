@@ -17,6 +17,7 @@
 
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
+import { GlyphData } from "../../../Addon/BedformCanvas/Public/Glyph.generated.js";
 import { PNG } from "pngjs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
@@ -405,6 +406,16 @@ ${chunk(hex)};
  * @since 1.0.0
  */
 export const TenAdvances = ${JSON.stringify(tenAdvances)};
+
+/**
+ * Canvas font-switch code and custom PUA advances, from the authoritative glyph catalogue.
+ *
+ * @category Constant
+ * @since 1.0.0
+ */
+export const Canvas = Object.freeze(${JSON.stringify({ Advances: GlyphData.Advances,
+    First: GlyphData.First,
+    Switch: GlyphData.Switch })} as const);
 `;
 }
 

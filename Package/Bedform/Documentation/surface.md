@@ -66,6 +66,23 @@ the paint stack. Explicit positive spacing remains configurable.
 The depth policy has host regression coverage. Client observation from multiple angles and
 distances is still required to qualify flicker, transparency sorting and visible parallax.
 
+### Depth writing
+
+The default particles use the vanilla `particles_blend` material, which blends but has
+`DisableDepthWrite` in the client's `particles.material`. Layer offsets therefore do not
+order overlapping blended particles. They draw in the client's own particle order, which
+changes as the viewer moves and as sprites are re-spawned each tick, so stacked content
+flickers like z-fighting.
+
+`Pose.DepthWrite: true` spawns the `_oriented_depth` variants instead. These use
+`particles_alpha`: alpha-tested (pixels are either drawn or cut, so a partial alpha such as
+`#00000080` does not blend) and depth-writing, so layer offsets decide what is in front.
+
+Unlike `particles_blend`, `particles_alpha` does not disable culling, so these quads may
+show only one face. Whether depth variants stop the flicker, and which face they show, are
+pending client checks. The widget demonstration's `/scriptevent widget_demo:depth` toggles
+between the two variants.
+
 ## Emission and audiences
 
 Every sprite is sent to each viewer separately with `Player.spawnParticle`, which keeps
@@ -107,8 +124,10 @@ and is never rounded to a `§` palette colour. Alpha multiplies the texture's ow
 
 ## Particles
 
-BedformCanvas generates every surface particle in pairs: a camera-facing definition and an
-`_oriented` definition that faces `Direction`. That includes the plain rectangle and the
+BedformCanvas generates three variants of every surface particle: a camera-facing
+definition, an `_oriented` definition that faces `Direction`, and an `_oriented_depth`
+copy of it that writes depth (see [Depth writing](#depth-writing)). The shared serializer's
+`ParticleVariants` lists them. That includes the plain rectangle and the
 glyph pages E2 to EB. They share the variable contract above and read `variable.color`
 for tint. `bedform-canvas/Public/Glyph` re-exports `ParticleVariable`, `Tint` and
 `DefaultTint` from this module.

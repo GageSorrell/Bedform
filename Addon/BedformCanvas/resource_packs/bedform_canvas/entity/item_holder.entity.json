@@ -1,0 +1,21 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bedform_canvas:item_holder",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/bedform_canvas/widget/transparent"
+      },
+      "geometry": {
+        "default": "geometry.bedform_canvas.item_holder"
+      },
+      "render_controllers": [
+        "controller.render.bedform_canvas.empty"
+      ],
+      "enable_attachables": true
+    }
+  }
+}

@@ -237,17 +237,21 @@ test("glyph and rectangle particles sample white textures through the shared sur
 {
     const definitions = [ ...Generated.Texts ].filter(([ file ]: [ string, string ]) =>
         file.startsWith(Output.Particles));
-    assert.equal(definitions.length, 22);
+    assert.equal(definitions.length, 33, "camera-facing, oriented and oriented depth variants");
     for (const [ file, text ] of definitions)
     {
         const effect = JSON.parse(text).particle_effect;
-        const oriented = file.endsWith("_oriented.json");
+        const depth = file.endsWith(Surface.OrientedSuffix + Surface.DepthSuffix + ".json");
+        const oriented = depth || file.endsWith(Surface.OrientedSuffix + ".json");
         const page = /glyph_([0-9a-f]{2})/u.exec(file)?.[1];
         const [ identifier, texture, size ] = page === undefined
             ? [ Surface.Rectangle.Particle, "textures/bedform_canvas/surface/rectangle",
                 Surface.Rectangle.TextureSize ]
             : [ Glyph.ParticlePrefix + page, `textures/bedform_canvas/glyph/glyph_${page}`, 256 ];
-        assert.equal(effect.description.identifier, identifier + (oriented ? Surface.OrientedSuffix : ""));
+        assert.equal(effect.description.identifier,
+            identifier + (oriented ? Surface.OrientedSuffix : "") + (depth ? Surface.DepthSuffix : ""));
+        assert.equal(effect.description.basic_render_parameters.material,
+            depth ? "particles_alpha" : "particles_blend");
         assert.equal(effect.description.basic_render_parameters.texture, texture);
         assert.ok(Generated.Images.has(`resource_packs/bedform_canvas/${texture}.png`));
         const billboard = effect.components["minecraft:particle_appearance_billboard"];

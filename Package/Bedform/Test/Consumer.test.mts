@@ -16,6 +16,7 @@ import Assert from "node:assert/strict";
 import { VerifyPackedCanvas } from "./CanvasImagesPacked.mjs";
 import { VerifyPackedCanvasPacks } from "./CanvasPacksPacked.mjs";
 import { VerifyPackedIntent } from "./IntentPacked.mjs";
+import { VerifyPackedSpatialBuild } from "./SpatialBuildPacked.mjs";
 import { build } from "esbuild";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
@@ -367,6 +368,7 @@ test("packed consumers resolve declarations and run without Node or Web globals"
         writeFileSync(join(directory, "Script/part.tsx"),
             "export const Part = (props: {label:string}) => { return props.label; };");
         writeFileSync(join(directory, "Script/main.tsx"), `
+            /** @jsxImportSource bedform/DDUI */
             import { StrictMode, isValidElement } from "bedform/DDUI";
             import { Part } from "./part.js";
             const view = <Part label="packed" />;
@@ -386,6 +388,7 @@ test("packed consumers resolve declarations and run without Node or Web globals"
         for (const strict of [ false, true ])
         {
             execFileSync(process.execPath, [ buildBin, "build", "--config", "bedform.config.json",
+                ...strict ? [ "--development" ] : [],
                 `--ddui-strict=${strict}`, "--out", "packed.mcaddon" ], {
                 cwd: directory,
                 encoding: "utf8",
@@ -822,6 +825,7 @@ test("packed consumers resolve declarations and run without Node or Web globals"
         await VerifyPackedIntent(directory);
         await VerifyPackedCanvas(directory);
         await VerifyPackedCanvasPacks(directory);
+        await VerifyPackedSpatialBuild(directory);
         const manifest = JSON.parse(readFileSync(
             join(directory, "node_modules/bedform/package.json"), "utf8"));
         Assert.equal(manifest.dependencies["@bedform/effect"], "1.0.0-alpha.1");

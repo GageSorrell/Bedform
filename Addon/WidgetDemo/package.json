@@ -1,0 +1,16 @@
+{
+  "name": "@sorrell/widget-demo",
+  "version": "1.0.1",
+  "description": "Self-contained demonstration server for Bedform spatial React widgets, pointer lines and access control.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --import tsx Tool/Build.mts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.tools.json",
+    "lint": "eslint Script Tool Test --max-warnings 0",
+    "test": "node --import tsx --test Test/*.test.mts",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "demo:prepare": "node --import tsx Tool/Demonstration.mts",
+    "demo:widgets": "node --import tsx \"../../Script/Deprecated/Demonstration/Source/start.mts\" --server \"Demonstration/widgets/server\""
+  }
+}

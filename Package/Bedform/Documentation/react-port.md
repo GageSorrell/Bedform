@@ -19,8 +19,11 @@ separately; concrete drawing and widget layout retain their own implementation g
 }
 ```
 
-Use `react-jsxdev` for the development JSX transform. Named and default imports
-share the same vendored React singleton, including both JSX runtimes. The public
+Use `react-jsxdev` for the development JSX transform. See the
+[Spatial React TSX build defaults](spatial-build.md).
+`bedform build` selects the normal transform, or the development transform with
+`--development`, while preserving per-file JSX engine overrides. Named and default
+imports share the same vendored React singleton, including both JSX runtimes. The public
 client deliberately uses upstream's diagnostic build in both modes; it never
 reads `process.env` to select a build. Consumers need no runtime `react` install.
 Declarations reference the exact production dependency `@types/react@19.3.0`, so

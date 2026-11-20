@@ -84,9 +84,10 @@ test("precedence and equal overrides use authored presence without mutating conf
             const Settings = resolveBuildSettings(Project, Flag, (message) => Logs.push(message));
             const Effective = Flag ?? Configured ?? false;
             Assert.equal(Settings.strict, Effective);
-            Assert.equal(Settings.bundle.jsxDev, Effective);
+            Assert.equal(Settings.bundle.jsxDev, false);
             Assert.equal(Settings.bundle.jsx, "automatic");
-            Assert.equal(Settings.typescript.jsx, Effective ? "react-jsxdev" : "react-jsx");
+            Assert.equal(Settings.typescript.jsx, "react-jsx");
+            Assert.equal(Settings.bundle.jsxImportSource, "bedform/Spatial/React");
             Assert.equal(Settings.bundle.jsxImportSource, Settings.typescript.jsxImportSource);
             Assert.equal(Logs.length, Flag !== undefined && Configured !== undefined ? 1 : 0);
             if (Logs.length)
@@ -96,6 +97,25 @@ test("precedence and equal overrides use authored presence without mutating conf
 
             Assert.deepEqual(Project.input, Input);
             Assert.equal(Project.config.DDUI?.StrictMode, Configured ?? false);
+        }
+    }
+});
+
+test("Spatial React development JSX is independent of legacy strict diagnostics", () =>
+{
+    for (const Development of [ false, true ])
+    {
+        for (const Strict of [ false, true ])
+        {
+            const Settings = resolveBuildSettings({ config: BedformConfig({ DDUI: { StrictMode: !Strict } }),
+                directory: "/fixture",
+                input: { DDUI: { StrictMode: !Strict } } }, Strict, () => {},
+            { development: Development });
+            Assert.equal(Settings.bundle.jsxImportSource, "bedform/Spatial/React");
+            Assert.equal(Settings.typescript.jsxImportSource, "bedform/Spatial/React");
+            Assert.equal(Settings.bundle.jsxDev, Development);
+            Assert.equal(Settings.typescript.jsx, Development ? "react-jsxdev" : "react-jsx");
+            Assert.equal(Settings.strict, Strict);
         }
     }
 });
@@ -185,7 +205,7 @@ test("strict and ordinary JSX fixture bundles agree with pure mode and include n
     {
         const Settings = resolveBuildSettings({ config: BedformConfig({}),
             directory: "/fixture",
-            input: {} }, Flag, () => {});
+            input: {} }, Flag, () => {}, { development: Flag });
         const Bundle = await build({
             ...Settings.bundle,
             bundle: true,
@@ -200,7 +220,7 @@ test("strict and ordinary JSX fixture bundles agree with pure mode and include n
                 name: "future-jsx-runtime-fixture",
                 setup(plugin)
                 {
-                    plugin.onResolve({ filter: /^bedform\/DDUI\/jsx-(dev-)?runtime$/ }, (args) => ({ path: args.path,
+                    plugin.onResolve({ filter: /^bedform\/Spatial\/React\/jsx-(dev-)?runtime$/ }, (args) => ({ path: args.path,
                         namespace: "fixture" }));
                     plugin.onLoad({ filter: /.*/,
                         namespace: "fixture" }, () => ({

@@ -105,6 +105,11 @@ opaque and are not deep-cloned or frozen. React children, keys and refs are not
 forwarded as backend props. Host refs expose stable frozen `{ Id, Type }` handles;
 native actors and imperative component handles belong to their concrete adapter.
 Hidden state propagates through descendants, including Activity/Suspense trees.
+
+`Root.Audience` lists the ids of viewers holding a presentation lease as of the
+last tick, which [pointer targeting](spatial-pointer.md) uses as the set of
+players that can aim at the root.
+
 Valid widget commits include `frame.Layout`, also available as `Root.Layout`, for
 the same presentation and hit-testing geometry. Resolved child-contract failures
 withhold the invalid frame and return through the nearest component's React error
