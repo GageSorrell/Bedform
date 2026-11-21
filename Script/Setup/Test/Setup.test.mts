@@ -194,7 +194,8 @@ for (const flag of [ "--help", "--version" ])
 test("importing every compiled module never runs the CLI handler", () =>
 {
     const output = execFileSync(process.execPath, [ "--input-type=module", "-e",
-        "await Promise.all(['index','Cli','Node','Setup','Contract','Currency']" +
+        "await Promise.all(['index','Cli','Node','Setup','Contract','Currency'," +
+        "'Permissions','Handoff','Session','Windows','keys']" +
         ".map(n => import('./' + n + '.js')));" ],
     { cwd: resolve(Root, "Script/Setup/Distribution"),
         encoding: "utf8" });

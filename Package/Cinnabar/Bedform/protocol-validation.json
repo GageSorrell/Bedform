@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "checkedAtUtc": "2026-11-20T23:39:18.9882778Z",
+  "rustVersion": "1.100.0",
+  "platform": "windows-x64-msvc",
+  "result": "isolated-protocol-tests-passed",
+  "sourceFilesVerified": 511,
+  "selectedDependencyIdentitiesVerified": 103,
+  "originalLockSha256": "64eba18cf3396910da15df9dce3df5019ab73622f3dd6614f21e527ac9e5e347",
+  "isolatedLockSha256": "fc980758b4502c8d82192634cc128be9293302c66513250b4591c31b8019d6e7",
+  "unitPassed": 1253,
+  "integrationPassed": 65,
+  "ignored": [
+    "blob_cache::perf_tests::blob_cache_delta_cost",
+    "blob_cache::perf_tests::blob_cache_unpin_cost",
+    "blob_cache::tests::blob_trim_cost_for_small_blobs",
+    "tests::login::login_reaches_start_game_through_bds"
+  ],
+  "goHandoffTest": "TestHandoffCarriesTheTraceConnection",
+  "goHandoffTestResult": "passed",
+  "scope": "Eight unchanged owning/path-dependency crates were copied to .local/protocol-validation, retaining their source-relative assets, docs, core and Experience fixtures. The root workspace member list was narrowed and unused renderer patches removed. The source lock was copied and pruned; all 103 retained package identities/checksums match the original lock.",
+  "commands": [
+    "cargo +stable test --manifest-path .local/protocol-validation/Cargo.toml --locked -p protocol --lib",
+    "cargo +stable test --manifest-path .local/protocol-validation/Cargo.toml --locked -p protocol --test it"
+  ],
+  "originalWorkspaceCheck": "Unrun after dependency-fetch failure: shallow fetch of pinned Bevy commit failed with curl 56 connection reset, early EOF and invalid index-pack output.",
+  "nativeBdsExecuted": false,
+  "targetCompatibilityQualified": false,
+  "registrySuiteResult": "failed: excluded block-registry-v1001.bin, block-registry-v2225.bin and biome-registry-v1001.bin fixtures are absent; Rust carrier delegation also could not find cargo on the inherited PATH."
+}

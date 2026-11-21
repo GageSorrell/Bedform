@@ -16,6 +16,7 @@ import { Currency } from "../Source/Contract.js";
 import { Effect } from "effect";
 import type { Request } from "../Source/Contract.js";
 import { RunSetup } from "../Source/Setup.js";
+import { Sessions } from "../Source/Session.js";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import process from "node:process";
@@ -74,7 +75,11 @@ test("verified current setup exits before permissions, prompts, processes and bu
     const fixture = Fixture();
     const request = RequestFor();
     fixture.verification.value = EvidenceFor(request);
-    assert.equal(await Effect.runPromise(RunSetup(request).pipe(Effect.provide(fixture.layer))), 0);
+    assert.equal(await Effect.runPromise(RunSetup(request).pipe(
+        Effect.provideService(Sessions, {
+            acquire: () => Effect.fail(new Error("Must not acquire a lease"))
+        }),
+        Effect.provide(fixture.layer))), 0);
     assert.deepEqual(fixture.checks, [ request ]);
     assert.deepEqual(fixture.events, [ "platform", "source" ]);
     assert.deepEqual(fixture.requests, []);

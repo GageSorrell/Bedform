@@ -1,6 +1,6 @@
 {
   "name": "@bedform/diagnostics",
-  "version": "1.0.0-beta.1.26.66-stable-dev.1",
+  "version": "1.0.0-beta.1.26.60-stable-dev.1",
   "description": "Bedform's counterpart to @minecraft/diagnostics: everything it exports, extended by Bedform.",
   "license": "MIT",
   "author": {
@@ -36,10 +36,10 @@
     "prepack": "npm run build"
   },
   "peerDependencies": {
-    "@minecraft/diagnostics": "1.0.0-beta.1.26.66-stable"
+    "@minecraft/diagnostics": "1.0.0-beta.1.26.60-stable"
   },
   "devDependencies": {
-    "@minecraft/diagnostics": "1.0.0-beta.1.26.66-stable",
+    "@minecraft/diagnostics": "1.0.0-beta.1.26.60-stable",
     "typescript": "6.0.3"
   },
   "keywords": [

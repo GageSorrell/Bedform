@@ -9,6 +9,7 @@
  * @license   MIT
  */
 
+import { ActiveSession, Sessions } from "./Session.js";
 import { BuildInstall, CreativeTools, Currency, Permissions, Prerequisites, Probes, Provisioning,
     Reporting } from "./Contract.js";
 import { Console, Effect } from "effect";
@@ -60,23 +61,8 @@ export const ResolveOptions = (options: Options, cwd: string): Options => Object
  * @category Running
  * @since 1.0.0
  */
-export const RunSetup = (request: Request) => Effect.gen(function*()
+const RunStages = (request: Request) => Effect.gen(function*()
 {
-    const probes = yield* Probes;
-    yield* probes.platform;
-    yield* probes.source(request.paths);
-    if (!request.options.update)
-    {
-        const currency = yield* Currency;
-        const evidence = yield* currency.inspect(request).pipe(Effect.catch(() => Effect.succeed(undefined)));
-        if (IsCurrent(request, evidence))
-        {
-            const reporting = yield* Reporting;
-            yield* reporting.alreadyCurrent;
-            return 0;
-        }
-    }
-
     const permissions = yield* Permissions;
     const permission = yield* permissions.prepare(request);
     if (permission.kind === "relaunched")
@@ -130,3 +116,31 @@ export const RunSetup = (request: Request) => Effect.gen(function*()
 
     return 0;
 });
+
+/**
+ * Holds an exclusive setup lease across all stages and any waited elevated child.
+ *
+ * @category Running
+ * @since 1.0.0
+ */
+export const RunSetup = (request: Request) => Effect.scoped(Effect.gen(function*()
+{
+    const probes = yield* Probes;
+    yield* probes.platform;
+    yield* probes.source(request.paths);
+    if (!request.options.update)
+    {
+        const currency = yield* Currency;
+        const evidence = yield* currency.inspect(request).pipe(Effect.catch(() => Effect.succeed(undefined)));
+        if (IsCurrent(request, evidence))
+        {
+            const reporting = yield* Reporting;
+            yield* reporting.alreadyCurrent;
+            return 0;
+        }
+    }
+
+    const sessions = yield* Sessions;
+    const session = yield* sessions.acquire(request, yield* ActiveSession);
+    return yield* RunStages(request).pipe(Effect.provideService(ActiveSession, session));
+}));

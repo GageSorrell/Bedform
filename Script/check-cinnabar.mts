@@ -24,6 +24,7 @@ interface Compatibility
 {
     readonly schemaVersion: number;
     readonly status: string;
+    readonly rustVersion: string;
     readonly bedformBdsVersion: string;
     readonly apiPins: Readonly<Record<string, string>>;
     readonly upstreamCommit: string;
@@ -94,9 +95,22 @@ export function checkCinnabar(repository: string): ReadonlyArray<string>
 {
     const fork = path.join(repository, "Package/Cinnabar");
     const compatibility = readJson<Compatibility>(path.join(fork, "Bedform/compatibility.json"));
+    const selected = readJson<{ readonly serverVersion: string;
+        readonly apiPins: Readonly<Record<string, string>> }>(
+            path.join(repository, "Script/bedrock-target.json"));
+    assert.equal(compatibility.bedformBdsVersion, selected.serverVersion, "Selected BDS target drift");
+    assert.deepEqual(compatibility.apiPins, selected.apiPins, "Selected API pins drift");
     const inventory = readJson<Inventory>(path.join(fork, "Bedform/import.json"));
+    const availability = readJson<Record<string, unknown>>(path.join(fork, "Bedform/availability.json"));
     const target = readJson<Record<string, unknown>>(path.join(fork, "assets/bedrock-target.json"));
     assert.equal(compatibility.schemaVersion, 1);
+    assert.equal(availability.targetBdsVersion, compatibility.bedformBdsVersion);
+    assert.equal(availability.loaderVersion, compatibility.loaderVersion);
+    assert.equal(availability.sdkVersion, compatibility.sdkVersion);
+    const toolchain = readFileSync(path.join(fork, "rust-toolchain.toml"), "utf8");
+    const workspace = readFileSync(path.join(fork, "Cargo.toml"), "utf8");
+    assert.ok(toolchain.includes(`channel = "${compatibility.rustVersion}"`), "Rust toolchain pin drift");
+    assert.ok(workspace.includes(`rust-version = "${compatibility.rustVersion}"`), "Rust MSRV pin drift");
     assert.equal(compatibility.upstreamCommit, inventory.commit);
     assert.match(inventory.commit, /^[a-f0-9]{40}$/u);
     assert.equal(existsSync(path.join(fork, ".git")), false, "Cinnabar must be ordinary monorepo content");
@@ -171,7 +185,7 @@ export function checkCinnabar(repository: string): ReadonlyArray<string>
         blockers.push(`Native SDK: ${compatibility.sdkBdsVersion} != ${compatibility.bedformBdsVersion}`);
     }
 
-    assert.equal(compatibility.status, blockers.length === 0 ? "qualified" : "blocked");
+    assert.equal(compatibility.status, blockers.length === 0 ? "aligned" : "blocked");
     return blockers;
 }
 

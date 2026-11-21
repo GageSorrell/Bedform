@@ -3,19 +3,20 @@
   "status": "blocked",
   "checkedOn": "2026-11-20",
   "platform": "windows-x64",
-  "bedformBdsVersion": "1.26.66.1",
-  "bdsDownloadUrl": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.66.1.zip",
+  "rustVersion": "1.100.0",
+  "bedformBdsVersion": "1.26.60.6",
+  "bdsDownloadUrl": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.60.6.zip",
   "bdsDiscoveryUrl": "https://net-secondary.web.minecraft-services.net/api/v1.0/download/links",
   "apiPins": {
     "@minecraft/server": "2.11.0",
     "@minecraft/common": "1.3.0",
-    "@minecraft/debug-utilities": "1.0.0-beta.1.26.66-stable",
-    "@minecraft/diagnostics": "1.0.0-beta.1.26.66-stable",
-    "@minecraft/server-admin": "1.0.0-beta.1.26.66-stable",
-    "@minecraft/server-editor": "0.1.0-beta.1.26.66-stable",
-    "@minecraft/server-gametest": "1.0.0-beta.1.26.66-stable",
+    "@minecraft/debug-utilities": "1.0.0-beta.1.26.60-stable",
+    "@minecraft/diagnostics": "1.0.0-beta.1.26.60-stable",
+    "@minecraft/server-admin": "1.0.0-beta.1.26.60-stable",
+    "@minecraft/server-editor": "0.1.0-beta.1.26.60-stable",
+    "@minecraft/server-gametest": "1.0.0-beta.1.26.60-stable",
     "@minecraft/server-graphics": "1.0.0",
-    "@minecraft/server-net": "1.0.0-beta.1.26.66-stable",
+    "@minecraft/server-net": "1.0.0-beta.1.26.60-stable",
     "@minecraft/server-ui": "2.3.0"
   },
   "upstreamCommit": "99cbeb5016b0833cd8b8e5ebe11cad2589c333ae",
@@ -38,9 +39,8 @@
   "loaderReleaseUrl": "https://github.com/LiteLDev/LeviLamina/releases/tag/v26.60.8",
   "sdkReleaseUrl": "https://github.com/LiteLDev/bedrock-runtime-data/releases/tag/v26.60.6-server.16",
   "blockers": [
-    "Imported registries/assets and codec implementation are not qualified for 1.26.66.1; Mojang documents unchanged protocol 2225 packet schemas across the hotfixes.",
-    "Published LeviLamina loader and SDK target 1.26.60.6; no matching 1.26.66.1 native SDK was found.",
-    "Asset binaries and media are excluded from the source import; carrier generation and native builds remain unverified."
+    "Affected registry validation is in progress."
   ],
-  "protocolChangelogUrl": "https://mojang.github.io/bedrock-protocol-docs/changelog/"
+  "protocolChangelogUrl": "https://mojang.github.io/bedrock-protocol-docs/changelog/",
+  "qualificationScope": "Source import, exact target alignment and affected protocol/registry checks. Native attachment, renderer, media and installer acceptance belong to later gates."
 }

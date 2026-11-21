@@ -14,6 +14,7 @@ import { BuildInstall, Consent, CreativeTools, Currency, Permissions, Prerequisi
 import { Effect, Layer } from "effect";
 import type { Options, ProcessCommand, Request } from "../Source/Contract.js";
 import { ResolvePaths } from "../Source/Setup.js";
+import { Sessions } from "../Source/Session.js";
 import type { Verification } from "../Source/Currency.js";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
@@ -76,6 +77,12 @@ export const Fixture = () =>
         }
     });
     const layer = Layer.mergeAll(
+        Layer.succeed(Sessions, { acquire: () => Effect.succeed({
+            directory: "C:\\test\\locks",
+            nonce: "test",
+            pid: 1,
+            resources: []
+        }) }),
         Layer.succeed(Currency, {
             inspect: (request: Request) => Effect.sync(() =>
             {

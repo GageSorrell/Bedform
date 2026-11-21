@@ -32,7 +32,13 @@ Core setup is selected by default. Independent selections are:
 
 Optional-stage decline/failure emits a diagnostic and preserves required setup success. Consent defaults to No; a required decision without an interactive terminal fails clearly. Setup does not change global PATH or enable look-back/capture.
 
-This foundation does **not yet perform a complete installation**. Machine-changing adapters fail explicitly until their owning Beads components are implemented: permissions/UAC (`xa5.2`), prerequisites (`xa5.3`), build/install (`xa5.4`), BDS/MCP (`xa5.7`), and creative tools (`xa5.8`/`xa5.9`). Consequently root postinstall currently fails with the missing-source or pending-component diagnostic. Help/version work now. No native installation or renderer acceptance is claimed.
+This foundation does **not yet perform a complete installation**. Machine-changing adapters fail explicitly until their owning Beads components are implemented: prerequisites (`xa5.3`), build/install (`xa5.4`), BDS/MCP (`xa5.7`), and creative tools (`xa5.8`/`xa5.9`). Consequently root postinstall currently fails with the missing-source or pending-component diagnostic. Help/version work now. No native installation or renderer acceptance is claimed.
+
+Permission preflight resolves junctions and checks the local build cache, install directory, sibling bundle staging/rollback, every owned bundle file supplied by the inspector, and explicitly selected BDS/MCP configuration and backup locations. It rejects source/build/install collisions. Setup supplies `CARGO_TARGET_DIR` and `CARGO_BUILD_BUILD_DIR` for `source/target` and `source/target/.setup-build`, overriding ambient Cargo output redirection without rewriting configuration. Prerequisite/build adapters must retain these values so their writes match preflight. Temporary write/rename probes are cleaned immediately; existing files are opened without truncation. ACLs are never changed.
+
+Writable custom destinations continue without elevation. Protected paths require a default-No confirmation. Approval launches the same absolute Node executable and compiled CLI through Windows UAC in a visible terminal, waits for completion, and propagates the child exit code. The data-only handoff retains flags, original cwd, absolute paths and original tool/profile locations; it excludes credentials and Node startup hooks. A different Windows account, cancellation, noninteractive consent, or continued denial while elevated fails clearly without a relaunch loop.
+
+Scoped leases under the invoking account's `LOCALAPPDATA/Bedform/Setup/locks` prevent duplicate setup work for the same source or destination. The elevated child verifies and borrows its live parent's lease. Interrupted runs can leave a stale lock: inspect its recorded PID and resources before manually removing that specific lock. Setup never deletes another process's locks automatically. Already-current setup exits before creating locks or probes.
 
 ## Component contracts
 
@@ -52,7 +58,7 @@ This foundation does **not yet perform a complete installation**. Machine-changi
 | `Provisioning` | Independent BDS and MCP operations with explicit absolute destinations. |
 | `CreativeTools` | Independent Blender/Mcblend and Blockbench operations. |
 
-Adapters capture their Effect dependencies when constructing layers, keeping service methods' error channel as `Error`. Original account identity/home remain unchanged when child environments refresh. `Request.elevated` is reserved for the permissions lane's validated internal handoff; it is never accepted as a public approval flag. That lane owns serialized payload validation, loop prevention and result propagation. No elevation implementation ships in this foundation.
+Adapters capture their Effect dependencies when constructing layers, keeping service methods' error channel as `Error`. Original account identity/home remain unchanged when child environments refresh. `Request.elevated` is reserved for the permissions lane's validated internal handoff; it is never accepted as a public approval flag. That lane owns serialized payload validation, loop prevention and result propagation. The permission and handoff adapters implement this boundary.
 
 `Test/Fixture.mts` supplies reusable in-memory services, currency evidence/checks, recorded requests/events/commands/prompts/logs, queued consent answers (default No), and queued process exit codes. Override individual services with `Effect.provideService` to exercise a component without changing the machine.
 

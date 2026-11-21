@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 
 const Repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("native ABI configuration rejects an unqualified tuple before linking", (context: TestContext) =>
+test("native ABI configuration requires explicit SDK inputs before linking", (context: TestContext) =>
 {
     const build = mkdtempSync(path.join(tmpdir(), "bedform-native-abi-"));
     try
@@ -38,7 +38,19 @@ test("native ABI configuration rejects an unqualified tuple before linking", (co
         assert.equal(result.error, undefined);
         assert.notEqual(result.status, 0);
         assert.match(result.stderr, /Native feasibility unrun/u);
-        assert.match(result.stderr, /No older BDS fallback/u);
+        assert.match(result.stderr, /missing explicit LEVILAMINA_INCLUDE_DIRECTORY/u);
+        const source = path.join(build, "source/Native");
+        mkdirSync(source, { recursive: true });
+        cpSync(path.join(Repository, "Package/Cinnabar/Bedform/Native/CMakeLists.txt"),
+            path.join(source, "CMakeLists.txt"));
+        const compatibility = readFileSync(path.join(Repository,
+            "Package/Cinnabar/Bedform/compatibility.json"), "utf8");
+        writeFileSync(path.join(source, "../compatibility.json"),
+            compatibility.replace("\"sdkBdsVersion\": \"1.26.60.6\"", "\"sdkBdsVersion\": \"1.26.66.1\""));
+        const mismatch = spawnSync(process.env.CMAKE ?? "cmake", [ "-S", source,
+            "-B", path.join(build, "mismatch") ], { encoding: "utf8" });
+        assert.notEqual(mismatch.status, 0);
+        assert.match(mismatch.stderr, /No older BDS fallback/u);
     }
     finally
     {
@@ -81,9 +93,13 @@ interface Inventory
 function fixture(): string
 {
     const root = mkdtempSync(path.join(tmpdir(), "bedform-cinnabar-"));
-    const files = [ "Bedform/compatibility.json", "Bedform/LeviLamina.lip.toml",
+    mkdirSync(path.join(root, "Script"), { recursive: true });
+    cpSync(path.join(Repository, "Script/bedrock-target.json"),
+        path.join(root, "Script/bedrock-target.json"));
+    const files = [ "Bedform/compatibility.json", "Bedform/availability.json", "Bedform/LeviLamina.lip.toml",
         "Bedform/LeviLamina.xmake.lua", "assets/bedrock-target.json", "assets/vanilla-source.json",
-        "assets/registry-foundation-v2225.json", "core/go.mod", "crates/protocol/Cargo.toml", "LICENSE" ];
+        "assets/registry-foundation-v2225.json", "core/go.mod", "crates/protocol/Cargo.toml", "LICENSE",
+        "Cargo.toml", "rust-toolchain.toml" ];
     for (const file of files)
     {
         const destination = path.join(root, "Package/Cinnabar", file);
@@ -116,16 +132,14 @@ function fixture(): string
     return root;
 }
 
-test("source metadata passes while exact-target qualification stays blocked", () =>
+test("source metadata and the selected target pass without claiming native attachment", () =>
 {
     const blockers = checkCinnabar(Repository);
-    assert.ok(blockers.some((message: string) => message.startsWith("Codec/assets:")));
-    assert.ok(blockers.some((message: string) => message.startsWith("Native SDK:")));
+    assert.deepEqual(blockers, []);
     const result = spawnSync(process.execPath,
         [ "--import", "tsx", "Script/check-cinnabar.mts" ], { cwd: Repository,
             encoding: "utf8" });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /Native target qualification remains blocked/u);
+    assert.equal(result.status, 0, result.stderr);
 });
 
 test("pin drift and changed upstream license fail the source gate", () =>
@@ -133,12 +147,22 @@ test("pin drift and changed upstream license fail the source gate", () =>
     const root = fixture();
     try
     {
-        assert.ok(checkCinnabar(root).length > 0);
+        assert.deepEqual(checkCinnabar(root), []);
         const pin = path.join(root, "Package/ServerGameTest/package.json");
         const original = readFileSync(pin, "utf8");
-        writeFileSync(pin, original.replaceAll("1.26.66-stable", "1.26.60-stable"));
+        writeFileSync(pin, original.replaceAll("1.26.60-stable", "1.26.66-stable"));
         assert.throws(() => checkCinnabar(root), /API pin drift/u);
         writeFileSync(pin, original);
+        const selected = path.join(root, "Script/bedrock-target.json");
+        const originalSelected = readFileSync(selected, "utf8");
+        writeFileSync(selected, originalSelected.replace("1.26.60.6", "1.26.66.1"));
+        assert.throws(() => checkCinnabar(root), /Selected BDS target drift/u);
+        writeFileSync(selected, originalSelected);
+        const toolchain = path.join(root, "Package/Cinnabar/rust-toolchain.toml");
+        const originalToolchain = readFileSync(toolchain, "utf8");
+        writeFileSync(toolchain, originalToolchain.replace("1.100.0", "1.99.0"));
+        assert.throws(() => checkCinnabar(root), /Rust toolchain pin drift/u);
+        writeFileSync(toolchain, originalToolchain);
         writeFileSync(path.join(root, "Package/Cinnabar/LICENSE"), "Changed license");
         assert.throws(() => checkCinnabar(root), /Changed upstream notice/u);
     }
@@ -180,6 +204,8 @@ test("sync and publishing discovery preserve the fork and handwritten GameTest e
         { cwd: root,
             encoding: "utf8" });
         assert.equal(result.status, 0, result.stderr);
+        assert.match(readFileSync(path.join(root, "Package/ServerGameTest/package.json"), "utf8"),
+            /1\.0\.0-beta\.1\.26\.60-stable-dev\.1/u);
         assert.equal(readFileSync(entry, "utf8"), extension);
         assert.equal(readFileSync(native, "utf8"), sentinel);
         const collision = spawnSync(process.execPath, [ "--import", import.meta.resolve("tsx"),

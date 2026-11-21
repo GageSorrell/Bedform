@@ -10,15 +10,16 @@
  */
 
 import { AlreadyCurrentLine, ColorEnabled } from "./Currency.js";
-import { BuildInstall, Consent, CreativeTools, Currency, Permissions, Prerequisites, Probes, Processes,
+import { BuildInstall, Consent, CreativeTools, Currency, Prerequisites, Probes, Processes,
     Provisioning, Reporting } from "./Contract.js";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
 import { Console, Effect, FileSystem, Layer } from "effect";
 import type { Paths, ProcessCommand } from "./Contract.js";
+import { release, version } from "node:os";
+import { IsSupportedPlatform } from "./Windows.js";
 import { Prompt } from "effect/cli";
 import { join } from "node:path";
 import process from "node:process";
-import { release } from "node:os";
 
 /**
  * Identifies component work that remains outside this CLI foundation.
@@ -53,13 +54,16 @@ export const ProbeLayer = Layer.effect(Probes, Effect.gen(function*()
 {
     const fs = yield* FileSystem.FileSystem;
     return {
-        platform: Effect.suspend(() => process.platform === "win32" && process.arch === "x64" &&
-            Number(release().split(".")[2]) >= 22_000
+        platform: Effect.suspend(() => IsSupportedPlatform(
+            process.platform, process.arch, release(), version())
             ? Effect.void
             : Effect.fail(new Error("Setup requires Windows 11 x64; help/version work on any platform."))),
         source: (paths: Paths) => Effect.gen(function*()
         {
-            for (const file of [ "Cargo.toml", "rust-toolchain.toml" ])
+            for (const file of [ "Cargo.toml", "Cargo.lock", "rust-toolchain.toml",
+                "app/Cargo.toml", "app/src/main.rs", "core/go.mod", "go.work",
+                "tools/cinnabar-mcp/Cargo.toml", "tools/cinnabar-mcp/src/main.rs",
+                "Bedform/compatibility.json" ])
             {
                 const info = yield* fs.stat(join(paths.source, file)).pipe(
                     Effect.mapError(() => new Error(
@@ -70,6 +74,12 @@ export const ProbeLayer = Layer.effect(Probes, Effect.gen(function*()
                 if (info.type !== "File")
                 {
                     return yield* Effect.fail(new Error(`Expected a local fork file: ${file}`));
+                }
+
+                const content = yield* fs.readFileString(join(paths.source, file));
+                if (content.trim() === "")
+                {
+                    return yield* Effect.fail(new Error(`Incomplete local fork configuration: ${file}`));
                 }
             }
         })
@@ -131,7 +141,6 @@ export const ProcessLayer = Layer.effect(Processes, Effect.gen(function*()
  */
 export const ComponentLayer = Layer.mergeAll(
     Layer.succeed(Currency, { inspect: () => Effect.succeed(undefined) }),
-    Layer.succeed(Permissions, { prepare: () => Unavailable("Destination permissions/UAC (xa5.2)") }),
     Layer.succeed(Prerequisites, { prepare: () => Unavailable("Prerequisite setup (xa5.3)") }),
     Layer.succeed(BuildInstall, { run: () => Unavailable("Local build/install (xa5.4)") }),
     Layer.succeed(Provisioning, {

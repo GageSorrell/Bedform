@@ -26,7 +26,7 @@
     "test:native": "npm run build --workspace bedform && node --import tsx Tool/Native.mts"
   },
   "devDependencies": {
-    "@minecraft/server-gametest": "1.0.0-beta.1.26.50-stable",
+    "@minecraft/server-gametest": "1.0.0-beta.1.26.60-stable",
     "esbuild": "0.25.12",
     "fflate": "0.8.2",
     "pngjs": "7.0.0"

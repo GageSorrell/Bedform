@@ -1,0 +1,374 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-11-20",
+  "issue": "Bedform-8ww.15",
+  "verdict": "BDS 1.26.60.6 is a viable Bedform target based on declaration comparison and the exercised native package fixtures; complete Cinnabar/native-bridge product qualification remains open.",
+  "supportedTargetChanged": false,
+  "currentSelectedTarget": "1.26.66.1",
+  "candidateTarget": "1.26.60.6",
+  "engine": {
+    "version": "1.26.60.6",
+    "build": "52886189",
+    "sha256": "d7b26d6c5e8f3e910f66e8cbf7e1dfde06e570032349bf7abdd070deb6e9d884",
+    "source": "C:/MineCraft/Addon/BuildCraft/dist/engine-1.26.60.6",
+    "sourceModified": false
+  },
+  "apiComparison": {
+    "method": "Download exact npm tarballs from registry.npmjs.org; parse complete index.d.ts with TypeScript 6.0.3; compare printed syntax with comments removed and whitespace normalized. This includes variable and anonymous statements, not just named declarations.",
+    "packages": [
+      {
+        "folder": "Server",
+        "name": "@minecraft/server",
+        "current": "2.11.0",
+        "older": "2.11.0",
+        "sha256": "62d606f497f8a4272fcbe559428ee11d064137e5a731a8356aeb0fcff60fee51",
+        "oldIntegrity": "sha512-w3iTWtltjahU95RSIkGXtFxf9gABY8OGMzruLq5A5WnLbrA2lwwsdA47ymXo0F4z290wuK8lOs9Emsv2yAg4Yg==",
+        "newIntegrity": "sha512-w3iTWtltjahU95RSIkGXtFxf9gABY8OGMzruLq5A5WnLbrA2lwwsdA47ymXo0F4z290wuK8lOs9Emsv2yAg4Yg==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 681,
+        "currentSha256": "62d606f497f8a4272fcbe559428ee11d064137e5a731a8356aeb0fcff60fee51"
+      },
+      {
+        "folder": "ServerUI",
+        "name": "@minecraft/server-ui",
+        "current": "2.3.0",
+        "older": "2.3.0",
+        "sha256": "e24eb079eb34c4e025e38268149ee033674d5318344a3aca75fb241b3f0b3704",
+        "oldIntegrity": "sha512-ziMm+Vww85F8xblLh3TdeuH79axWvPoaFamhBmaTxQdvjs9CyytMsd0HSCwQNrAqVyJEohD9JqL40RxqSJnLiw==",
+        "newIntegrity": "sha512-ziMm+Vww85F8xblLh3TdeuH79axWvPoaFamhBmaTxQdvjs9CyytMsd0HSCwQNrAqVyJEohD9JqL40RxqSJnLiw==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 47,
+        "currentSha256": "e24eb079eb34c4e025e38268149ee033674d5318344a3aca75fb241b3f0b3704"
+      },
+      {
+        "folder": "ServerGameTest",
+        "name": "@minecraft/server-gametest",
+        "current": "1.0.0-beta.1.26.66-stable",
+        "older": "1.0.0-beta.1.26.60-stable",
+        "sha256": "ef4c5cd61fb4c9b3b53039a42f94f1f6e6fd143b81f380ed093e60a871a8d69d",
+        "oldIntegrity": "sha512-cpEzSKe0eGEMhRl+XANIvYqbx0awgFTv6RqIATvQf5KOWmY7Co8vmO1+kROun7hfsCH9RsbQCHmMhuAxolE9hA==",
+        "newIntegrity": "sha512-V5IcPxxy44g5ijfbcnPF1N7eirBoKlzSbXQd99xTFAa1URPJUEmHRUfgZrM224Q+UwYzOq0nNDMtN+Zz6QcpGA==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 27,
+        "currentSha256": "ef4c5cd61fb4c9b3b53039a42f94f1f6e6fd143b81f380ed093e60a871a8d69d"
+      },
+      {
+        "folder": "ServerAdmin",
+        "name": "@minecraft/server-admin",
+        "current": "1.0.0-beta.1.26.66-stable",
+        "older": "1.0.0-beta.1.26.60-stable",
+        "sha256": "42685759399feddaa0eff2070a57341153ce4c0902ee8555aa3dda1fcac1b691",
+        "oldIntegrity": "sha512-UOTD0RFb1FU2pWGSO8vp/IjGIpE2y6XTKLA21nNzg5LGicXDdUdOXVO0rpNhzYPEaK4mB+Lv/pGgOYnCK/va9g==",
+        "newIntegrity": "sha512-feqxz0eeVVoT8U6w+X9ruVZ69eOLINk3lWhqW2HCL4GO+BJuSyWaFD2F43c63PAGmL//IkzIPAi9URLE54EJug==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 31,
+        "currentSha256": "42685759399feddaa0eff2070a57341153ce4c0902ee8555aa3dda1fcac1b691"
+      },
+      {
+        "folder": "ServerNet",
+        "name": "@minecraft/server-net",
+        "current": "1.0.0-beta.1.26.66-stable",
+        "older": "1.0.0-beta.1.26.60-stable",
+        "sha256": "1bfab52e813a704da16769cd61ffe667012cc17f87bc533b0b9d08781b85da32",
+        "oldIntegrity": "sha512-c/7M/VFDEJ/MoJscfOj43Z1h25Ym0Lk+GMa1QUjLeG93Y5A31yZ/fEiUBZN2rgCX0spNl4Kw0wqaxMuJyZeyjQ==",
+        "newIntegrity": "sha512-tFvfuizFDhaSLL5MGrCmCf7PD0HeDB2rnZaN4F7ZLwOmbAHfPcajjCRg1ECj6F+MSuWSbqSpnvoxKNxefLN13w==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 38,
+        "currentSha256": "1bfab52e813a704da16769cd61ffe667012cc17f87bc533b0b9d08781b85da32"
+      },
+      {
+        "folder": "DebugUtilities",
+        "name": "@minecraft/debug-utilities",
+        "current": "1.0.0-beta.1.26.66-stable",
+        "older": "1.0.0-beta.1.26.60-stable",
+        "sha256": "bea38c38bb5ab5eafd532f42269ce0f7f4b0fb862f026e42c46708c873a766ab",
+        "oldIntegrity": "sha512-2IuZvQdTLcrubPu6gHwlvsVMPAES1xCoFmSHthqzdrR2fI4ey8HrOv63Jfqc9quTfIrQc8VhLoFTWtKbMkXXpQ==",
+        "newIntegrity": "sha512-siKbAHnMROY1B8F2cDKvjNE+ngisrpLQ/UsMzApWN2+evXXKSWTzDFW7gXEaOAaxW1LxO5JRcs8HajZBt2gJDQ==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 32,
+        "currentSha256": "bea38c38bb5ab5eafd532f42269ce0f7f4b0fb862f026e42c46708c873a766ab"
+      },
+      {
+        "folder": "Diagnostics",
+        "name": "@minecraft/diagnostics",
+        "current": "1.0.0-beta.1.26.66-stable",
+        "older": "1.0.0-beta.1.26.60-stable",
+        "sha256": "6e58fbc20334c8aace37a46c25ef01dfe04c2485a8e7d72e549230cbc575e14a",
+        "oldIntegrity": "sha512-SbnsZoHd3w/erMUeUixLkk0kff6A4BfhZ88wqmCMTmbLl6bnqIXen05DJ5Jw7S7QxSUod0ljNRwaHWbr3ek7qQ==",
+        "newIntegrity": "sha512-7z6horPCoi4jZu6K2JtEY92EqwhN5kL+g2St2IE0DWSlztSLmNpQJ37pZ7TzDK/SlX2r89+f0oedEWdM4cIZww==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 9,
+        "currentSha256": "6e58fbc20334c8aace37a46c25ef01dfe04c2485a8e7d72e549230cbc575e14a"
+      },
+      {
+        "folder": "ServerEditor",
+        "name": "@minecraft/server-editor",
+        "current": "0.1.0-beta.1.26.66-stable",
+        "older": "0.1.0-beta.1.26.60-stable",
+        "sha256": "17cbf285bb1e5e047a1b2d9758335a06295a3a620feaeb427a5bb31a0530072a",
+        "oldIntegrity": "sha512-KCacKUEJB/cyCLKC5eDUCiXF5GNJgi3o2MflAkN1mLuVh5wESSyoq4ExJTkd8ZqxcUWeo81m/em0X2kaY7e5nQ==",
+        "newIntegrity": "sha512-sA4/E6gWTAm7SMq/G3FDM5WEtGavLvnZT0VtlFT6roSdGn6xBbfHwNmXnn/ttUKHKGVPHLpUn3nnQNXemfJSbQ==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 468,
+        "currentSha256": "17cbf285bb1e5e047a1b2d9758335a06295a3a620feaeb427a5bb31a0530072a"
+      },
+      {
+        "folder": "ServerGraphics",
+        "name": "@minecraft/server-graphics",
+        "current": "1.0.0",
+        "older": "1.0.0",
+        "sha256": "1911fb488f539981c98a3f7039c5bd6d2ced0764e9099771516d079741d0ff14",
+        "oldIntegrity": "sha512-Tff9XmrsjhoFt7kOaynLjg3x4Vzxj4nINBca1gadCyFt1A2QiZYOOx63TXjvoZ8MTR+2NuLUpwuu3X3RpSn4IQ==",
+        "newIntegrity": "sha512-Tff9XmrsjhoFt7kOaynLjg3x4Vzxj4nINBca1gadCyFt1A2QiZYOOx63TXjvoZ8MTR+2NuLUpwuu3X3RpSn4IQ==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 14,
+        "currentSha256": "1911fb488f539981c98a3f7039c5bd6d2ced0764e9099771516d079741d0ff14"
+      },
+      {
+        "folder": "Common",
+        "name": "@minecraft/common",
+        "current": "1.3.0",
+        "older": "1.3.0",
+        "sha256": "37c63f2e2880c1f37a8e78318433218a6dd390777f690a90e3073b1bdd82d96c",
+        "oldIntegrity": "sha512-GLT8USFhvEyeTTFHZAgszbrnoT007hmXmK+aO4l+2A1up9/zwZ+4e8R8F0KcKrCWDjLEqkOJtPow0hQCcNJ++Q==",
+        "newIntegrity": "sha512-GLT8USFhvEyeTTFHZAgszbrnoT007hmXmK+aO4l+2A1up9/zwZ+4e8R8F0KcKrCWDjLEqkOJtPow0hQCcNJ++Q==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 9,
+        "currentSha256": "37c63f2e2880c1f37a8e78318433218a6dd390777f690a90e3073b1bdd82d96c"
+      },
+      {
+        "folder": "ServerBeta",
+        "name": "@minecraft/server",
+        "current": "2.12.0-beta.1.26.66-stable",
+        "older": "2.12.0-beta.1.26.60-stable",
+        "oldIntegrity": "sha512-eJZLQ+Z/BPdXdtV2fVbPoSfEDTIW2pJtqtA0LFGckKFyZnDZ4liwfAZqb+uIF3jZLb7jNSM7gkdgD9vwq3PfKw==",
+        "newIntegrity": "sha512-AnJa15x1rJt4mvOwvv6CWHXhqK8cEzCpy099CYnvmEG64RHPdESW+souLvDBQa/bmTBKiR1KUPi37sNR8tsJ7A==",
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "declarationSurfaceIdentical": true,
+        "oldDeclarationCount": 730,
+        "currentSha256": "3c6995a34231117eab9e815e577132b2f580a5eb38a3aedfea818a845a21131b",
+        "sha256": "3c6995a34231117eab9e815e577132b2f580a5eb38a3aedfea818a845a21131b"
+      }
+    ]
+  },
+  "typecheck": {
+    "method": "Use each workspace-resolved TypeScript compiler and unchanged tsconfig. Compare original declarations against a compiler-host read overlay containing downloaded 26.60 beta declarations at existing beta module paths. Preserve original stable modules, package metadata and module resolution. No dependency installation or pin changes.",
+    "results": [
+      {
+        "config": "Package/Bedform/tsconfig.json",
+        "baselineErrors": 0,
+        "olderErrors": 0,
+        "newErrors": [],
+        "baselineDiagnostics": []
+      },
+      {
+        "config": "Package/Server/tsconfig.json",
+        "baselineErrors": 0,
+        "olderErrors": 0,
+        "newErrors": [],
+        "baselineDiagnostics": []
+      },
+      {
+        "config": "Package/ServerGameTest/tsconfig.json",
+        "baselineErrors": 0,
+        "olderErrors": 0,
+        "newErrors": [],
+        "baselineDiagnostics": []
+      },
+      {
+        "config": "Addon/BedformCanvas/tsconfig.json",
+        "baselineErrors": 0,
+        "olderErrors": 0,
+        "newErrors": [],
+        "baselineDiagnostics": []
+      }
+    ]
+  },
+  "nativeChecks": [
+    {
+      "name": "Effect runtime",
+      "command": "$env:BDS_PATH='C:/MineCraft/Addon/BuildCraft/dist/engine-1.26.60.6'; $env:BDS_EXPECTED_VERSION='1.26.60.6'; npm run test:bds --workspace @bedform/effect",
+      "result": {
+        "engine": "1.26.60.6",
+        "failures": [],
+        "results": [
+          {
+            "detail": "probe 2",
+            "name": "fibers resumed by microtasks and ticks may write to the world",
+            "ok": true
+          },
+          {
+            "detail": "3,4,1",
+            "name": "sleeps round up to whole ticks",
+            "ok": true
+          },
+          {
+            "detail": "gaps 2,2,2 events open,close interrupted 1",
+            "name": "layers, scopes, schedules and interruption",
+            "ok": true
+          },
+          {
+            "detail": "sum 19999900000 over 49 ticks",
+            "name": "long work spreads across ticks without the watchdog",
+            "ok": true
+          },
+          {
+            "detail": "random true aborted true hostAbortController undefined",
+            "name": "Random and abort signals work without host crypto or AbortController",
+            "ok": true
+          },
+          {
+            "detail": "handler write false, runSync cancel applied rain false, microtask same tick true, microtask write true, nextTick write true, cancel after waiting applied rain true",
+            "name": "before-events are read-only until the handler returns and drain microtasks in the same tick",
+            "ok": true
+          }
+        ],
+        "runtime": "C:\\Bedform\\Package\\Effect\\dist\\bds-runtime",
+        "shutdownFinalized": true
+      },
+      "evidence": "Package/Effect/dist/bds-runs/run-8zYkVi/results.json",
+      "sha256": "5fa307f437d092d70014d225653875b0e61b3edf7f5e5026324883dd98e55bc5"
+    },
+    {
+      "name": "Canvas, widgets and spatial text",
+      "command": "$env:BDS_PATH='C:/MineCraft/Addon/BuildCraft/dist/engine-1.26.60.6'; npm run test:native --workspace bedform-canvas",
+      "passed": true,
+      "phases": [
+        {
+          "name": "observed",
+          "exitCode": 0,
+          "steps": [
+            "Setup",
+            "WidgetAssets",
+            "SpatialText",
+            "RawProtocol",
+            "PlayerSubjectPrivacy",
+            "RangeBoundary",
+            "Movement",
+            "ReplacementAndDisposal",
+            "NpcExpiryAndClear",
+            "ErrorIsolation",
+            "DimensionChange",
+            "UnloadReload",
+            "Death",
+            "Disconnect",
+            "ScopedDisposal",
+            "ActiveAtStop"
+          ],
+          "engineWarnings": []
+        },
+        {
+          "name": "restart",
+          "exitCode": 0,
+          "steps": [
+            "RestartCleanup",
+            "RestartRendering"
+          ],
+          "engineWarnings": []
+        },
+        {
+          "name": "unmodified",
+          "exitCode": 0,
+          "steps": [
+            "UnmodifiedArtifact"
+          ],
+          "engineWarnings": []
+        }
+      ],
+      "archive": {
+        "Path": "dist/bedform-canvas.mcaddon",
+        "Sha256": "443ab42e87b0011472e06867ebd5dd5223eb614b9c7f0489f20f47b00ab6ef9f",
+        "InstalledFiles": 514,
+        "InstalledMatchesBuild": true,
+        "ObservedScriptSuffixMatches": true
+      },
+      "evidence": "Addon/BedformCanvas/dist/native.results.json",
+      "sha256": "d01bca96c43677b2a9d5974d9c3679835a102a7e7655c68809e1ab53cee331b9"
+    },
+    {
+      "name": "Physics native fixture and restart",
+      "command": "$env:BDS_PATH='C:/MineCraft/Addon/BuildCraft/dist/engine-1.26.60.6'; npm run test:physics:bds --workspace bedform",
+      "exitCode": 0,
+      "phaseExits": {
+        "startup": 0,
+        "restart": 0
+      },
+      "failures": [],
+      "watchdog": false,
+      "acceptanceMarker": "BF_PASS owners/full orientation/native AABBs/renderer lifecycle/actual process restart",
+      "additionalMarkers": [
+        "BF_HELPER_PASS",
+        "BF_TERRAIN_SLAB_PASS",
+        "BF_NATIVE_PUSH_PASS",
+        "BF_UNLOAD_RELOAD_PASS"
+      ],
+      "evidence": "Package/Bedform/dist/physics-bds-hCga2d/report.json",
+      "sha256": "9d497ecab0f829d573a59ad039b225c71e7129abd797d07522e757c8f47d1afd",
+      "note": "Non-benchmark fixture: report.completed and report.qualified are benchmark-only flags and remain false. Native fixture acceptance is the exit/phase/marker result; no performance qualification claimed."
+    }
+  ],
+  "nativeDependencyAlignment": {
+    "cinnabarImportedTarget": "1.26.60.6",
+    "leviLamina": "26.60.8",
+    "bdsDependency": "1.26.60",
+    "sdk": "26.60.6-server.16",
+    "preLoader": "1.16.8",
+    "evidence": "LeviLamina.lip.toml",
+    "status": "Matching declared target; SDK linking and loader execution have not been demonstrated."
+  },
+  "requiredForRetarget": [
+    "Select 1.26.60.6 explicitly in the canonical Beads contract and compatibility manifest; do not equate this assessment with an implemented retarget.",
+    "Repin six version-specific beta mirrors and their dependents to published 1.26.60-stable packages, regenerate lockfile consistently and define an explicit older-target exception/channel for latest-version mirror synchronization.",
+    "Keep stable server 2.11.0 and server-ui 2.3.0 where already used; their APIs were released with 26.60. Preserve existing supported preview/beta usage as validated.",
+    "Update compatibility guards to evaluate the selected exact tuple; preserve original Cinnabar provenance.",
+    "Finish excluded asset/registry generation and original workspace build checks for .1, then native linking/loader qualification and .2 exact-player attachment acceptance."
+  ],
+  "limitations": [
+    "No Cinnabar renderer was built or run in this investigation; no native extension was linked or loaded.",
+    "No real client login, physical-client appearance, Switch acceptance or existing-world downgrade/migration was tested.",
+    "No full Bedform regression or benchmark qualification is inferred from these focused fixtures.",
+    "Editor, diagnostics, network and admin module declarations were compared; their complete runtime behavior was not separately exercised.",
+    "Current-client font/art source provenance remains 1.26.6501.0; older-client appearance is unverified.",
+    "Later engine hotfixes are absent from the older runtime; no claim of bug or security equivalence.",
+    "Node used was installed 24.22.1, rather than repository requested 24.19.0.",
+    "All BDS processes launched by this investigation stopped cleanly; the source installation and its worlds/configuration were not modified."
+  ],
+  "sources": [
+    "https://feedback.minecraft.net/hc/en-us/articles/49852828563853-Minecraft-Bedrock-Edition-26-60-Changelog",
+    "https://feedback.minecraft.net/hc/en-us/articles/50306516691853-Minecraft-Bedrock-Edition-26-63-Hotfix-Changelog",
+    "https://github.com/LiteLDev/LeviLamina/releases/tag/v26.60.8",
+    "https://github.com/LiteLDev/bedrock-runtime-data/releases/tag/v26.60.6-server.16"
+  ]
+}

@@ -10,7 +10,8 @@
  */
 // Usage: node --import tsx Script/sync-minecraft-mirrors.mts [--channel dev|beta] [--check]
 // Each mirror's version is its first-party counterpart's version with `-<channel>.1` appended. The
-// counterpart's version is its `latest` release when that is stable, and otherwise its `beta` release.
+// Native modules follow Script/bedrock-target.json. Other counterparts use their stable `latest`
+// release, or their `beta` release when latest is a prerelease.
 // The channel defaults to `beta` on the Beta branch and `dev` everywhere else. Missing mirrors are
 // scaffolded under Package/<Name>; existing mirrors only have their version and their exact
 // first-party dependency rewritten, so hand-written sources survive. --check fails instead of writing.
@@ -72,6 +73,15 @@ const Author = Object.freeze({ email: "gage@sorrell.sh",
     name: "Gage Sorrell",
     url: "https://sorrell.sh" });
 const TypeScriptVersion = "6.0.3";
+
+/**
+ * Native module pins for the explicitly selected Bedrock server target.
+ *
+ * @category Configuration
+ * @since 1.0.0
+ */
+const Target = JSON.parse(readFileSync(path.join(Repository, "Script/bedrock-target.json"), "utf8")) as
+    { readonly apiPins: Readonly<Record<string, string>> };
 
 /** Script API modules that the game provides at runtime; their npm packages hold only declarations. */
 const Native: ReadonlySet<string> = new Set([ "common", "debug-utilities", "diagnostics", "server",
@@ -194,7 +204,8 @@ async function resolveMirrors(channel: string): Promise<ReadonlyArray<Mirror>>
         const encoded = `@minecraft%2F${name}`;
         const tags = await fetchJson<Record<string, string>>(`${Registry}/-/package/${encoded}/dist-tags`);
         const latest = tags.latest;
-        const upstream = latest !== undefined && !latest.includes("-") ? latest : tags.beta ?? latest;
+        const upstream = Target.apiPins[`@minecraft/${name}`] ??
+            (latest !== undefined && !latest.includes("-") ? latest : tags.beta ?? latest);
         if (upstream === undefined)
         {
             throw new Error(`@minecraft/${name} has neither a latest nor a beta release.`);

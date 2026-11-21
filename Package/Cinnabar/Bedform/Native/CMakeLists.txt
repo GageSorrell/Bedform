@@ -8,7 +8,7 @@ string(JSON sdk_bds GET "${compatibility}" sdkBdsVersion)
 string(JSON codec_bds GET "${compatibility}" importedServerVersion)
 string(JSON qualification GET "${compatibility}" status)
 if(NOT target_bds STREQUAL sdk_bds OR NOT target_bds STREQUAL codec_bds
-   OR NOT qualification STREQUAL "qualified")
+   OR NOT qualification STREQUAL "aligned")
     message(FATAL_ERROR
         "Native feasibility unrun: required BDS ${target_bds}, SDK BDS ${sdk_bds}, "
         "codec/assets BDS ${codec_bds}, qualification ${qualification}. "

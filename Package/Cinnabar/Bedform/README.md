@@ -17,8 +17,10 @@ The LeviLamina build descriptors are evidence snapshots from commit
 
 ## Exact target gate
 
-`compatibility.json` is the checked version set. Bedform's first-party API pins require
-BDS **1.26.66.1** (the current official stable Windows download checked on 2026-11-20).
+`compatibility.json` records the currently selected version set, targeting BDS
+**1.26.66.1**. Its beta API pins carry the `1.26.66-stable` label; that label alone
+does not establish a minimum runtime version. The older-target assessment below
+demonstrates that 1.26.60.6 is a viable alternative without changing this selection.
 The imported Cinnabar codec, protocol 2225 registry foundation and core target
 **1.26.60.6**. Its vanilla resource source is separately pinned to a 1.26.60 preview
 sample pack. These older inputs have not been relabeled as compatible with 1.26.66.1.
@@ -31,6 +33,9 @@ Published LeviLamina **26.60.8** uses BDS dependency `1.26.60`, PreLoader **1.16
 and SDK/runtime data **26.60.6-server.16**. Its release and SDK build descriptors do
 not establish support for BDS 1.26.66.1. No matching published SDK was found in the
 release inventory checked on 2026-11-20. Exact native alignment remains blocked.
+`availability.json` records the latest 100 published tags for each project, the
+checked loader main commit, query URLs and the empty exact-target candidate lists.
+This availability audit does not prove that adapting the SDK is impossible.
 Bedform-8ww.1 therefore remains open, and dependent attachment/rendering work must
 remain blocked. This import proves neither native attachment nor renderer behavior.
 
@@ -82,12 +87,50 @@ cargo +stable test --manifest-path .local/codec-validation/Cargo.toml --target-d
 ```
 
 The `stable` toolchain was verified to report exactly the pinned 1.100.0 release.
-The source lockfile was unchanged. The workspace command
-`cargo +stable check --locked --tests -p protocol --offline` could not resolve the
-uncached pinned Bevy Git dependency. Its online attempt was interrupted while
-fetching that dependency so the isolated codec check could proceed; the workspace
-check is incomplete. These codec tests do not qualify current-BDS registries,
-assets or the native SDK, or establish attachment and rendering behavior.
+The source lockfile was unchanged. An additional isolated protocol workspace passed
+**1,253 unit tests and 65 integration tests**, including its offline Go startup
+harness. Three benchmarks and the manual live-BDS test remained ignored upstream.
+The Go `TestHandoffCarriesTheTraceConnection` test also passed. The reduced workspace
+used 511 byte-identical crate files and a pruned lockfile whose 103 package identities
+and checksums match the original lock. Commands, hashes and scope are recorded in
+`protocol-validation.json`.
+
+The original workspace check remains incomplete: an attempt to fetch the pinned
+Bevy commit with shallow history failed with a connection reset, early EOF and
+invalid index-pack output. The isolated checks do not establish a passing original
+workspace build, qualify current-BDS registries/assets or the native SDK, or prove
+attachment and rendering behavior.
+
+The full Go registry-generator suite was also run. Its carrier checks fail because
+the excluded block/biome binary registries are absent; its Rust delegation could
+not find Cargo on the inherited PATH. Regenerating and validating the required
+carriers from qualified target inputs remains an open gate. The passing foundation
+command tests validate metadata handling, not the missing carriers.
+
+## Older-target assessment
+
+The user-requested investigation in Bedform-8ww.15 found BDS **1.26.60.6** to be a
+viable Bedform target. `bds-1.26.60.6-assessment.json` records the evidence, exact
+package versions, integrity/hash information, commands and limitations. Eleven API
+version comparisons, including the seven version-specific beta comparisons, have
+identical complete declaration syntax after removing comments and normalizing
+whitespace. Four workspace typechecks introduce no errors using the older beta
+declarations and each workspace's installed TypeScript compiler.
+
+On the exact Windows server executable (build 52886189), the package runners passed
+all six Effect scenarios, the three-process Canvas/widget/spatial-text fixture
+(including restart and the byte-exact unmodified pack), and the native physics
+fixture with actual process restart. These runs used the fixed test executable
+paths after the user completed firewall setup. The source installation was read
+only; all launched test servers stopped cleanly.
+
+This establishes a practical older-target option without demonstrating Cinnabar
+attachment or real-client appearance. A deliberate retarget still requires changes
+to the canonical task contract, six beta mirror pins and dependent lockfile entries,
+the latest-version mirror policy and compatibility guards. Stable server 2.11.0
+and server-ui 2.3.0 need no downgrade. Missing Cinnabar assets, original-workspace
+build validation, native loader/link qualification and exact-player acceptance
+remain open. The selected 1.26.66.1 target and issue .1's blocked status are unchanged.
 
 ## Exclusions and repository tooling
 
