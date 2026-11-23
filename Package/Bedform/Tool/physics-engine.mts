@@ -63,7 +63,9 @@ export const physicsEngine = async (root: string, override?: string): Promise<st
  * @category Fixtures
  * @since 1.0.0
  */
-export const physicsTemplate = async (runtime: string, run: string): Promise<string> =>
+export const physicsTemplate = async (
+    runtime: string, run: string, extraProperties: string = ""
+): Promise<string> =>
 {
     const Properties = Path.join(runtime, "server.properties");
     const Previous = await Fs.readFile(Properties).catch((error: NodeJS.ErrnoException) =>
@@ -80,7 +82,7 @@ export const physicsTemplate = async (runtime: string, run: string): Promise<str
         await Fs.writeFile(Properties, `server-name=Bedform template bootstrap\nlevel-name=${Name}\n` +
             "level-type=FLAT\ngamemode=creative\ndifficulty=peaceful\nallow-cheats=true\n" +
             "online-mode=false\nallow-player-joining=false\nserver-port=0\nserver-portv6=0\n" +
-            "transport=nethernet\nenable-lan-visibility=false\n");
+            "transport=nethernet\nenable-lan-visibility=false\n" + extraProperties);
         const Child = spawn(Path.join(runtime, "bedrock_server.exe"), [], {
             cwd: runtime,
             windowsHide: true,

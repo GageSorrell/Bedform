@@ -42,6 +42,61 @@ Scoped leases under the invoking account's `LOCALAPPDATA/Bedform/Setup/locks` pr
 
 ## Component contracts
 
+To prepare the native feasibility environment on Windows, run
+`npm run qualify:cinnabar --workspace bedform` from an interactive terminal.
+The runner checks the assessed BDS binary at
+`Package/Bedform/dist/bds-runtime/bedrock_server.exe` and its existing inbound
+firewall rule. Use the repository's explicit firewall setup if approval is missing.
+The runner shares the package BDS lock, starts a disposable world with joins
+disabled, and stops the server after startup. It restores the previous
+`server.properties` and keeps the scoped fixture and evidence under
+`Package/Bedform/dist/cinnabar-environment/<run-id>`.
+
+The readiness report includes the invoking identity, checkout revision and local
+changes, prerequisite probe results, an offscreen D3D12 pixel readback, both
+GameTest spawn API availability checks, and a measured world checkpoint. Native
+build and Go commands use two jobs or processors, and the fixture requests two
+BDS threads. To restore a stopped disposable world from its checkpoint, run
+`node --import tsx Script/Setup/Tool/cinnabar-environment.mts --reset <run-id>`.
+Keep evidence local because the report identifies the Windows account.
+
+This checkpoint covers the disposable world. Clean, missing-tool and incomplete-tool
+OS snapshots and real installer/UAC verification remain part of final Windows
+qualification. Exact-player attachment, rendered Cinnabar world frames and
+server-observed input are measured separately in the native feasibility experiment.
+
+The prerequisite adapter validates local Cargo, Rust/Go, helper, native loader/SDK,
+API and asset manifests before permission prompts or installation. It detects Git,
+VS 2022 or later with a working x64 compiler/Windows SDK/CMake/Clang environment,
+the declared MSVC Rust toolchain and components, Go, xmake, and FFmpeg/ffprobe.
+Compiler/link and H.264/MP4 smoke probes check usable capabilities. Child environments
+retain the original account and canonical build paths; PATH refresh does not edit
+the registry or Rust's global default. Installed toolchains matching an exact release
+can be reused under their existing name.
+
+Each missing or broken prerequisite requires an explicit default-No confirmation.
+Git, Go, VS Build Tools, xmake and FFmpeg use the locally declared WinGet IDs.
+An incomplete supported VS installation is modified in place. Missing WinGet requires
+manual App Installer setup; setup never bootstraps it. Rustup uses the official
+Windows installer URL and SHA-256 in `Package/Cinnabar/Bedform/prerequisites.json`.
+Install failures, cancellations, reboot results and unsuccessful rechecks stop setup.
+Installer and smoke-test temporary directories are cleaned.
+
+The same checked policy pins the selected LeviLamina source SDK and runtime-data
+archives. Acquisition verifies their SHA-256 and extracted bytes. Separately consented
+source data/font/image inputs come only from the recorded import commit and must
+match the import inventory's Git blob hashes. They stay ignored and untracked;
+edited existing inputs are preserved and cause a diagnostic. Mojang sample assets
+use the fork's checked manifest and cache normalization, with explicit Minecraft
+EULA/license consent. No replacement fork/configuration is fetched, optional creative
+tools remain independent, and preparation never enables capture or look-back.
+
+Prerequisite readiness establishes tool and input availability. Building runtime
+helpers, generated carriers and the native bridge, SDK link/load qualification, and
+installed-bundle validation remain separate build/native acceptance gates. Normal
+tests inject probes, consent, installers and acquisition; they do not run installers
+or UAC.
+
 `Source/Contract.ts` is the shared boundary. Changes to these contracts and the root manifests/lockfile should have one integration owner. Implement lane-specific adapters in separate modules and wire their layers in `Source/index.ts` when ready.
 
 | Service/model | Responsibility |

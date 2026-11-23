@@ -1,0 +1,6 @@
+{
+  "name": "BedformNativeBridge",
+  "entry": "BedformNativeBridge.dll",
+  "version": "0.1.0",
+  "type": "native"
+}

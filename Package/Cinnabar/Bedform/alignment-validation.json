@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-11-20",
+  "serverVersion": "1.26.60.6",
+  "result": "passed",
+  "scope": "Source import, selected BDS/API/codec/core/SDK version alignment, affected codec/protocol and asset-registry checks. Not a complete renderer/native-loader/client/installer qualification.",
+  "sharedTarget": "Script/bedrock-target.json",
+  "codec": {
+    "passed": 39,
+    "evidence": "README.md"
+  },
+  "protocol": {
+    "unitPassed": 1253,
+    "integrationPassed": 65,
+    "evidence": "protocol-validation.json",
+    "note": "Unchanged sources in the audited reduced graph; upstream ignored benchmarks and live-BDS login remain unrun."
+  },
+  "registry": {
+    "unitPassed": 76,
+    "goPassedTests": 490,
+    "goPassedPackages": [
+      "github.com/hashimthearab/rust-mcbe/tools/registrygen/cmd/foundationcheck",
+      "github.com/hashimthearab/rust-mcbe/tools/registrygen/cmd/blockdestroy",
+      "github.com/hashimthearab/rust-mcbe/tools/registrygen/cmd/itemtags",
+      "github.com/hashimthearab/rust-mcbe/tools/registrygen/internal/targetpin",
+      "github.com/hashimthearab/rust-mcbe/tools/registrygen/cmd/serverdefined",
+      "github.com/hashimthearab/rust-mcbe/tools/registrygen/cmd/itemcapacity",
+      "github.com/hashimthearab/rust-mcbe/tools/registrygen"
+    ],
+    "failed": 0,
+    "skipped": [
+      {
+        "package": "github.com/hashimthearab/rust-mcbe/tools/registrygen/cmd/serverdefined",
+        "test": "TestPinnedMetadataReproduces",
+        "reason": "main_test.go:103: missing fixture: pinned palette generation input: read pinned behavior definitions (run make assets): open ..\\..\\..\\..\\.local\\assets\\bedrock-samples\\v1.26.60.30-preview\\full\\behavior_pack\\blocks: The system cannot find the path specified."
+      },
+      {
+        "package": "github.com/hashimthearab/rust-mcbe/tools/registrygen",
+        "test": "TestEducationConstructionRetainsUnrelatedPaletteRecords",
+        "reason": "education_v2225_test.go:16: missing previous registry fixtures: set CINNABAR_PREVIOUS_REGISTRY_ROOT"
+      }
+    ],
+    "regeneration": "registryc --kind all --check succeeded; every regenerated production carrier matched its pinned source bytes.",
+    "regeneratedFiles": 26,
+    "sourceAudit": {
+      "sourceFilesVerified": 1073,
+      "lockedPackageIdentitiesVerified": 254,
+      "originalLockSha256": "64eba18cf3396910da15df9dce3df5019ab73622f3dd6614f21e527ac9e5e347",
+      "validationLockSha256": "ba379526f15347618f0551bd39d99ff255e531c35286ed5cc7bdd9f908af24c6"
+    },
+    "fixtures": [
+      {
+        "path": "crates/assets/data/biome-registry-v1001.bin",
+        "gitBlob": "c82f8b166481a3e42171b5fc2df050d64a8d51ae",
+        "sha256": "1c5c567c38bad94f61f21b83f2848db151fcd07a44a3bdcc2aea0c8ae5f9b62c",
+        "bytes": 2584
+      },
+      {
+        "path": "crates/assets/data/biome-registry-v2225.bin",
+        "gitBlob": "f31b8ecceeb804e544b7526d1699c22378542f65",
+        "sha256": "e3ba3d96a66fa49b3b7d94ae6b67b4cc5d8961789c91275080d3922909b25c2a",
+        "bytes": 2642
+      },
+      {
+        "path": "crates/assets/data/block-light-registry-v1001.bin",
+        "gitBlob": "6677f34b7e7ad636774f38d0028c79a73696a1a5",
+        "sha256": "5b1388f8162b75371bbb85a8d8cebdb4b138082002d29cf46f1410a22dea1d67",
+        "bytes": 16993
+      },
+      {
+        "path": "crates/assets/data/block-light-registry-v2225.bin",
+        "gitBlob": "e60750ecdcc424462e401f6fcc2199d38101bcf8",
+        "sha256": "c5b022f0fb9fb3ccb489acf2a9771d79b5ef6ef3e3629333df7a88196d7d7e06",
+        "bytes": 24040
+      },
+      {
+        "path": "crates/assets/data/block-physics-seed-v2225.bin",
+        "gitBlob": "ec7c4515b62a78c5a760796d80887ea57f844f21",
+        "sha256": "9647fa8594baede6782a1f246a024975385b8aec978c3b82c478d411961db189",
+        "bytes": 1218856
+      },
+      {
+        "path": "crates/assets/data/block-physics-v2225.bin",
+        "gitBlob": "40078e458ec9e9496b5b8f305a788f9d6f3f481e",
+        "sha256": "26dbde7a44804597d3e361ebd94151a616f17c0e59e5330e065071706fdfb8d4",
+        "bytes": 5153944
+      },
+      {
+        "path": "crates/assets/data/block-registry-v1001.bin",
+        "gitBlob": "05310c8a6e5422b17773578fcdca9c387207d84d",
+        "sha256": "2247b37058ac42a65a601dbc246da6f215caf80b79b4aaf439cc3361911d2f1b",
+        "bytes": 4647994
+      },
+      {
+        "path": "crates/assets/data/block-registry-v2225.bin",
+        "gitBlob": "217f69fdc9fe181104995a15a8354c23454c9c5e",
+        "sha256": "124f554df0ce1ac4edcea61eeed5cf582c54fa42aaffb99d1ca187c824d1539a",
+        "bytes": 7095833
+      },
+      {
+        "path": "crates/assets/data/entity-facts-v2225.bin",
+        "gitBlob": "4c19e3c576ee885b4148e36b0b5db9c0c011c081",
+        "sha256": "eafa8e34497333c017d7084e5cb10979d6f4666f5a3c62a96f239eeae960e89e",
+        "bytes": 72415
+      },
+      {
+        "path": "crates/assets/data/item-facts-v2225.bin",
+        "gitBlob": "65a41d275b0ba12965d4f3f63c34e82591ebeb1e",
+        "sha256": "fd833f51a0772ba0ba656e2b3d5afe2852e5638414f01e46cec4e5c567681320",
+        "bytes": 1133210
+      },
+      {
+        "path": "crates/assets/data/java-mapping-v2225.bin",
+        "gitBlob": "3f43e20c65463f8a823d83280f497c12939081d0",
+        "sha256": "692bd4ebeff97f5c85731bd4b5488e54d7736cd9a7b8c5dd80f527cec50b8cb0",
+        "bytes": 612983
+      },
+      {
+        "path": "crates/assets/data/vanilla-fallback-v2225.bin",
+        "gitBlob": "0ce82d005e22ddefe2f3285c8972f82e938b2c1d",
+        "sha256": "b0eb5906f628af95b12c0d6fd638a0df423378d802c1c56260828e8f89c19920",
+        "bytes": 90366
+      }
+    ],
+    "logs": {
+      "unitSha256": "0e7f58a5bc30b79745e891c66c21198998aa96eef33722df171a463b0119e154",
+      "goSha256": "ae108d3b0de3b638a192d482180d4f4f2d12458462798e18db2e157a31d95953",
+      "regenerationSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "commands": [
+      "python Bedform/PrepareRegistryValidation.py",
+      "cargo +stable test --manifest-path .local/asset-validation/Cargo.toml -p asset-compiler --lib",
+      "cargo +stable build --manifest-path .local/asset-validation/Cargo.toml --locked -p asset-compiler --bin registryc",
+      "GOWORK=off CINNABAR_REGISTRYC_BIN=<absolute registryc.exe> go -C .local/asset-validation/tools/registrygen test -json ./...",
+      "GOWORK=off go -C .local/asset-validation/tools/registrygen run . -facts-out <absolute facts.json>",
+      "registryc --root <absolute validation root> --facts <absolute facts.json> --kind all --check --out <absolute regenerated directory>"
+    ],
+    "prerequisites": "Verified Rust/Cargo 1.100.0 (installed stable channel), Go 1.27.3, GNU Make 4.4.1 and PowerShell on PATH. GNU Make was extracted under ignored .local/make; no global install or PATH change.",
+    "make": {
+      "url": "https://master.dl.sourceforge.net/project/ezwinports/make-4.4.1-without-guile-w32-bin.zip",
+      "archiveSha256": "fb66a02b530f7466f6222ce53c0b602c5288e601547a034e4156a512dd895ee7"
+    },
+    "isolation": "Fourteen unchanged compiler/path-dependency crates, 1,073 source files, and 254 exact locked package identities were verified against the source import. The reduced workspace omits unused renderer patches and prunes the copied lock. The original Cargo workspace and lock were not changed."
+  },
+  "bedformNativeChecks": {
+    "evidence": "bds-1.26.60.6-assessment.json",
+    "effectScenarios": 6,
+    "canvasProcesses": 3,
+    "physicsRestart": true,
+    "engineBuild": "52886189"
+  },
+  "remainingAcceptance": [
+    "Native ABI link and loader execution, exact simulated-player attachment, real renderer frame, server-observed input and lifecycle: Bedform-8ww.2.",
+    "Complete renderer/helper/asset bundle build and install acceptance: linked setup and later integration tasks.",
+    "Original full-workspace check remains incomplete after prior Bevy Git fetch failure; reduced checks do not establish that build.",
+    "Two upstream conditional tests remain skipped: historical Education registry migration requires a previous registry root; independent server-defined metadata regeneration requires the sample behavior pack/palette inputs. Current production registry byte-for-byte regeneration passed.",
+    "Real-client appearance, current-client connectivity and existing-world downgrade/migration were not qualified."
+  ],
+  "nodeVersion": "24.19.0",
+  "earlierNativeFixturesNodeVersion": "24.22.1",
+  "repositoryChecks": {
+    "cinnabarHostTests": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "node": "24.19.0"
+    },
+    "affectedMirrorTypechecks": {
+      "passed": 6,
+      "node": "24.19.0"
+    },
+    "selectedTargetChecker": "passed",
+    "mirrorSynchronization": "passed",
+    "npmDependencyTree": "valid",
+    "affectedToolLint": "passed",
+    "rootToolsTypecheck": {
+      "result": "passed",
+      "node": "24.19.0"
+    },
+    "allWorkspaceToolsTypecheck": {
+      "result": "passed",
+      "node": "24.22.1"
+    },
+    "broadBedformVerify": {
+      "result": "failed",
+      "passed": 587,
+      "failed": 3,
+      "followup": "Bedform-oce",
+      "node": "24.22.1",
+      "recheck": "CanvasPacks/SpatialPointer under Node24.19.0: 19 pass, 2 fail. Packed consumer separately passes under Node24.19.0 with normal temp path; full suite is still not green."
+    },
+    "packedConsumer": {
+      "result": "passed",
+      "node": "24.19.0",
+      "tempPath": "Package/Cinnabar/.local/consumer-temp",
+      "note": "Actual independent offline script-disabled install, declarations, no-Node/Web-global runtime and installed CLI archive checks passed. Default Windows short-temp-path case still fails and is tracked in Bedform-oce."
+    }
+  },
+  "bdsDownloadUrlProbe": "HEAD request timed out; tested executable provenance is the exact local source recorded in bds-1.26.60.6-assessment.json. No public archive availability claim."
+}

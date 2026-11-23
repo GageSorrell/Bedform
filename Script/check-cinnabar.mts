@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 /**
  * The compatibility fields checked against their owning source files.
@@ -97,9 +98,13 @@ export function checkCinnabar(repository: string): ReadonlyArray<string>
     const compatibility = readJson<Compatibility>(path.join(fork, "Bedform/compatibility.json"));
     const selected = readJson<{ readonly serverVersion: string;
         readonly apiPins: Readonly<Record<string, string>> }>(
-            path.join(repository, "Script/bedrock-target.json"));
+        path.join(repository, "Script/bedrock-target.json"));
     assert.equal(compatibility.bedformBdsVersion, selected.serverVersion, "Selected BDS target drift");
     assert.deepEqual(compatibility.apiPins, selected.apiPins, "Selected API pins drift");
+    const validation = readJson<Record<string, unknown>>(
+        path.join(fork, "Bedform/alignment-validation.json"));
+    assert.equal(validation.serverVersion, selected.serverVersion, "Alignment evidence target drift");
+    assert.equal(validation.result, "passed", "Alignment checks have not passed");
     const inventory = readJson<Inventory>(path.join(fork, "Bedform/import.json"));
     const availability = readJson<Record<string, unknown>>(path.join(fork, "Bedform/availability.json"));
     const target = readJson<Record<string, unknown>>(path.join(fork, "assets/bedrock-target.json"));
@@ -129,7 +134,26 @@ export function checkCinnabar(repository: string): ReadonlyArray<string>
 
     for (const entry of inventory.excluded)
     {
-        assert.equal(existsSync(path.join(fork, entry.path)), false, `Excluded payload: ${entry.path}`);
+        const file = path.join(fork, entry.path);
+        if (!existsSync(file))
+        {
+            continue;
+        }
+
+        assert.ok(entry.path.startsWith("assets/") || entry.path.startsWith("crates/assets/data/"),
+            `Excluded payload: ${entry.path}`);
+        const bytes = readFileSync(file);
+        const hash = createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+        assert.equal(hash, entry.sha, `Acquired input differs from its import pin: ${entry.path}`);
+        const relative = path.relative(repository, file);
+        const tracked = spawnSync("git", [ "ls-files", "--error-unmatch", "--", relative ],
+            { cwd: repository,
+                encoding: "utf8" });
+        const ignored = spawnSync("git", [ "check-ignore", "--quiet", "--", relative ],
+            { cwd: repository,
+                encoding: "utf8" });
+        assert.equal(tracked.status, 1, `Acquired input must remain untracked: ${entry.path}`);
+        assert.equal(ignored.status, 0, `Acquired input must remain ignored: ${entry.path}`);
     }
 
     assert.equal(target.server_version, compatibility.importedServerVersion);

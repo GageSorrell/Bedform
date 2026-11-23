@@ -28,6 +28,7 @@ export default defineConfig(
             "Package/Deprecated/BDSIntellisense/Source/Schema/Generated/**/*.ts",
             "Package/Bedform/Source/Config.ts",
             "Package/Bedform/Source/Spatial/Internal/React/Vendor/*.generated.ts",
+            "Package/ServerGameTest/Source/AutomationContract.generated.ts",
             "Package/Deprecated/Blockbench/types/generated/**/*.ts"
         ],
         linterOptions: { reportUnusedDisableDirectives: "off" }

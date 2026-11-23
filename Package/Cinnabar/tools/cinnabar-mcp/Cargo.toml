@@ -9,7 +9,13 @@ publish = false
 name = "cinnabar-mcp"
 path = "src/main.rs"
 
+[package.metadata.cinnabar]
+reads = ["Bedform/Contract/automation-v1.schema.json"]
+
 [dependencies]
+ctrlc = { version = "3.4", features = ["termination"] }
+getrandom = "0.3"
+regex = "1"
 developer-control = { path = "../../crates/developer-control" }
 diagnostics = { path = "../../crates/diagnostics" }
 image.workspace = true

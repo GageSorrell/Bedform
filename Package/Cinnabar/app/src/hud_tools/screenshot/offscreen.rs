@@ -3,6 +3,7 @@
 use bevy::{
     camera::RenderTarget,
     prelude::*,
+    render::render_resource::TextureUsages,
     window::{PrimaryWindow, WindowRef},
 };
 use client_presentation::camera::FlyCamera;
@@ -38,12 +39,10 @@ pub(super) fn prepare(
         return;
     }
     let image = target.0.get_or_insert_with(|| {
-        images.add(Image::new_target_texture(
-            size.x,
-            size.y,
-            render_scene::SCENE_COLOR_FORMAT,
-            None,
-        ))
+        let mut image =
+            Image::new_target_texture(size.x, size.y, render_scene::SCENE_COLOR_FORMAT, None);
+        image.texture_descriptor.usage |= TextureUsages::COPY_SRC;
+        images.add(image)
     });
     if let Some(mut output) = images.get_mut(&*image)
         && output.size() != size

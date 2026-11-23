@@ -303,6 +303,7 @@
     }
   },
   "scripts": {
+    "qualify:cinnabar": "node --import tsx ../../Script/Setup/Tool/cinnabar-environment.mts",
     "verify:intent": "node --import tsx Tool/IntentVerify.mts",
     "test:physics:bds": "node --import tsx Tool/physics-bds.mts",
     "benchmark:physics": "node --import tsx Tool/physics-bds.mts --benchmark",

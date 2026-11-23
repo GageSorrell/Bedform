@@ -10,13 +10,15 @@
  */
 
 import { AlreadyCurrentLine, ColorEnabled } from "./Currency.js";
-import { BuildInstall, Consent, CreativeTools, Currency, Prerequisites, Probes, Processes,
+import { BuildInstall, Consent, CreativeTools, Currency, Probes, Processes,
     Provisioning, Reporting } from "./Contract.js";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
 import { Console, Effect, FileSystem, Layer } from "effect";
 import type { Paths, ProcessCommand } from "./Contract.js";
 import { release, version } from "node:os";
 import { IsSupportedPlatform } from "./Windows.js";
+import { LoadPrerequisitePlan } from "./PrerequisitePlan.js";
+import { PrerequisiteHost } from "./Prerequisite.js";
 import { Prompt } from "effect/cli";
 import { join } from "node:path";
 import process from "node:process";
@@ -45,7 +47,7 @@ export const ReportingLayer = Layer.succeed(Reporting, {
 
 /**
  * Provides read-only Windows and fork probes, without native builds or source acquisition.
- * Detailed Cargo/toolchain validation belongs to the prerequisite component.
+ * Validates local prerequisite manifests before permission prompts or machine changes.
  *
  * @category Layer
  * @since 1.0.0
@@ -53,6 +55,7 @@ export const ReportingLayer = Layer.succeed(Reporting, {
 export const ProbeLayer = Layer.effect(Probes, Effect.gen(function*()
 {
     const fs = yield* FileSystem.FileSystem;
+    const host = yield* PrerequisiteHost;
     return {
         platform: Effect.suspend(() => IsSupportedPlatform(
             process.platform, process.arch, release(), version())
@@ -82,6 +85,8 @@ export const ProbeLayer = Layer.effect(Probes, Effect.gen(function*()
                     return yield* Effect.fail(new Error(`Incomplete local fork configuration: ${file}`));
                 }
             }
+
+            yield* LoadPrerequisitePlan(paths).pipe(Effect.provideService(PrerequisiteHost, host));
         })
     };
 }));
@@ -141,7 +146,6 @@ export const ProcessLayer = Layer.effect(Processes, Effect.gen(function*()
  */
 export const ComponentLayer = Layer.mergeAll(
     Layer.succeed(Currency, { inspect: () => Effect.succeed(undefined) }),
-    Layer.succeed(Prerequisites, { prepare: () => Unavailable("Prerequisite setup (xa5.3)") }),
     Layer.succeed(BuildInstall, { run: () => Unavailable("Local build/install (xa5.4)") }),
     Layer.succeed(Provisioning, {
         bds: () => Unavailable("Stopped-BDS provisioning (xa5.7)"),

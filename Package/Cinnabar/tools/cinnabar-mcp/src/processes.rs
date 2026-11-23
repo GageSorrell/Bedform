@@ -82,7 +82,6 @@ impl Client {
                 return Ok((client, endpoint));
             }
             if Instant::now() >= deadline {
-                client.stop();
                 return Err(format!(
                     "no control endpoint within {} s; is the binary built with --features developer-control? See {}",
                     launch.timeout.as_secs(),

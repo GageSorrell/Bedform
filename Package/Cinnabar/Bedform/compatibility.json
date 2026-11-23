@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "blocked",
+  "status": "aligned",
   "checkedOn": "2026-11-20",
   "platform": "windows-x64",
   "rustVersion": "1.100.0",
@@ -38,9 +38,7 @@
   "preLoaderVersion": "1.16.8",
   "loaderReleaseUrl": "https://github.com/LiteLDev/LeviLamina/releases/tag/v26.60.8",
   "sdkReleaseUrl": "https://github.com/LiteLDev/bedrock-runtime-data/releases/tag/v26.60.6-server.16",
-  "blockers": [
-    "Affected registry validation is in progress."
-  ],
+  "blockers": [],
   "protocolChangelogUrl": "https://mojang.github.io/bedrock-protocol-docs/changelog/",
   "qualificationScope": "Source import, exact target alignment and affected protocol/registry checks. Native attachment, renderer, media and installer acceptance belong to later gates."
 }

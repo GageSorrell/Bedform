@@ -14,6 +14,8 @@ import { ComponentLayer, ConsentLayer, ProbeLayer, ProcessLayer, ReportingLayer 
 import { Console, Effect, Layer } from "effect";
 import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { PermissionLayer } from "./Permissions.js";
+import { PrerequisiteHostLayer } from "./PrerequisiteNode.js";
+import { PrerequisiteLayer } from "./Prerequisites.js";
 import { RunCli } from "./Cli.js";
 import { SessionLayer } from "./Session.js";
 import { fileURLToPath } from "node:url";
@@ -23,9 +25,11 @@ import { resolve } from "node:path";
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
 {
     const base = Layer.mergeAll(NodeServices.layer, AccessLayer, ComponentLayer, ReportingLayer);
+    const host = PrerequisiteHostLayer.pipe(Layer.provideMerge(base));
     const adapters = Layer.mergeAll(ConsentLayer, ProbeLayer, ProcessLayer, IdentityLayer, SessionLayer)
-        .pipe(Layer.provideMerge(base));
-    const transport = ElevationLayer.pipe(Layer.provideMerge(adapters));
+        .pipe(Layer.provideMerge(host));
+    const prerequisites = PrerequisiteLayer.pipe(Layer.provideMerge(adapters));
+    const transport = ElevationLayer.pipe(Layer.provideMerge(prerequisites));
     const services = PermissionLayer.pipe(Layer.provideMerge(transport));
     NodeRuntime.runMain(RunCli(process.argv.slice(2)).pipe(
         Effect.provide(services),

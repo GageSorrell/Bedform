@@ -4,6 +4,7 @@
 // The tool list is one `json!` value; its nesting exceeds the default macro recursion limit.
 #![recursion_limit = "256"]
 
+mod automation;
 mod benchmark;
 mod commands;
 mod definitions;
@@ -19,6 +20,13 @@ use std::path::PathBuf;
     reason = "the benchmark CLI reports failures on stderr without changing the stdio MCP protocol"
 )]
 fn main() {
+    if let Some(result) = automation::cli() {
+        if let Err(error) = result {
+            eprintln!("automation: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     let repo = repo_argument()
         .or_else(|| std::env::current_dir().ok())
         .unwrap_or_else(|| PathBuf::from("."));

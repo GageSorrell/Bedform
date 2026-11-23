@@ -1,8 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "../..",
     "noEmit": true
   },
-  "include": ["Source/**/*.ts", "Test/**/*.mts"]
+  "include": ["Source/**/*.ts", "Test/**/*.mts", "Tool/**/*.mts"]
 }

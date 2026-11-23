@@ -9,4 +9,4 @@ Bedform adds its extensions here, and where an extension replaces a first-party 
 
 This package's version is the version of `@minecraft/debug-utilities` that it tracks, followed by a channel suffix:
 `-dev.N` on the `Master` branch and `-beta.N` on the `Beta` branch. For example, this release tracks
-`@minecraft/debug-utilities@1.0.0-beta.1.26.66-stable`.
+`@minecraft/debug-utilities@1.0.0-beta.1.26.60-stable`.

@@ -13,6 +13,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import type { TestContext } from "node:test";
 import assert from "node:assert/strict";
 import { checkCinnabar } from "./check-cinnabar.mts";
+import { createHash } from "node:crypto";
 import { discoverMirrors } from "./workspace-mirrors.mts";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -20,6 +21,37 @@ import test from "node:test";
 import { tmpdir } from "node:os";
 
 const Repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+test("acquired source data must match its pin and stay ignored and untracked", () =>
+{
+    const root = fixture();
+    try
+    {
+        const relative = "Package/Cinnabar/assets/prerequisite-fixture.bin";
+        const file = path.join(root, relative);
+        const bytes = Buffer.from("verified input");
+        const sha = createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+        const inventoryFile = path.join(root, "Package/Cinnabar/Bedform/import.json");
+        const inventory = JSON.parse(readFileSync(inventoryFile, "utf8")) as Inventory;
+        inventory.excluded = [ { path: "assets/prerequisite-fixture.bin",
+            sha } ];
+        writeFileSync(inventoryFile, JSON.stringify(inventory));
+        writeFileSync(file, bytes);
+        writeFileSync(path.join(root, ".gitignore"), `${relative}\n`);
+        assert.equal(spawnSync("git", [ "init", "--quiet" ], { cwd: root }).status, 0);
+        assert.deepEqual(checkCinnabar(root), []);
+        writeFileSync(file, "edited");
+        assert.throws(() => checkCinnabar(root), /differs from its import pin/);
+        writeFileSync(file, bytes);
+        assert.equal(spawnSync("git", [ "add", "--force", "--", relative ], { cwd: root }).status, 0);
+        assert.throws(() => checkCinnabar(root), /must remain untracked/);
+    }
+    finally
+    {
+        rmSync(root, { force: true,
+            recursive: true });
+    }
+});
 
 test("native ABI configuration requires explicit SDK inputs before linking", (context: TestContext) =>
 {
@@ -80,6 +112,7 @@ interface ImportEntry
 interface Inventory
 {
     imported: Array<ImportEntry>;
+    excluded: Array<ImportEntry>;
 }
 
 /**
@@ -96,7 +129,9 @@ function fixture(): string
     mkdirSync(path.join(root, "Script"), { recursive: true });
     cpSync(path.join(Repository, "Script/bedrock-target.json"),
         path.join(root, "Script/bedrock-target.json"));
-    const files = [ "Bedform/compatibility.json", "Bedform/availability.json", "Bedform/LeviLamina.lip.toml",
+    const files = [ "Bedform/compatibility.json", "Bedform/availability.json",
+        "Bedform/alignment-validation.json",
+        "Bedform/LeviLamina.lip.toml",
         "Bedform/LeviLamina.xmake.lua", "assets/bedrock-target.json", "assets/vanilla-source.json",
         "assets/registry-foundation-v2225.json", "core/go.mod", "crates/protocol/Cargo.toml", "LICENSE",
         "Cargo.toml", "rust-toolchain.toml" ];

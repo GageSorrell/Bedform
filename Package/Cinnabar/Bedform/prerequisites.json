@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "rustup": {
+    "url": "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-pc-windows-msvc/rustup-init.exe",
+    "sha256": "88d8258dcf6ae4f7a80c7d1088e1f36fa7025a1cfd1343731b4ee6f385121fc0"
+  },
+  "nativeSource": {
+    "url": "https://codeload.github.com/LiteLDev/LeviLamina/zip/db7ea1f1a964baa9c9612845ea60575d76a012ec",
+    "sha256": "c3c25e6bbefac5f86e11b04ebba581043836ce100be5d88970723224f76110af",
+    "prefix": "LeviLamina-db7ea1f1a964baa9c9612845ea60575d76a012ec/"
+  },
+  "runtimeData": {
+    "url": "https://github.com/LiteLDev/bedrock-runtime-data/releases/download/v26.60.6-server.16/bedrock-runtime-data-v26.60.6-server.16-windows-x64.zip",
+    "sha256": "8c9149c853227bf1c77f19290a1911a36ecd59a05f316e6dd1767fde9468a1c9"
+  },
+  "winget": {
+    "git": "Git.Git",
+    "visualStudio": "Microsoft.VisualStudio.2022.BuildTools",
+    "go": "GoLang.Go",
+    "xmake": "Xmake-io.Xmake",
+    "ffmpeg": "Gyan.FFmpeg"
+  },
+  "visualStudioComponents": [
+    "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+    "Microsoft.VisualStudio.Component.Windows11SDK.26100",
+    "Microsoft.VisualStudio.Component.VC.CMake.Project",
+    "Microsoft.VisualStudio.Component.VC.Llvm.Clang"
+  ],
+  "encoder": "libx264",
+  "container": "mp4"
+}

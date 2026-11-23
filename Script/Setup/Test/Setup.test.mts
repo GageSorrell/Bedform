@@ -19,6 +19,7 @@ import { Command } from "effect/cli";
 import { MakeCommand } from "../Source/Cli.js";
 import { NodeServices } from "@effect/platform-node";
 import type { Options } from "../Source/Contract.js";
+import { PrerequisiteHostLayer } from "../Source/PrerequisiteNode.js";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
@@ -195,7 +196,8 @@ test("importing every compiled module never runs the CLI handler", () =>
 {
     const output = execFileSync(process.execPath, [ "--input-type=module", "-e",
         "await Promise.all(['index','Cli','Node','Setup','Contract','Currency'," +
-        "'Permissions','Handoff','Session','Windows','keys']" +
+        "'Permissions','Handoff','Session','Windows','keys'," +
+        "'Prerequisite','PrerequisitePlan','PrerequisiteNode','Prerequisites','Qualification']" +
         ".map(n => import('./' + n + '.js')));" ],
     { cwd: resolve(Root, "Script/Setup/Distribution"),
         encoding: "utf8" });
@@ -290,6 +292,7 @@ test("Node source probe diagnoses a missing local fork without machine services"
         return yield* probes.source(paths);
     });
     await assert.rejects(Effect.runPromise(preflight.pipe(
-        Effect.provide(ProbeLayer.pipe(Layer.provide(NodeServices.layer)))
+        Effect.provide(ProbeLayer.pipe(Layer.provide(
+            PrerequisiteHostLayer.pipe(Layer.provideMerge(NodeServices.layer)))))
     )), /complete checkout/);
 });

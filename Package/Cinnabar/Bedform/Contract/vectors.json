@@ -1,0 +1,40 @@
+{
+  "session": {
+    "runId": "run-fixture",
+    "sessionId": "session-1",
+    "generation": 1,
+    "player": {
+      "serverInstanceId": "bds-fixture",
+      "entityId": "-9223372036854775808",
+      "runtimeId": "18446744073709551615",
+      "spawn": "gameTest"
+    }
+  },
+  "input": [
+    {"valid": true, "command": {"kind": "press", "input": {"kind": "action", "action": "@bedform/server-gametest/InputAction!Use"}}},
+    {"valid": true, "command": {"kind": "hold", "input": {"kind": "action", "action": "@bedform/server-gametest/InputAction!MoveForward"}}},
+    {"valid": true, "command": {"kind": "release", "input": {"kind": "action", "action": "@bedform/server-gametest/InputAction!Hotbar9"}}},
+    {"valid": false, "command": {"kind": "press", "input": {"kind": "action", "action": "@bedform/server-gametest/InputAction!use"}}},
+    {"valid": false, "command": {"kind": "hold", "input": {"kind": "action", "action": "@bedform/server-gametest/InputAction!MadeUp"}}},
+    {"valid": false, "command": {"kind": "release", "input": {"kind": "action", "action": "other/InputAction!Use"}}}
+  ],
+  "packet": {
+    "batchHex": "0203900100",
+    "framedBatchHex": "000000050203900100"
+  },
+  "request": {
+    "v": 1,
+    "kind": "request",
+    "id": "fixture-request",
+    "op": "Capabilities",
+    "args": {}
+  },
+  "response": {
+    "v": 1,
+    "kind": "response",
+    "id": "fixture-request",
+    "op": "Capabilities",
+    "ok": true,
+    "value": ["NativeSession"]
+  }
+}

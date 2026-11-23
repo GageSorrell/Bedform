@@ -1,5 +1,5 @@
 /**
- * Script-owned environment identifiers for the setup elevation transport.
+ * Script-owned environment identifiers for setup handoff and prerequisite input discovery.
  *
  * @module monorepo-setup/keys
  *
@@ -10,9 +10,16 @@
  */
 
 /**
- * Data-only environment payload consumed by the fixed PowerShell UAC helper.
+ * Data-only handoff and prerequisite locations passed to fixed helpers and later build stages.
  *
  * @category Constant
  * @since 1.0.0
  */
-export const EnvironmentVariable = Object.freeze({ Relaunch: "BEDFORM_SETUP_RELAUNCH" } as const);
+export const EnvironmentVariable = Object.freeze({
+    AssetInputs: "BEDFORM_SETUP_ASSET_INPUTS",
+    NativeSource: "BEDFORM_SETUP_NATIVE_SOURCE",
+    Relaunch: "BEDFORM_SETUP_RELAUNCH",
+    RuntimeData: "BEDFORM_SETUP_RUNTIME_DATA",
+    RuntimeExecutable: "BEDFORM_SETUP_RUNTIME_EXECUTABLE",
+    VisualStudio: "BEDFORM_SETUP_VISUAL_STUDIO"
+} as const);

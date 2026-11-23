@@ -1,0 +1,5149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bedform Cinnabar Automation v1",
+  "$ref": "#/definitions/Message",
+  "x-operation-receivers": {
+    "Hello": [
+      "host",
+      "bridge",
+      "renderer"
+    ],
+    "Capabilities": [
+      "host",
+      "bridge",
+      "renderer"
+    ],
+    "Attach": [
+      "host",
+      "bridge"
+    ],
+    "Detach": [
+      "host",
+      "bridge"
+    ],
+    "State": [
+      "host",
+      "bridge"
+    ],
+    "SyncSession": [
+      "renderer"
+    ],
+    "AcquireLease": [
+      "host",
+      "bridge"
+    ],
+    "ReleaseLease": [
+      "host",
+      "bridge"
+    ],
+    "DispatchInput": [
+      "host",
+      "renderer"
+    ],
+    "SetBindings": [
+      "host",
+      "renderer"
+    ],
+    "GetBindings": [
+      "host",
+      "renderer"
+    ],
+    "Observe": [
+      "host",
+      "bridge",
+      "renderer"
+    ],
+    "PublishFact": [
+      "host"
+    ],
+    "Screenshot": [
+      "host"
+    ],
+    "StartVideo": [
+      "host"
+    ],
+    "StopVideo": [
+      "host"
+    ],
+    "EnableLookBack": [
+      "host"
+    ],
+    "DisableLookBack": [
+      "host"
+    ],
+    "LookBackStatus": [
+      "host"
+    ],
+    "RegisterTrigger": [
+      "host"
+    ],
+    "ListTriggers": [
+      "host"
+    ],
+    "InspectTrigger": [
+      "host"
+    ],
+    "EnableTrigger": [
+      "host"
+    ],
+    "DisableTrigger": [
+      "host"
+    ],
+    "ResetTrigger": [
+      "host"
+    ],
+    "RemoveTrigger": [
+      "host"
+    ],
+    "Artifacts": [
+      "host"
+    ],
+    "PollEvents": [
+      "host",
+      "bridge",
+      "renderer"
+    ]
+  },
+  "definitions": {
+    "Compatibility": {
+      "type": "object",
+      "properties": {
+        "platform": {
+          "const": "windows-x64"
+        },
+        "bdsVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "bdsBuild": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "wireProtocol": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "loaderVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "sdkVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "preLoaderVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "compatibilitySha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "platform",
+        "bdsVersion",
+        "bdsBuild",
+        "wireProtocol",
+        "loaderVersion",
+        "sdkVersion",
+        "preLoaderVersion",
+        "compatibilitySha256"
+      ],
+      "additionalProperties": false
+    },
+    "ErrorCode": {
+      "enum": [
+        "Malformed",
+        "Unauthorized",
+        "UnsupportedVersion",
+        "Incompatible",
+        "UnsupportedCapability",
+        "ExtensionMissing",
+        "InvalidPlayer",
+        "PlayerDead",
+        "AlreadyAttached",
+        "StaleSession",
+        "LeaseBusy",
+        "LeaseLost",
+        "NotReady",
+        "Disconnected",
+        "Shutdown",
+        "Timeout",
+        "Cancelled",
+        "ResourceLimit",
+        "LaunchFailed",
+        "UnknownAction",
+        "TriggerExists",
+        "TriggerMissing",
+        "PredicateFailed",
+        "LookBackDisabled",
+        "HistoryUnavailable",
+        "FrameUnavailable",
+        "EncoderFailed",
+        "DiskFailed",
+        "PermissionDenied",
+        "InvalidPath",
+        "Collision",
+        "Internal"
+      ]
+    },
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/definitions/ErrorCode"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "additionalProperties": false
+    },
+    "Capability": {
+      "enum": [
+        "NativeSession",
+        "VirtualInput",
+        "VisibleRenderer",
+        "HiddenRenderer",
+        "Observations",
+        "Capture",
+        "Audio",
+        "FixedClock",
+        "LookBack",
+        "Triggers"
+      ]
+    },
+    "Role": {
+      "enum": [
+        "script",
+        "host",
+        "bridge",
+        "renderer",
+        "provisioner"
+      ]
+    },
+    "Player": {
+      "type": "object",
+      "properties": {
+        "serverInstanceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20,
+          "pattern": "^(0|-?[1-9][0-9]{0,18})$"
+        },
+        "runtimeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]{0,19})$"
+        },
+        "spawn": {
+          "enum": [
+            "standalone",
+            "gameTest"
+          ]
+        }
+      },
+      "required": [
+        "serverInstanceId",
+        "entityId",
+        "runtimeId",
+        "spawn"
+      ],
+      "additionalProperties": false
+    },
+    "Session": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "player": {
+          "$ref": "#/definitions/Player"
+        }
+      },
+      "required": [
+        "runId",
+        "sessionId",
+        "generation",
+        "player"
+      ],
+      "additionalProperties": false
+    },
+    "SessionState": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "phase": {
+          "enum": [
+            "attaching",
+            "ready",
+            "transitioning",
+            "closing",
+            "ended"
+          ]
+        },
+        "alive": {
+          "type": "boolean"
+        },
+        "dimension": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "runtimeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]{0,19})$"
+        },
+        "renderer": {
+          "enum": [
+            "hidden",
+            "visible"
+          ]
+        },
+        "lease": {
+          "$ref": "#/definitions/Lease"
+        },
+        "endReason": {
+          "$ref": "#/definitions/EndReason"
+        }
+      },
+      "required": [
+        "session",
+        "phase",
+        "alive",
+        "dimension",
+        "runtimeId",
+        "renderer"
+      ],
+      "additionalProperties": false
+    },
+    "EndReason": {
+      "enum": [
+        "detached",
+        "playerRemoved",
+        "testEnded",
+        "disconnected",
+        "shutdown",
+        "failed"
+      ]
+    },
+    "Lease": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "owner": {
+          "enum": [
+            "native",
+            "virtual"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "owner"
+      ],
+      "additionalProperties": false
+    },
+    "PacketEndpoint": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "port",
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "PacketBind": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "v",
+        "session",
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "PacketIngress": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "lease": {
+          "$ref": "#/definitions/Lease"
+        }
+      },
+      "required": [
+        "v",
+        "session"
+      ],
+      "additionalProperties": false
+    },
+    "Stamp": {
+      "type": "object",
+      "properties": {
+        "monotonicMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "monotonicMs"
+      ],
+      "additionalProperties": false
+    },
+    "FrameTime": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "at": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "mediaPtsUs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "index",
+        "at"
+      ],
+      "additionalProperties": false
+    },
+    "Vector": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "additionalProperties": false
+    },
+    "RawInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "key"
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "kind",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "mouseButton"
+            },
+            "button": {
+              "enum": [
+                "left",
+                "middle",
+                "right",
+                "back",
+                "forward"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "button"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "movement"
+            },
+            "forward": {
+              "type": "number",
+              "minimum": -1,
+              "maximum": 1
+            },
+            "right": {
+              "type": "number",
+              "minimum": -1,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "kind",
+            "forward",
+            "right"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "look"
+            },
+            "yaw": {
+              "type": "number"
+            },
+            "pitch": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "yaw",
+            "pitch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "pointer"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "wheel"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "kind",
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Action": {
+      "enum": [
+        "@bedform/server-gametest/InputAction!Use",
+        "@bedform/server-gametest/InputAction!Attack",
+        "@bedform/server-gametest/InputAction!Sneak",
+        "@bedform/server-gametest/InputAction!Jump",
+        "@bedform/server-gametest/InputAction!Sprint",
+        "@bedform/server-gametest/InputAction!MoveForward",
+        "@bedform/server-gametest/InputAction!MoveBackward",
+        "@bedform/server-gametest/InputAction!MoveLeft",
+        "@bedform/server-gametest/InputAction!MoveRight",
+        "@bedform/server-gametest/InputAction!Inventory",
+        "@bedform/server-gametest/InputAction!Hotbar1",
+        "@bedform/server-gametest/InputAction!Hotbar2",
+        "@bedform/server-gametest/InputAction!Hotbar3",
+        "@bedform/server-gametest/InputAction!Hotbar4",
+        "@bedform/server-gametest/InputAction!Hotbar5",
+        "@bedform/server-gametest/InputAction!Hotbar6",
+        "@bedform/server-gametest/InputAction!Hotbar7",
+        "@bedform/server-gametest/InputAction!Hotbar8",
+        "@bedform/server-gametest/InputAction!Hotbar9",
+        "@bedform/server-gametest/InputAction!Drop",
+        "@bedform/server-gametest/InputAction!Chat",
+        "@bedform/server-gametest/InputAction!Confirm",
+        "@bedform/server-gametest/InputAction!Cancel",
+        "@bedform/server-gametest/InputAction!Pause",
+        "@bedform/server-gametest/InputAction!Perspective"
+      ]
+    },
+    "Input": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/RawInput"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "action"
+            },
+            "action": {
+              "$ref": "#/definitions/Action"
+            }
+          },
+          "required": [
+            "kind",
+            "action"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "InputCommand": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "press"
+            },
+            "input": {
+              "$ref": "#/definitions/Input"
+            },
+            "ticks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "kind",
+            "input"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "hold"
+            },
+            "input": {
+              "$ref": "#/definitions/Input"
+            }
+          },
+          "required": [
+            "kind",
+            "input"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "release"
+            },
+            "input": {
+              "$ref": "#/definitions/Input"
+            }
+          },
+          "required": [
+            "kind",
+            "input"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "releaseAll"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Binding": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "$ref": "#/definitions/Action"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RawInput"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "action",
+        "inputs"
+      ],
+      "additionalProperties": false
+    },
+    "InputAck": {
+      "type": "object",
+      "properties": {
+        "applied": {
+          "$ref": "#/definitions/Stamp"
+        }
+      },
+      "required": [
+        "applied"
+      ],
+      "additionalProperties": false
+    },
+    "Fact": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "enum": [
+            "player",
+            "world",
+            "inventory",
+            "hud",
+            "ui",
+            "script"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "source",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "Observation": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "observed": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fact": {
+                "$ref": "#/definitions/Fact"
+              },
+              "value": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 4096
+                  }
+                ]
+              }
+            },
+            "required": [
+              "fact",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "session",
+        "observed",
+        "sequence",
+        "facts"
+      ],
+      "additionalProperties": false
+    },
+    "Condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "all"
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Condition"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "kind",
+            "conditions"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "any"
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Condition"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "kind",
+            "conditions"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "not"
+            },
+            "condition": {
+              "$ref": "#/definitions/Condition"
+            }
+          },
+          "required": [
+            "kind",
+            "condition"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "exists"
+            },
+            "fact": {
+              "$ref": "#/definitions/Fact"
+            }
+          },
+          "required": [
+            "kind",
+            "fact"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "compare"
+            },
+            "fact": {
+              "$ref": "#/definitions/Fact"
+            },
+            "operator": {
+              "enum": [
+                "eq",
+                "ne",
+                "lt",
+                "le",
+                "gt",
+                "ge"
+              ]
+            },
+            "value": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 4096
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "fact",
+            "operator",
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Output": {
+      "type": "object",
+      "properties": {
+        "directory": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32767
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32767
+        },
+        "template": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32767
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Screenshot": {
+      "type": "object",
+      "properties": {
+        "output": {
+          "$ref": "#/definitions/Output"
+        },
+        "offsetsMs": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "format": {
+          "const": "png"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Video": {
+      "type": "object",
+      "properties": {
+        "output": {
+          "$ref": "#/definitions/Output"
+        },
+        "container": {
+          "const": "mp4"
+        },
+        "codec": {
+          "const": "h264"
+        },
+        "fps": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "audio": {
+          "type": "boolean"
+        },
+        "clock": {
+          "enum": [
+            "realTime",
+            "fixed"
+          ]
+        },
+        "stop": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "manual"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "duration"
+                },
+                "durationMs": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "kind",
+                "durationMs"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "condition"
+                },
+                "condition": {
+                  "$ref": "#/definitions/Condition"
+                },
+                "maxWallClockMs": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "kind",
+                "condition",
+                "maxWallClockMs"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "historyOnly"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Interval": {
+      "type": "object",
+      "properties": {
+        "startMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "endMs": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "startMs",
+        "endMs"
+      ],
+      "additionalProperties": false
+    },
+    "FrameRequest": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "observed": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "receivedAtMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "offsetsMs": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "session",
+        "observed",
+        "receivedAtMs",
+        "offsetsMs"
+      ],
+      "additionalProperties": false
+    },
+    "FrameIndexEntry": {
+      "type": "object",
+      "properties": {
+        "frame": {
+          "$ref": "#/definitions/FrameTime"
+        },
+        "segmentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "keyframe": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "frame",
+        "segmentId",
+        "keyframe"
+      ],
+      "additionalProperties": false
+    },
+    "FrameDescriptor": {
+      "type": "object",
+      "properties": {
+        "frame": {
+          "$ref": "#/definitions/FrameTime"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "rowStride": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "pixelFormat": {
+          "enum": [
+            "rgba8",
+            "bgra8"
+          ]
+        }
+      },
+      "required": [
+        "frame",
+        "width",
+        "height",
+        "rowStride",
+        "pixelFormat"
+      ],
+      "additionalProperties": false
+    },
+    "AudioDescriptor": {
+      "type": "object",
+      "properties": {
+        "at": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "sampleRate": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "channels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "frames": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sampleFormat": {
+          "const": "f32leInterleaved"
+        }
+      },
+      "required": [
+        "at",
+        "sampleRate",
+        "channels",
+        "frames",
+        "sampleFormat"
+      ],
+      "additionalProperties": false
+    },
+    "LookBackDefaults": {
+      "oneOf": [
+        {
+          "const": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "screenshot": {
+              "type": "boolean"
+            },
+            "video": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "screenshot",
+            "video"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "LookBackConfig": {
+      "type": "object",
+      "properties": {
+        "durationMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "defaults": {
+          "$ref": "#/definitions/LookBackDefaults"
+        },
+        "audio": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "LookBackOverride": {
+      "oneOf": [
+        {
+          "const": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "durationMs": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "screenshot": {
+              "type": "boolean"
+            },
+            "video": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "LookBackStatus": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "disabled"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "enabled"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "retentionMs": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "defaults": {
+              "$ref": "#/definitions/LookBackDefaults"
+            },
+            "audio": {
+              "type": "boolean"
+            },
+            "available": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/definitions/Interval"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "epoch",
+            "retentionMs",
+            "defaults",
+            "audio",
+            "available"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "HistoryRequest": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "interval": {
+          "$ref": "#/definitions/Interval"
+        }
+      },
+      "required": [
+        "session",
+        "epoch",
+        "interval"
+      ],
+      "additionalProperties": false
+    },
+    "HistorySegment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "interval": {
+          "$ref": "#/definitions/Interval"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "audio": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "interval",
+        "bytes",
+        "audio"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryIndex": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "status": {
+          "$ref": "#/definitions/LookBackStatus"
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FrameIndexEntry"
+          },
+          "minItems": 0
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HistorySegment"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "session",
+        "status",
+        "frames",
+        "segments"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryPin": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "request": {
+          "$ref": "#/definitions/HistoryRequest"
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HistorySegment"
+          },
+          "minItems": 1
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FrameIndexEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "request",
+        "segments",
+        "frames"
+      ],
+      "additionalProperties": false
+    },
+    "Trigger": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "condition": {
+          "$ref": "#/definitions/Condition"
+        },
+        "screenshot": {
+          "$ref": "#/definitions/Screenshot"
+        },
+        "video": {
+          "$ref": "#/definitions/Video"
+        },
+        "output": {
+          "$ref": "#/definitions/Output"
+        },
+        "lookBack": {
+          "$ref": "#/definitions/LookBackOverride"
+        },
+        "oncePerRun": {
+          "type": "boolean"
+        },
+        "cooldownMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "condition"
+      ],
+      "additionalProperties": false
+    },
+    "TriggerState": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "$ref": "#/definitions/Trigger"
+        },
+        "owner": {
+          "enum": [
+            "script",
+            "mcp"
+          ]
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "previous": {
+          "type": "boolean"
+        },
+        "activations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "lastActivation": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "failure": {
+          "$ref": "#/definitions/Failure"
+        }
+      },
+      "required": [
+        "trigger",
+        "owner",
+        "enabled",
+        "previous",
+        "activations"
+      ],
+      "additionalProperties": false
+    },
+    "TriggerFact": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "fact": {
+          "$ref": "#/definitions/Fact"
+        },
+        "observed": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "outcome": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "value"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "maxLength": 4096
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "value"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "failure"
+                },
+                "failure": {
+                  "$ref": "#/definitions/Failure"
+                }
+              },
+              "required": [
+                "kind",
+                "failure"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "session",
+        "fact",
+        "observed",
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "TriggerEvaluation": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/TriggerState"
+        },
+        "observation": {
+          "$ref": "#/definitions/Observation"
+        },
+        "at": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "history": {
+          "$ref": "#/definitions/HistoryIndex"
+        },
+        "nextActivation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "predicateFailure": {
+          "$ref": "#/definitions/Failure"
+        }
+      },
+      "required": [
+        "state",
+        "observation",
+        "at",
+        "history",
+        "nextActivation"
+      ],
+      "additionalProperties": false
+    },
+    "Occurrence": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "activation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "observed": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "activated": {
+          "$ref": "#/definitions/Stamp"
+        }
+      },
+      "required": [
+        "name",
+        "activation",
+        "observed",
+        "activated"
+      ],
+      "additionalProperties": false
+    },
+    "Warning": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "enum": [
+            "retentionClamp",
+            "historyUnavailable",
+            "historyWarmUp"
+          ]
+        },
+        "occurrence": {
+          "$ref": "#/definitions/Occurrence"
+        },
+        "requestedMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "retentionMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "availableMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "effectiveMs": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "reason",
+        "occurrence",
+        "requestedMs",
+        "retentionMs",
+        "availableMs",
+        "effectiveMs"
+      ],
+      "additionalProperties": false
+    },
+    "WarningDelivery": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "warning": {
+          "$ref": "#/definitions/Warning"
+        },
+        "sink": {
+          "enum": [
+            "hostConsole",
+            "bdsConsole",
+            "mcp"
+          ]
+        }
+      },
+      "required": [
+        "session",
+        "warning",
+        "sink"
+      ],
+      "additionalProperties": false
+    },
+    "LookBackResult": {
+      "type": "object",
+      "properties": {
+        "requestedMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "effectiveMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "availableMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "retentionMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "requestedMs",
+        "effectiveMs",
+        "availableMs",
+        "retentionMs"
+      ],
+      "additionalProperties": false
+    },
+    "ScreenshotPlan": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "current"
+            },
+            "request": {
+              "$ref": "#/definitions/FrameRequest"
+            },
+            "screenshot": {
+              "$ref": "#/definitions/Screenshot"
+            }
+          },
+          "required": [
+            "kind",
+            "request",
+            "screenshot"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "historical"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "targetMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "frames": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FrameIndexEntry"
+              },
+              "minItems": 1
+            },
+            "screenshot": {
+              "$ref": "#/definitions/Screenshot"
+            }
+          },
+          "required": [
+            "kind",
+            "epoch",
+            "targetMs",
+            "frames",
+            "screenshot"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "VideoPlan": {
+      "type": "object",
+      "properties": {
+        "video": {
+          "$ref": "#/definitions/Video"
+        },
+        "activated": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "history": {
+          "$ref": "#/definitions/HistoryRequest"
+        },
+        "post": {
+          "$ref": "#/definitions/Interval"
+        },
+        "postDeadlineMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stopCondition": {
+          "$ref": "#/definitions/Condition"
+        }
+      },
+      "required": [
+        "video",
+        "activated"
+      ],
+      "additionalProperties": false
+    },
+    "CapturePlan": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "occurrence": {
+          "$ref": "#/definitions/Occurrence"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WarningDelivery"
+          },
+          "minItems": 0
+        },
+        "screenshot": {
+          "$ref": "#/definitions/ScreenshotPlan"
+        },
+        "video": {
+          "$ref": "#/definitions/VideoPlan"
+        },
+        "lookBack": {
+          "$ref": "#/definitions/LookBackResult"
+        },
+        "failure": {
+          "$ref": "#/definitions/Failure"
+        }
+      },
+      "required": [
+        "session",
+        "occurrence",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "TriggerDecision": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "idle"
+            },
+            "state": {
+              "$ref": "#/definitions/TriggerState"
+            }
+          },
+          "required": [
+            "kind",
+            "state"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "activate"
+            },
+            "state": {
+              "$ref": "#/definitions/TriggerState"
+            },
+            "plan": {
+              "$ref": "#/definitions/CapturePlan"
+            }
+          },
+          "required": [
+            "kind",
+            "state",
+            "plan"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "failed"
+            },
+            "state": {
+              "$ref": "#/definitions/TriggerState"
+            },
+            "failure": {
+              "$ref": "#/definitions/Failure"
+            }
+          },
+          "required": [
+            "kind",
+            "state",
+            "failure"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CaptureJob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "accepted": {
+          "$ref": "#/definitions/Stamp"
+        }
+      },
+      "required": [
+        "id",
+        "accepted"
+      ],
+      "additionalProperties": false
+    },
+    "Recording": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "started": {
+          "$ref": "#/definitions/Stamp"
+        }
+      },
+      "required": [
+        "id",
+        "started"
+      ],
+      "additionalProperties": false
+    },
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "session": {
+          "$ref": "#/definitions/Session"
+        },
+        "kind": {
+          "enum": [
+            "screenshot",
+            "video"
+          ]
+        },
+        "observed": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "activated": {
+          "$ref": "#/definitions/Stamp"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Warning"
+          },
+          "minItems": 0
+        },
+        "droppedFrames": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "truncation": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "retentionClamp",
+              "historyWarmUp",
+              "historyUnavailable",
+              "stopDeadline",
+              "interrupted"
+            ]
+          },
+          "minItems": 0
+        },
+        "result": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "completed"
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32767
+                },
+                "mediaStart": {
+                  "$ref": "#/definitions/FrameTime"
+                },
+                "mediaEnd": {
+                  "$ref": "#/definitions/FrameTime"
+                },
+                "source": {
+                  "enum": [
+                    "renderer",
+                    "videoDerived",
+                    "mixed"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "path",
+                "mediaStart",
+                "mediaEnd",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "failed"
+                },
+                "failure": {
+                  "$ref": "#/definitions/Failure"
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32767
+                }
+              },
+              "required": [
+                "kind",
+                "failure"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "interrupted"
+                },
+                "failure": {
+                  "$ref": "#/definitions/Failure"
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32767
+                }
+              },
+              "required": [
+                "kind",
+                "failure"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "jobId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "occurrence": {
+          "$ref": "#/definitions/Occurrence"
+        },
+        "lookBack": {
+          "$ref": "#/definitions/LookBackResult"
+        }
+      },
+      "required": [
+        "id",
+        "session",
+        "kind",
+        "observed",
+        "activated",
+        "warnings",
+        "droppedFrames",
+        "truncation",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "RunManifest": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Artifact"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "v",
+        "runId",
+        "artifacts"
+      ],
+      "additionalProperties": false
+    },
+    "OwnedFile": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "role": {
+          "enum": [
+            "client",
+            "mcp",
+            "core",
+            "helper",
+            "asset",
+            "bridge",
+            "loader",
+            "license"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "Provenance": {
+      "type": "object",
+      "properties": {
+        "sourceSha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "pinsSha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "name",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "monorepoCommit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      },
+      "required": [
+        "sourceSha256",
+        "pinsSha256",
+        "upstreamCommit",
+        "tools"
+      ],
+      "additionalProperties": false
+    },
+    "BundleManifest": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "owner": {
+          "const": "Bedform.Cinnabar"
+        },
+        "bundleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "compatibility": {
+          "$ref": "#/definitions/Compatibility"
+        },
+        "provenance": {
+          "$ref": "#/definitions/Provenance"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OwnedFile"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "v",
+        "owner",
+        "bundleId",
+        "compatibility",
+        "provenance",
+        "files"
+      ],
+      "additionalProperties": false
+    },
+    "ProvisioningReceipt": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "owner": {
+          "const": "Bedform.Cinnabar"
+        },
+        "bundleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32767
+        },
+        "configSha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "stage": {
+          "enum": [
+            "bds",
+            "mcp"
+          ]
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OwnedFile"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "v",
+        "owner",
+        "bundleId",
+        "target",
+        "configSha256",
+        "stage",
+        "files"
+      ],
+      "additionalProperties": false
+    },
+    "ControlEndpoint": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "host": {
+          "const": "127.0.0.1"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "compatibility": {
+          "$ref": "#/definitions/Compatibility"
+        }
+      },
+      "required": [
+        "v",
+        "host",
+        "port",
+        "token",
+        "role",
+        "compatibility"
+      ],
+      "additionalProperties": false
+    },
+    "Hello": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "compatibility": {
+          "$ref": "#/definitions/Compatibility"
+        }
+      },
+      "required": [
+        "role",
+        "compatibility"
+      ],
+      "additionalProperties": false
+    },
+    "Welcome": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "compatibility": {
+          "$ref": "#/definitions/Compatibility"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Capability"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "role",
+        "compatibility",
+        "capabilities"
+      ],
+      "additionalProperties": false
+    },
+    "Request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "Hello"
+            },
+            "args": {
+              "$ref": "#/definitions/Hello"
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "Capabilities"
+            },
+            "args": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "Attach"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "runId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+                },
+                "entityId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20,
+                  "pattern": "^(0|-?[1-9][0-9]{0,18})$"
+                },
+                "renderer": {
+                  "enum": [
+                    "hidden",
+                    "visible"
+                  ]
+                },
+                "fixedClock": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "runId",
+                "entityId"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "Detach"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "State"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "SyncSession"
+            },
+            "args": {
+              "$ref": "#/definitions/SessionState"
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "AcquireLease"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "owner": {
+                  "enum": [
+                    "native",
+                    "virtual"
+                  ]
+                }
+              },
+              "required": [
+                "session",
+                "owner"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "ReleaseLease"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "lease": {
+                  "$ref": "#/definitions/Lease"
+                }
+              },
+              "required": [
+                "session",
+                "lease"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "DispatchInput"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "lease": {
+                  "$ref": "#/definitions/Lease"
+                },
+                "command": {
+                  "$ref": "#/definitions/InputCommand"
+                }
+              },
+              "required": [
+                "session",
+                "lease",
+                "command"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "SetBindings"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "bindings": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Binding"
+                  },
+                  "minItems": 0
+                }
+              },
+              "required": [
+                "session",
+                "bindings"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "GetBindings"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "Observe"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "facts": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Fact"
+                  },
+                  "minItems": 0
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "PublishFact"
+            },
+            "args": {
+              "$ref": "#/definitions/TriggerFact"
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "Screenshot"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "capture": {
+                  "$ref": "#/definitions/Screenshot"
+                }
+              },
+              "required": [
+                "session",
+                "capture"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "StartVideo"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "capture": {
+                  "$ref": "#/definitions/Video"
+                }
+              },
+              "required": [
+                "session",
+                "capture"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "StopVideo"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "recordingId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+                }
+              },
+              "required": [
+                "session",
+                "recordingId"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "EnableLookBack"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "config": {
+                  "$ref": "#/definitions/LookBackConfig"
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "DisableLookBack"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "LookBackStatus"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "RegisterTrigger"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "trigger": {
+                  "$ref": "#/definitions/Trigger"
+                }
+              },
+              "required": [
+                "session",
+                "trigger"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "ListTriggers"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "session"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "InspectTrigger"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "required": [
+                "session",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "EnableTrigger"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "required": [
+                "session",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "DisableTrigger"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "required": [
+                "session",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "ResetTrigger"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "required": [
+                "session",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "RemoveTrigger"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "required": [
+                "session",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "Artifacts"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "runId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+                },
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "runId"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "op": {
+              "const": "PollEvents"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "after": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "session": {
+                  "$ref": "#/definitions/Session"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 128
+                }
+              },
+              "required": [
+                "after"
+              ],
+              "additionalProperties": false
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Response": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "Hello"
+            },
+            "value": {
+              "$ref": "#/definitions/Welcome"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "Capabilities"
+            },
+            "value": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Capability"
+              },
+              "minItems": 0
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "Attach"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "$ref": "#/definitions/SessionState"
+                },
+                "packets": {
+                  "$ref": "#/definitions/PacketEndpoint"
+                }
+              },
+              "required": [
+                "state"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "Detach"
+            },
+            "value": {
+              "$ref": "#/definitions/SessionState"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "State"
+            },
+            "value": {
+              "$ref": "#/definitions/SessionState"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "SyncSession"
+            },
+            "value": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "AcquireLease"
+            },
+            "value": {
+              "$ref": "#/definitions/Lease"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "ReleaseLease"
+            },
+            "value": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "DispatchInput"
+            },
+            "value": {
+              "$ref": "#/definitions/InputAck"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "SetBindings"
+            },
+            "value": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "GetBindings"
+            },
+            "value": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Binding"
+              },
+              "minItems": 0
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "Observe"
+            },
+            "value": {
+              "$ref": "#/definitions/Observation"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "PublishFact"
+            },
+            "value": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "Screenshot"
+            },
+            "value": {
+              "$ref": "#/definitions/CaptureJob"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "StartVideo"
+            },
+            "value": {
+              "$ref": "#/definitions/Recording"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "StopVideo"
+            },
+            "value": {
+              "$ref": "#/definitions/Artifact"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "EnableLookBack"
+            },
+            "value": {
+              "$ref": "#/definitions/LookBackStatus"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "DisableLookBack"
+            },
+            "value": {
+              "$ref": "#/definitions/LookBackStatus"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "LookBackStatus"
+            },
+            "value": {
+              "$ref": "#/definitions/LookBackStatus"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "RegisterTrigger"
+            },
+            "value": {
+              "$ref": "#/definitions/TriggerState"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "ListTriggers"
+            },
+            "value": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TriggerState"
+              },
+              "minItems": 0
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "InspectTrigger"
+            },
+            "value": {
+              "$ref": "#/definitions/TriggerState"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "EnableTrigger"
+            },
+            "value": {
+              "$ref": "#/definitions/TriggerState"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "DisableTrigger"
+            },
+            "value": {
+              "$ref": "#/definitions/TriggerState"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "ResetTrigger"
+            },
+            "value": {
+              "$ref": "#/definitions/TriggerState"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "RemoveTrigger"
+            },
+            "value": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "Artifacts"
+            },
+            "value": {
+              "$ref": "#/definitions/RunManifest"
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": true
+            },
+            "op": {
+              "const": "PollEvents"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Event"
+                  },
+                  "minItems": 0
+                },
+                "next": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "events",
+                "next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "ok": {
+              "const": false
+            },
+            "error": {
+              "$ref": "#/definitions/Failure"
+            },
+            "op": {
+              "enum": [
+                "Hello",
+                "Capabilities",
+                "Attach",
+                "Detach",
+                "State",
+                "SyncSession",
+                "AcquireLease",
+                "ReleaseLease",
+                "DispatchInput",
+                "SetBindings",
+                "GetBindings",
+                "Observe",
+                "PublishFact",
+                "Screenshot",
+                "StartVideo",
+                "StopVideo",
+                "EnableLookBack",
+                "DisableLookBack",
+                "LookBackStatus",
+                "RegisterTrigger",
+                "ListTriggers",
+                "InspectTrigger",
+                "EnableTrigger",
+                "DisableTrigger",
+                "ResetTrigger",
+                "RemoveTrigger",
+                "Artifacts",
+                "PollEvents"
+              ]
+            }
+          },
+          "required": [
+            "v",
+            "id",
+            "kind",
+            "ok",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Event": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "kind": {
+              "const": "event"
+            },
+            "event": {
+              "const": "SessionChanged"
+            },
+            "value": {
+              "$ref": "#/definitions/SessionState"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "v",
+            "kind",
+            "event",
+            "value",
+            "sequence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "kind": {
+              "const": "event"
+            },
+            "event": {
+              "const": "Observation"
+            },
+            "value": {
+              "$ref": "#/definitions/Observation"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "v",
+            "kind",
+            "event",
+            "value",
+            "sequence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "kind": {
+              "const": "event"
+            },
+            "event": {
+              "const": "Warning"
+            },
+            "value": {
+              "$ref": "#/definitions/WarningDelivery"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "v",
+            "kind",
+            "event",
+            "value",
+            "sequence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "kind": {
+              "const": "event"
+            },
+            "event": {
+              "const": "Artifact"
+            },
+            "value": {
+              "$ref": "#/definitions/Artifact"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "v",
+            "kind",
+            "event",
+            "value",
+            "sequence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "kind": {
+              "const": "event"
+            },
+            "event": {
+              "const": "RunFailed"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "runId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+                },
+                "failure": {
+                  "$ref": "#/definitions/Failure"
+                },
+                "session": {
+                  "$ref": "#/definitions/Session"
+                }
+              },
+              "required": [
+                "runId",
+                "failure"
+              ],
+              "additionalProperties": false
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "v",
+            "kind",
+            "event",
+            "value",
+            "sequence"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Message": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/Request"
+        },
+        {
+          "$ref": "#/definitions/Response"
+        },
+        {
+          "$ref": "#/definitions/Event"
+        }
+      ]
+    }
+  }
+}

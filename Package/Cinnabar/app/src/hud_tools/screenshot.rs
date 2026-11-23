@@ -13,12 +13,18 @@ use std::{
 #[cfg(test)]
 use bevy::prelude::Messages;
 use bevy::{
+    asset::{Assets, RenderAssetUsages},
     prelude::{
         App, AppExit, ButtonInput, Commands, Image, IntoScheduleConfigs, KeyCode, Last,
         MessageWriter, MouseButton, On, Real, Res, ResMut, Resource, Result, SystemSet, Time,
         Update,
     },
-    render::view::screenshot::{Screenshot, ScreenshotCaptured},
+    render::{
+        gpu_readback::{ReadbackComplete, ReadbackOnce},
+        render_resource::TextureDimension,
+        renderer::RenderDevice,
+        view::screenshot::{Screenshot, ScreenshotCaptured},
+    },
 };
 use crossbeam_channel::{Receiver, Sender};
 
@@ -65,25 +71,52 @@ pub(crate) fn configure_frame_capture(app: &mut App) {
 fn spawn_frame_capture(
     mut capture: ResMut<FrameCapture>,
     target: Res<offscreen::FrameTarget>,
+    images: Option<Res<Assets<Image>>>,
     mut commands: Commands,
 ) {
     if capture.0.is_empty() {
         return;
     }
     let mut consumers = std::mem::take(&mut capture.0);
-    let screenshot = target
-        .0
-        .as_ref()
-        .map_or_else(Screenshot::primary_window, |image| {
-            Screenshot::image(image.clone())
-        });
-    commands
-        .spawn(screenshot)
-        .observe(move |captured: On<ScreenshotCaptured>| {
+    if let Some(handle) = target.0.as_ref()
+        && let Some(output) = images.as_deref().and_then(|images| images.get(handle))
+    {
+        let size = output.texture_descriptor.size;
+        let format = output.texture_descriptor.format;
+        // Read the hidden camera's retained output directly after rendering.
+        // The window screenshot path replaces the output attachment for its capture.
+        commands
+            .spawn(ReadbackOnce::texture(handle.clone()))
+            .observe(move |event: On<ReadbackComplete>, mut commands: Commands| {
+                let row = size.width as usize * 4;
+                let stride = RenderDevice::align_copy_bytes_per_row(row);
+                let pixels = event
+                    .data
+                    .chunks(stride)
+                    .take(size.height as usize)
+                    .flat_map(|bytes| bytes.iter().take(row).copied())
+                    .collect();
+                let image = Image::new(
+                    size,
+                    TextureDimension::D2,
+                    pixels,
+                    format,
+                    RenderAssetUsages::MAIN_WORLD,
+                );
+                for consumer in consumers.drain(..) {
+                    consumer(&image);
+                }
+                commands.entity(event.entity).despawn();
+            });
+        return;
+    }
+    commands.spawn(Screenshot::primary_window()).observe(
+        move |captured: On<ScreenshotCaptured>| {
             for consumer in consumers.drain(..) {
                 consumer(&captured.image);
             }
-        });
+        },
+    );
 }
 
 #[derive(Resource)]

@@ -54,6 +54,17 @@ impl LoginSequence {
             .await
             .map_err(ProtocolError::Bridge)?;
         drop(endpoint);
+        // Bedform's private renderer relay consumes this preface before the
+        // ordinary Connect frame. Never send it to another core endpoint.
+        if std::env::var_os("BEDFORM_CINNABAR_RELAY_DIRECTORY").as_deref()
+            == Some(socket_dir.as_os_str())
+            && let Ok(token) = std::env::var("BEDFORM_CINNABAR_RELAY_TOKEN")
+        {
+            frames
+                .send(bytes::Bytes::from(token))
+                .await
+                .map_err(super::bridge_error)?;
+        }
         Self::connect_prepared(
             SessionIo {
                 reader,

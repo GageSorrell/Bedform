@@ -17,27 +17,25 @@ The LeviLamina build descriptors are evidence snapshots from commit
 
 ## Exact target gate
 
-`compatibility.json` records the currently selected version set, targeting BDS
-**1.26.66.1**. Its beta API pins carry the `1.26.66-stable` label; that label alone
-does not establish a minimum runtime version. The older-target assessment below
-demonstrates that 1.26.60.6 is a viable alternative without changing this selection.
+The user explicitly selected **BDS 1.26.60.6** on 2026-11-20 after Bedform-8ww.15.
+`Script/bedrock-target.json` owns the server/API pins, and mirror sync preserves
+these native pins instead of following newer npm tags. `compatibility.json` records
+the corresponding Cinnabar inputs. Stable server 2.11.0 and server-ui 2.3.0 remain;
+the six version-specific beta mirrors now use their `1.26.60-stable` builds.
 The imported Cinnabar codec, protocol 2225 registry foundation and core target
 **1.26.60.6**. Its vanilla resource source is separately pinned to a 1.26.60 preview
-sample pack. These older inputs have not been relabeled as compatible with 1.26.66.1.
+sample pack. Its original provenance remains intact.
 Mojang's [protocol changelog](https://mojang.github.io/bedrock-protocol-docs/changelog/)
 documents protocol 2225 with no packet changes through the 1.26.66 hotfix. This is
-packet-schema evidence only; registry/assets, codec execution and native ABI
-qualification remain outstanding.
+packet-schema evidence only; it is not the basis for claiming native ABI compatibility.
 
 Published LeviLamina **26.60.8** uses BDS dependency `1.26.60`, PreLoader **1.16.8**
-and SDK/runtime data **26.60.6-server.16**. Its release and SDK build descriptors do
-not establish support for BDS 1.26.66.1. No matching published SDK was found in the
-release inventory checked on 2026-11-20. Exact native alignment remains blocked.
-`availability.json` records the latest 100 published tags for each project, the
-checked loader main commit, query URLs and the empty exact-target candidate lists.
-This availability audit does not prove that adapting the SDK is impossible.
-Bedform-8ww.1 therefore remains open, and dependent attachment/rendering work must
-remain blocked. This import proves neither native attachment nor renderer behavior.
+and SDK/runtime data **26.60.6-server.16**, matching the selected target.
+`availability.json` records published availability and descriptor alignment.
+`alignment-validation.json` records the passing source/target gate. Status `aligned`
+means source import, exact version alignment and affected protocol/registry checks.
+The [native fixture results](Native/README.md) record the separate Bedform-8ww.2
+proof of linking, loader execution and visible rendering for both spawn APIs.
 
 From the repository root:
 
@@ -48,7 +46,7 @@ node --import tsx --test Script/cinnabar.test.mts
 ```
 
 The first command checks provenance, notices and consistency of the recorded pins.
-The second additionally rejects unresolved qualification gates and currently exits 1.
+The second additionally checks alignment evidence; both currently pass.
 Neither command launches BDS, fetches assets or performs machine setup.
 
 ## Preserved build entrypoints
@@ -68,11 +66,9 @@ go -C tools/registrygen test ./internal/foundation ./cmd/foundationcheck
 
 `make help`, `make registry-foundation-check`, `make assets`, `make play-build` and
 `make dist-local` retain their upstream meaning. Builds require excluded asset inputs;
-the source import is not a runnable bundle. Do not run old-target asset preparation
-and treat it as target alignment. Before enabling installation, replace or qualify
-the codec, registry, vanilla asset, Go core and native SDK inputs against 1.26.66.1,
-regenerate assets locally, and pass the exact-target gate. No toolchain installation,
-Rust build, BDS launch or asset acquisition is implicit in this import.
+the source import is not a runnable bundle. Full bundle preparation must supply those
+inputs and qualify the resulting client, helpers and bridge for the selected target.
+No toolchain installation or BDS launch is implicit in this source import.
 
 ## Rust validation on 2026-11-20
 
@@ -101,11 +97,23 @@ invalid index-pack output. The isolated checks do not establish a passing origin
 workspace build, qualify current-BDS registries/assets or the native SDK, or prove
 attachment and rendering behavior.
 
-The full Go registry-generator suite was also run. Its carrier checks fail because
-the excluded block/biome binary registries are absent; its Rust delegation could
-not find Cargo on the inherited PATH. Regenerating and validating the required
-carriers from qualified target inputs remains an open gate. The passing foundation
-command tests validate metadata handling, not the missing carriers.
+The final registry validation passed **76 asset-compiler unit tests** and **490 Go
+tests across seven packages**. `registryc --kind all --check` regenerated 26 production
+files and matched the pinned bytes. The reduced validation graph has 1,073 byte-identical
+source files and 254 exact package identities/checksums from the original lock. Twelve
+excluded binary fixtures were fetched at the imported commit and Git-blob verified
+inside ignored `.local/asset-validation`; the source import still excludes them.
+Two upstream conditional tests remain skipped: the historical Education migration
+comparison needs a previous registry root, and independent server-defined metadata
+regeneration needs the sample behavior-pack/palette inputs. Current production
+registry regeneration passed; the skipped checks are recorded as unrun.
+
+To reproduce registry validation, run `python Bedform/PrepareRegistryValidation.py`
+from `Package/Cinnabar`, then follow `alignment-validation.json`'s commands. The first
+Cargo command prunes a copied lock for the reduced graph; subsequent commands use
+`--locked`. The preparation command fetches verified fixtures into `.local`; it neither
+installs tools nor launches BDS. GNU Make must be on PATH for its Makefile planning
+test. Use `GOWORK=off` and point `CINNABAR_REGISTRYC_BIN` at the built validation compiler.
 
 ## Older-target assessment
 
@@ -124,13 +132,23 @@ fixture with actual process restart. These runs used the fixed test executable
 paths after the user completed firewall setup. The source installation was read
 only; all launched test servers stopped cleanly.
 
-This establishes a practical older-target option without demonstrating Cinnabar
-attachment or real-client appearance. A deliberate retarget still requires changes
-to the canonical task contract, six beta mirror pins and dependent lockfile entries,
-the latest-version mirror policy and compatibility guards. Stable server 2.11.0
-and server-ui 2.3.0 need no downgrade. Missing Cinnabar assets, original-workspace
-build validation, native loader/link qualification and exact-player acceptance
-remain open. The selected 1.26.66.1 target and issue .1's blocked status are unchanged.
+This assessment preceded the user's explicit target switch; its original selection
+fields are historical. The task contract, beta pins, lockfile, mirror policy and
+compatibility guards now select 1.26.60.6. The [later native fixture](Native/README.md)
+validated the loader and visible Cinnabar attachment for that target. Complete
+bundle production and original workspace build validation remain in the dependent
+integration/setup gates. Final
+focused checks and all six affected mirror typechecks also passed using portable
+Node 24.19.0; the preceding native fixtures used installed Node 24.22.1. No system
+Node default was changed.
+
+The broader `npm run verify --workspace bedform` is not green: 587 of 590 tests
+passed, with failures in Canvas artifact rejection, pointer drawing and the Windows
+offline-consumer temp path. The two Canvas assertions also fail in a sequential
+Node 24.19.0 recheck. The independent packed consumer subsequently passed under
+Node 24.19.0 with a normal temp path; the default short-path case remains a test
+infrastructure defect. Bedform-oce tracks these framework gates separately from
+.1's passing import, selected-target, protocol and registry checks.
 
 ## Exclusions and repository tooling
 
